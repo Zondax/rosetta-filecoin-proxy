@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import "github.com/coinbase/rosetta-sdk-go/types"

@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -9,6 +7,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/specs-actors/actors/abi"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
 

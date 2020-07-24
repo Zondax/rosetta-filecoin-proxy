@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -22,14 +20,14 @@ type MemPoolAPIService struct {
 func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode) server.MempoolAPIServicer {
 	return &MemPoolAPIService{
 		network: network,
-		node:  *api,
+		node:    *api,
 	}
 }
 
 // Mempool implements the /mempool endpoint.
 func (m *MemPoolAPIService) Mempool(
 	ctx context.Context,
-	request *types.MempoolRequest,
+	request *types.NetworkRequest,
 ) (*types.MempoolResponse, *types.Error) {
 
 	errNet := ValidateNetworkId(ctx, &m.node, request.NetworkIdentifier)
