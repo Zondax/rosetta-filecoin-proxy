@@ -161,17 +161,6 @@ func main() {
 	log.Info("Connected to Lotus")
 
 	ctx := context.Background()
-	state, err := lotusAPI.SyncState(ctx)
-	if err != nil {
-		log.Fatalf(err.Error())
-		return
-	}
-
-	log.Info("---- Active syncs %d", len(state.ActiveSyncs))
-	for _, as := range state.ActiveSyncs {
-		fmt.Printf("%v", as)
-	}
-
 	err = startRosettaRPC(ctx, lotusAPI)
 	if err != nil {
 		log.Info("Exit Rosetta rpc")
