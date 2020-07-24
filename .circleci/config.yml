@@ -4,14 +4,27 @@ jobs:
   build:
     docker:
       - image: golang:1.14
-    working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
       - run: go fmt
       - run: go build
       - run: go test
+
+  integration_testnet:
+    docker:
+      - image: golang:1.14
+    steps:
+      - checkout
+      - run:
+          name: ""
+          command: |
+            export LOTUS_RPC_URL=${LOTUS_RPC_URL_TESTNET}
+            export LOTUS_RPC_TOKEN=${LOTUS_RPC_TOKEN_TESTNET}
+            go run main.go
+
 workflows:
   version: 2
   build_all:
     jobs:
       - build
+      - integration_testnet
