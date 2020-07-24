@@ -16,11 +16,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: ""
+          name: "Launch proxy"
+          background: true
           command: |
             export LOTUS_RPC_URL=${LOTUS_RPC_URL_TESTNET}
             export LOTUS_RPC_TOKEN=${LOTUS_RPC_TOKEN_TESTNET}
             go run main.go
+      - run:
+          name: "Run tests"
+          background: true
+          command: |
+            echo "TODO: Run rosetta-cli?"
 
 workflows:
   version: 2
