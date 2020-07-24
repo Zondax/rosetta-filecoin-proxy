@@ -31,7 +31,6 @@ jobs:
           command: sleep 3
       - run:
           name: "Run tests"
-          background: true
           command: |
             cd rosetta/tests
             go test
