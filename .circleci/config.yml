@@ -16,12 +16,19 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "Prebuild"
+          command: |
+            go build main.go
+      - run:
           name: "Launch proxy"
           background: true
           command: |
             export LOTUS_RPC_URL=${LOTUS_RPC_URL_TESTNET}
             export LOTUS_RPC_TOKEN=${LOTUS_RPC_TOKEN_TESTNET}
             go run main.go
+      - run:
+          name: "Give time for the proxy to start"
+          command: sleep 3
       - run:
           name: "Run tests"
           background: true
