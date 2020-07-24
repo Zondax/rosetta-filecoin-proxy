@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -54,11 +52,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		Balances: []*types.Amount{
 			{
 				Value: balanceFil.String(),
-				Currency: &types.Currency{
-					Symbol:   "FIL", // TODO: get this from api?
-					Decimals: 18,    // TODO: get this from api?
-					Metadata: nil,
-				},
+				Currency: GetCurrencyData(),
 			},
 		},
 	}

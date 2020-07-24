@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -26,6 +24,8 @@ type ConstructionAPIService struct {
 	network *types.NetworkIdentifier
 	node api.FullNode
 }
+
+
 
 // NewConstructionAPIService creates a new instance of an ConstructionAPIService.
 func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.ConstructionAPIServicer {
@@ -112,5 +112,29 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	}
 
 	return resp, nil
+}
+
+func (c *ConstructionAPIService) ConstructionCombine(ctx context.Context, request *types.ConstructionCombineRequest) (*types.ConstructionCombineResponse, *types.Error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *ConstructionAPIService) ConstructionDerive(ctx context.Context, request *types.ConstructionDeriveRequest) (*types.ConstructionDeriveResponse, *types.Error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *ConstructionAPIService) ConstructionHash(ctx context.Context, request *types.ConstructionHashRequest) (*types.ConstructionHashResponse, *types.Error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *ConstructionAPIService) ConstructionParse(ctx context.Context, request *types.ConstructionParseRequest) (*types.ConstructionParseResponse, *types.Error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *ConstructionAPIService) ConstructionPayloads(ctx context.Context, request *types.ConstructionPayloadsRequest) (*types.ConstructionPayloadsResponse, *types.Error) {
+	return nil, ErrNotImplemented
+}
+
+func (c *ConstructionAPIService) ConstructionPreprocess(ctx context.Context, request *types.ConstructionPreprocessRequest) (*types.ConstructionPreprocessResponse, *types.Error) {
+	return nil, ErrNotImplemented
 }
 

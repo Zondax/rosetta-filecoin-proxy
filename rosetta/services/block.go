@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -9,6 +7,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/specs-actors/actors/abi"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
 
@@ -52,22 +51,22 @@ func (s *BlockAPIService) Block(
 		return nil, errNet
 	}
 
+	requestedHeight := *request.BlockIdentifier.Index
+	if requestedHeight < 0 {
+		return nil, ErrMalformedValue
+	}
+
 	//Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
-	if !status.IsSynced() {
+	if requestedHeight > 0 && !status.IsSynced() {
 		return nil, ErrUnableToGetUnsyncedBlock
 	}
 
 	if request.BlockIdentifier.Index == nil {
 		return nil, ErrInsufficientQueryInputs
-	}
-
-	requestedHeight := *request.BlockIdentifier.Index
-	if requestedHeight < 0 {
-		return nil, ErrMalformedValue
 	}
 
 	var tipSet *filTypes.TipSet

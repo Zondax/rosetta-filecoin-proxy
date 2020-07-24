@@ -1,5 +1,3 @@
-// +build rosetta_rpc
-
 package services
 
 import (
@@ -18,7 +16,7 @@ func TestMemPoolAPIService_Mempool(t *testing.T) {
 	}
 	type args struct {
 		ctx     context.Context
-		request *types.MempoolRequest
+		request *types.NetworkRequest
 	}
 	tests := []struct {
 		name   string
