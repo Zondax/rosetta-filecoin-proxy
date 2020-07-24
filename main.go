@@ -20,7 +20,7 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, jsonrpc.ClientClos
 }
 
 func main() {
-	addr := os.Getenv("LOTUS_RPC_ENDPOINT")
+	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
 	log.Printf("Starting Rosetta Proxy")
