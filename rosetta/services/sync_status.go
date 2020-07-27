@@ -24,6 +24,15 @@ func (status SyncStatus) IsSynced() bool {
 }
 
 func (status SyncStatus) GetMaxHeight() int64 {
+
+	if status.globalSyncState == api.StageSyncErrored {
+		return -1
+	}
+
+	if status.globalSyncState < api.StageMessages {
+		return 0
+	}
+
 	var max int64
 	for _, height := range status.currentHeight {
 		if height > max {
@@ -39,6 +48,13 @@ func (status SyncStatus) GetMaxHeight() int64 {
 }
 
 func (status SyncStatus) GetMinHeight() int64 {
+	if status.globalSyncState == api.StageSyncErrored {
+		return -1
+	}
+
+	if status.globalSyncState < api.StageMessages {
+		return 0
+	}
 
 	if len(status.currentHeight) == 0 {
 		return 0

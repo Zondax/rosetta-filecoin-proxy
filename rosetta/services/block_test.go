@@ -29,6 +29,9 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	// Mock needed input arguments
 	var requestedIndex int64 = 0
+	requestedHash := "0171a0e40220a63ae9efee6a34c827982013a398f6efcd714d414c2435170efae73669713fe3"
+	mockMetadata := make(map[string]interface{})
+	mockMetadata[BlockCIDsKey] = []string{"bafy2bzacedecjgc3svxb7itplzqpebioa2g2bdowizz4suv6swg4ctipzgy5o"}
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
 	mockTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
@@ -62,6 +65,24 @@ func TestBlockAPIService_Block(t *testing.T) {
 		Return(mockTipSet, nil)
 	///
 
+	// Output
+	var response_test1 = &types.BlockResponse{
+		Block:             &types.Block{
+			BlockIdentifier:       &types.BlockIdentifier{
+										Index: requestedIndex,
+										Hash: requestedHash,
+									},
+			ParentBlockIdentifier: &types.BlockIdentifier{
+										Index: requestedIndex,
+										Hash: requestedHash,
+									},
+			Timestamp:             0,
+			Metadata:              mockMetadata,
+		},
+	}
+
+	///
+
 	type fields struct {
 		network *types.NetworkIdentifier
 		node    api.FullNode
@@ -79,7 +100,7 @@ func TestBlockAPIService_Block(t *testing.T) {
 		want1  *types.Error
 	}{
 		{
-			name: "Test1",
+			name: "RetrieveGenesisTipSet",
 			fields: fields {
 				network: NetworkID ,
 				node:    &nodeMock,
@@ -93,7 +114,7 @@ func TestBlockAPIService_Block(t *testing.T) {
 					},
 				},
 			},
-			want: nil ,
+			want: response_test1,
 			want1: nil,
 		},
 	}
