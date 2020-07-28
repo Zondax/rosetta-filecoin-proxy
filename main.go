@@ -149,7 +149,7 @@ func main() {
 			defer clientCloser()
 			break
 		}
-		log.Errorf("Could not connect to api at %s. Retrying attempt %d", addr, i)
+		log.Errorf("Could not connect to api. Retrying attempt %d", i)
 		time.Sleep(5 * time.Second)
 	}
 	
