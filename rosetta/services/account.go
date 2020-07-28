@@ -6,7 +6,6 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/api"
-	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
 // AccountAPIService implements the server.BlockAPIServicer interface.
@@ -42,16 +41,11 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, ErrUnableToGetWalletBalance
 	}
 
-	balanceFil, err := filTypes.ParseFIL(balance.String())
-	if err != nil {
-		return nil, ErrMalformedValue
-	}
-
 	resp := &types.AccountBalanceResponse{
 		BlockIdentifier: nil,
 		Balances: []*types.Amount{
 			{
-				Value: balanceFil.String(),
+				Value: balance.String(),
 				Currency: GetCurrencyData(),
 			},
 		},

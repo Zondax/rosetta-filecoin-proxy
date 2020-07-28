@@ -132,7 +132,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 }
 
 func main() {
-	startLogger("debug")
+	startLogger("info")
 
 	addr  := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
@@ -149,7 +149,7 @@ func main() {
 			defer clientCloser()
 			break
 		}
-		log.Errorf("Could not connect to api at %s. Retrying attempt %d", addr, i)
+		log.Errorf("Could not connect to api. Retrying attempt %d", i)
 		time.Sleep(5 * time.Second)
 	}
 	

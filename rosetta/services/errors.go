@@ -219,6 +219,12 @@ var (
 		Retriable: true,
 	}
 
+	ErrCouldNotRetrieveMethodName = &types.Error{
+		Code:      37,
+		Message:   "could not retrieve method name in message",
+		Retriable: false,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -256,5 +262,6 @@ var (
 		ErrUnableToEstimateGasPrice,
 		ErrInsufficientBalanceForGas,
 		ErrLotusCallTimedOut,
+		ErrCouldNotRetrieveMethodName,
 	}
 )

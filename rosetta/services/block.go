@@ -118,23 +118,43 @@ func (s *BlockAPIService) Block(
 
 	//Get executed transactions
 	var transactions []*types.Transaction
-	if requestedHeight > 0 {
-		for _, block := range tipSet.Blocks() {
-			messages, err := s.node.ChainGetParentMessages(ctx, block.Cid())
-			if err != nil {
-				return nil, ErrUnableToGetTxns
-			}
-			receipts, err := s.node.ChainGetParentReceipts(ctx, block.Cid())
-			if err != nil {
-				return nil, ErrUnableToGetTxnReceipt
-			}
-			if len(messages) != len(receipts) {
-				return nil, ErrMsgsAndReceiptsCountMismatch
-			}
-			for i, msg := range messages {
-				transactions = append(transactions, BuildTransaction(&msg, receipts[i], &s.node))
-			}
+	block := tipSet.Blocks()[0] // All blocks share the same parent TipSet
+	messages, err := s.node.ChainGetParentMessages(ctx, block.Cid())
+	if err != nil {
+		return nil, ErrUnableToGetTxns
+	}
+	receipts, err := s.node.ChainGetParentReceipts(ctx, block.Cid())
+	if err != nil {
+		return nil, ErrUnableToGetTxnReceipt
+	}
+	if len(messages) != len(receipts) {
+		return nil, ErrMsgsAndReceiptsCountMismatch
+	}
+
+	for i, msg := range messages {
+		var opStatus string
+		if receipts[i].ExitCode.IsSuccess() {
+			opStatus = OperationStatusOk
+		} else {
+			opStatus = OperationStatusFailed
 		}
+
+		transactions = append(transactions, &types.Transaction{
+			TransactionIdentifier: &types.TransactionIdentifier{
+				Hash: msg.Cid.String(),
+			},
+			Operations: []*types.Operation{},
+		})
+
+		opType, err := GetMethodName(&msg, &s.node)
+		if err != nil {
+			return nil, err
+		}
+
+		transactions[i].Operations = appendOp(transactions[i].Operations, opType,
+			msg.Message.From.String(), msg.Message.Value.String(), opStatus)
+		transactions[i].Operations = appendOp(transactions[i].Operations, opType,
+			msg.Message.To.String(), msg.Message.Value.String(), opStatus)
 	}
 
 	//Add block metadata
@@ -179,91 +199,33 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func BuildTransaction(msg *api.Message, receipt *filTypes.MessageReceipt, api *api.FullNode) *types.Transaction {
-	var transaction types.Transaction
-	transactionId := BuildTransactionIdentifier(msg)
-	operations := BuildTransactionOperations(msg, receipt, api)
-	if transactionId != nil {
-		transaction.TransactionIdentifier = transactionId
-	}
-	if operations != nil {
-		transaction.Operations = operations
-	}
-
-	return &transaction
-}
-
-func BuildTransactionIdentifier(msg *api.Message) *types.TransactionIdentifier {
-	if msg == nil {
-		return nil
-	}
-	return &types.TransactionIdentifier{
-		Hash: msg.Cid.String(),
-	}
-}
-
-func BuildTransactionOperations(msg *api.Message, receipt *filTypes.MessageReceipt, api *api.FullNode)[]*types.Operation{
-	if msg == nil || receipt == nil {
-		return nil
-	}
-	var (
-		operations []*types.Operation
-		operation  types.Operation
-	)
-
-	operationId := BuildOperationIdentifier(msg)
-	//relatedOperations := BuildRelatedOperations() //TODO
-	accountId := BuildAccountIdentifier(msg)
-	amount := BuildAmount(msg)
-	methodStr, err := GetMethodName(msg, api)
-	if err != nil {
-		operation.Type = methodStr
+func appendOp(ops []*types.Operation, opType string, account string, amount string, status string) []*types.Operation {
+	opIndex := int64(len(ops))
+	op := &types.Operation{
+		OperationIdentifier: &types.OperationIdentifier{
+			Index: opIndex,
+		},
+		Type:   opType,
+		Status: status,
+		Account: &types.AccountIdentifier{
+			Address: account,
+		},
+		Amount: &types.Amount{
+			Value:    amount,
+			Currency: GetCurrencyData(),
+		},
 	}
 
-	if operationId != nil {
-		operation.OperationIdentifier = operationId
-	}
-	if accountId != nil {
-		operation.Account = accountId
-	}
-	if amount != nil {
-		operation.Amount = amount
-	}
-	operation.Status = receipt.ExitCode.String()
-
-	operations = append(operations, &operation)
-	return operations
-}
-
-func BuildOperationIdentifier(msg *api.Message) *types.OperationIdentifier {
-	if msg == nil {
-		return nil
+	// Add related operation
+	if opIndex >= 1 {
+		op.RelatedOperations = []*types.OperationIdentifier{
+			{
+				Index: opIndex - 1,
+			},
+		}
 	}
 
-	return &types.OperationIdentifier{
-		Index: int64(msg.Message.Nonce),
-	}
-}
-
-func BuildAccountIdentifier(msg *api.Message) *types.AccountIdentifier {
-	if msg == nil {
-		return nil
-	}
-
-	return &types.AccountIdentifier{
-		Address: msg.Message.From.String(),
-	}
-}
-
-func BuildAmount(msg *api.Message) *types.Amount {
-	if msg == nil {
-		return nil
-	}
-
-	return &types.Amount{
-		Currency: GetCurrencyData(),
-		Value: msg.Message.Value.String(),
-	}
+	return append(ops, op)
 }
 
 // BlockTransaction implements the /block/transaction endpoint.

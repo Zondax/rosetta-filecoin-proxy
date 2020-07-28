@@ -157,11 +157,11 @@ func (s *NetworkAPIService) NetworkOptions(
 		Allow: &types.Allow{
 			OperationStatuses: []*types.OperationStatus{
 				{
-					Status:     "Success",
+					Status:     OperationStatusOk,
 					Successful: true,
 				},
 				{
-					Status:     "Reverted",
+					Status:     OperationStatusFailed,
 					Successful: false,
 				},
 			},
