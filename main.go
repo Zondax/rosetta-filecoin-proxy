@@ -132,7 +132,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 }
 
 func main() {
-	startLogger("debug")
+	startLogger("info")
 
 	addr  := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
