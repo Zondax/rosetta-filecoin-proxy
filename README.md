@@ -2,12 +2,22 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/Zondax/rosetta-filecoin-proxy/tree/master.svg?style=shield)](https://circleci.com/gh/Zondax/rosetta-filecoin-proxy/tree/master)
 
-To run a node (this will build the container if you haven't yet):
+This command will run a Lotus node, and a rosetta-proxy instance listening en port 8080 (this will also build the container if you haven't yet):
 ```
-make
+make run
 ```
 
-You can rebuild by using 
+You can rebuild the container by using 
 ```
-make rebuild
+make rebuild_docker
+```
+
+Once the docker container is up, you can log in into it:
+```
+make login
+```
+
+For only building rosetta-filecoin-proxy, run:
+```
+make build
 ```
