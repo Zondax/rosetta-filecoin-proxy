@@ -1,8 +1,4 @@
-
-
-
-
-.PHONY: build_docker login_docker run stop test
+.PHONY: build_docker rebuild_docker login run stop test
 
 DOCKER_IMAGE=lotus:latest
 CONTAINER_NAME=lotusnode
