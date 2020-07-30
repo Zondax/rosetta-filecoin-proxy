@@ -88,6 +88,24 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	///
 
+	// Output
+	var response_test1 = &types.BlockResponse{
+		Block:             &types.Block{
+			BlockIdentifier:       &types.BlockIdentifier{
+										Index: requestedIndex,
+										Hash: requestedHash,
+									},
+			ParentBlockIdentifier: &types.BlockIdentifier{
+										Index: requestedIndex,
+										Hash: requestedHash,
+									},
+			Timestamp:             0,
+			Metadata:              mockMetadata,
+		},
+	}
+
+	///
+
 	type fields struct {
 		network *types.NetworkIdentifier
 		node    api.FullNode
