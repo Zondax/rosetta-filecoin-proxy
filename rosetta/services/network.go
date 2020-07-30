@@ -65,9 +65,15 @@ func (s *NetworkAPIService) NetworkStatus(
 	)
 
 	//Check sync status
+
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
+	}
+	syncStatus := &types.SyncStatus{
+		Stage: status.GetGlobalStageName(),
+		CurrentIndex: status.GetMaxHeight(),
+		TargetIndex: status.GetTargetIndex(),
 	}
 	if !status.IsSynced() {
 		//Cannot retrieve any TipSet while node is syncing
@@ -133,6 +139,7 @@ func (s *NetworkAPIService) NetworkStatus(
 			Hash:  *hashGenesisTipSet,
 		},
 		Peers: peers,
+		SyncStatus: syncStatus,
 	}
 
 	return resp, nil

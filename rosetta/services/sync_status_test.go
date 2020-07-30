@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"github.com/filecoin-project/go-address"
-	types2 "github.com/filecoin-project/lotus/chain/types"
+	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/specs-actors/actors/abi"
 	"github.com/filecoin-project/specs-actors/actors/crypto"
 	"github.com/ipfs/go-cid"
@@ -23,9 +23,6 @@ const (
 	ScnWorkerWithNoTarget
 	ScnWorkerWithError
 )
-
-var nodeMock = mocks.FullNodeMock{}
-
 
 func TestCheckSyncStatus(t *testing.T) {
 
@@ -56,7 +53,8 @@ func TestCheckSyncStatus(t *testing.T) {
 				node: setupMockForScenario(ScnAllComplete),
 			},
 			want:  &SyncStatus{
-				currentHeight:   []int64{0,0},
+				currentHeight:   []int64{100,200},
+				targetIndex: []int64{100,200},
 				globalSyncState: api.StageSyncComplete,
 			},
 			want1: nil,
@@ -69,6 +67,7 @@ func TestCheckSyncStatus(t *testing.T) {
 			},
 			want:  &SyncStatus{
 				currentHeight:   []int64{0,0},
+				targetIndex: []int64{100,200},
 				globalSyncState: api.StageIdle,
 			},
 			want1: nil,
@@ -81,6 +80,7 @@ func TestCheckSyncStatus(t *testing.T) {
 			},
 			want:  &SyncStatus{
 				currentHeight:   []int64{0,0},
+				targetIndex: []int64{100,200},
 				globalSyncState: api.StageIdle,
 			},
 			want1: nil,
@@ -112,6 +112,7 @@ func TestCheckSyncStatus(t *testing.T) {
 func TestSyncStatus_GetMaxHeight(t *testing.T) {
 	type fields struct {
 		currentHeight   []int64
+		targetIndex     []int64
 		globalSyncState api.SyncStateStage
 	}
 	tests := []struct {
@@ -161,6 +162,43 @@ func TestSyncStatus_GetMaxHeight(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSyncStatus_GetTargetIndex(t *testing.T) {
+	type fields struct {
+		targetIndex     []int64
+		globalSyncState api.SyncStateStage
+	}
+
+	var  want1 int64 = 200
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   int64
+	}{
+		{
+			name: "ReturnMaxValue",
+			fields: fields{
+				targetIndex: []int64{100, want1},
+				globalSyncState: api.StageSyncComplete},
+			want: want1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status := SyncStatus{
+				targetIndex: tt.fields.targetIndex,
+				globalSyncState: tt.fields.globalSyncState,
+			}
+			got := status.GetTargetIndex()
+			if *got != tt.want {
+				t.Errorf("GetTargetIndex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
 }
 
 func TestSyncStatus_GetMinHeight(t *testing.T) {
@@ -295,16 +333,13 @@ func TestSyncStatus_IsSynced(t *testing.T) {
 	}
 }
 
-func setupMockForScenario(scn int) *mocks.FullNodeMock {
-
-	nodeMock := mocks.FullNodeMock{}
-
+func buildMockTargetTipSet (epoch int64) *filTypes.TipSet {
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
-	mockTargetTipSet, _ := types2.NewTipSet([]*types2.BlockHeader{
+	mockTargetTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
 		{
 			Miner:                 mockMiner,
-			Height:                abi.ChainEpoch(0),
+			Height:                abi.ChainEpoch(epoch),
 			ParentStateRoot:       mockCid,
 			Messages:              mockCid,
 			ParentMessageReceipts: mockCid,
@@ -313,6 +348,15 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 		},
 	},
 	)
+	return mockTargetTipSet
+}
+
+func setupMockForScenario(scn int) *mocks.FullNodeMock {
+
+	nodeMock := mocks.FullNodeMock{}
+
+	mockTargetTipSet1 := buildMockTargetTipSet(100)
+	mockTargetTipSet2 := buildMockTargetTipSet(200)
 
 	switch scn {
 	case ScnSyncError:
@@ -322,7 +366,7 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 					{
 						Stage: api.StageSyncErrored,
 						Height: 0,
-						Target: mockTargetTipSet,
+						Target: mockTargetTipSet1,
 					},
 				},
 			}, nil)
@@ -332,13 +376,13 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 				ActiveSyncs: []api.ActiveSync{
 					{
 						Stage: api.StageSyncComplete,
-						Height: 0,
-						Target: mockTargetTipSet,
+						Height: 100,
+						Target: mockTargetTipSet1,
 					},
 					{
 						Stage: api.StageSyncComplete,
-						Height: 0,
-						Target: mockTargetTipSet,
+						Height: 200,
+						Target: mockTargetTipSet2,
 					},
 				},
 			}, nil)
@@ -349,12 +393,12 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 					{
 						Stage: api.StageIdle,
 						Height: 0,
-						Target: mockTargetTipSet,
+						Target: mockTargetTipSet1,
 					},
 					{
 						Stage: api.StageIdle,
 						Height: 0,
-						Target: mockTargetTipSet,
+						Target: mockTargetTipSet2,
 					},
 				},
 			}, nil)
@@ -379,12 +423,12 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 					{
 						Stage: api.StageSyncComplete,
 						Height: 0,
-						Target: mockTargetTipSet,
+						Target: mockTargetTipSet1,
 					},
 					{
 						Stage: api.StageSyncErrored,
 						Height: 0,
-						Target: mockTargetTipSet,
+						Target: mockTargetTipSet2,
 					},
 				},
 			}, nil)
