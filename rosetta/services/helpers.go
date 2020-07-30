@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"encoding/hex"
-	
+
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	OperationStatusOk = "Ok"
+	OperationStatusOk     = "Ok"
 	OperationStatusFailed = "Fail"
 )
 
@@ -35,7 +35,7 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 		return ErrMalformedValue
 	}
 
-	fullAPI:= *node
+	fullAPI := *node
 	validNetwork, err := fullAPI.StateNetworkName(ctx)
 	if err != nil {
 		return ErrUnableToRetrieveNetworkName

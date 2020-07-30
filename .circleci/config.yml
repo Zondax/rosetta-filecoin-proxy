@@ -4,11 +4,21 @@ jobs:
   build:
     docker:
       - image: golang:1.14
+    working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
-      - run: go fmt
       - run: go build
-      - run: go test
+      - run: go test ./...
+
+  checks:
+    docker:
+      - image: golang:1.14
+    steps:
+      - checkout
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
+      - run: golangci-lint --version
+      - run: golangci-lint run -E gofmt -E gosec -E goconst -E gocritic
+  #      - run: golangci-lint run -E gofmt -E gosec -E goconst -E godox -E gocritic
 
   integration_testnet:
     docker:
@@ -65,5 +75,6 @@ workflows:
   build_all:
     jobs:
       - build
+      - checks
       - integration_testnet
       - integration_rosetta_cli

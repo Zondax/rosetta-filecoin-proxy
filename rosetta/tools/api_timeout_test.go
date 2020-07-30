@@ -2,7 +2,6 @@ package tools
 
 import (
 	"gotest.tools/assert"
-	"log"
 	"testing"
 	"time"
 )
@@ -24,7 +23,6 @@ func TestTimeout(t *testing.T) {
 
 	assert.Error(t, err, "Lotus RPC call Timed out!")
 
-	log.Printf("Elapsed %d", elapsed.Milliseconds())
 	assert.Assert(t, elapsed.Milliseconds() < 1100)
 	assert.Assert(t, elapsed.Milliseconds() > 900)
 }
@@ -46,7 +44,6 @@ func TestDoNotTimeout(t *testing.T) {
 
 	assert.NilError(t, err)
 
-	log.Printf("Elapsed %d", elapsed.Milliseconds())
 	assert.Assert(t, elapsed.Milliseconds() < 2100)
 	assert.Assert(t, elapsed.Milliseconds() > 1900)
 }

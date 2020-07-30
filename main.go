@@ -21,8 +21,8 @@ import (
 
 const (
 	RetryConnectAttempts = 10
-	BlockchainName = "Filecoin"
-	ServerPort = 8080
+	BlockchainName       = "Filecoin"
+	ServerPort           = 8080
 )
 
 var log = logging.Logger("rosetta-filecoin-proxy")
@@ -104,7 +104,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	}
 
 	router := newBlockchainRouter(network, asserter, api)
-	srv := &http.Server{Addr:fmt.Sprintf(":%d", ServerPort), Handler: router}
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: router}
 
 	sigCh := make(chan os.Signal, 2)
 	go func() {
@@ -134,7 +134,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 func main() {
 	startLogger("info")
 
-	addr  := os.Getenv("LOTUS_RPC_URL")
+	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
 	log.Info("Starting Rosetta Proxy")
@@ -146,13 +146,13 @@ func main() {
 	for i := 1; i <= RetryConnectAttempts; i++ {
 		lotusAPI, clientCloser, err = connectAPI(addr, token)
 		if err == nil {
-			defer clientCloser()
+			clientCloser()
 			break
 		}
 		log.Errorf("Could not connect to api. Retrying attempt %d", i)
 		time.Sleep(5 * time.Second)
 	}
-	
+
 	if err != nil {
 		log.Fatalf("Connect to Lotus api gave up after %d attempts", RetryConnectAttempts)
 		return
