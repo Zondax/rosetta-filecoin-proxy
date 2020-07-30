@@ -34,7 +34,7 @@ func WrapWithTimeout(lotusFunc LotusRPCWrapper, timeout time.Duration) error {
 	select {
 	case <-ch:
 		{
-			log.Debug("lotus answer received")
+			log.Debug("received answer from Lotus")
 			if ch != nil {
 				close(ch)
 			}
@@ -43,12 +43,12 @@ func WrapWithTimeout(lotusFunc LotusRPCWrapper, timeout time.Duration) error {
 		}
 	case <-timer.C:
 		{
-			log.Error("Lotus RPC call Timed out!")
+			log.Error("call to Lotus RPC timed out!")
 			if ch != nil {
 				close(ch)
 			}
 			ch = nil
-			return fmt.Errorf("Lotus RPC call Timed out!")
+			return fmt.Errorf("call to Lotus RPC timed out!")
 		}
 	}
 }

@@ -15,12 +15,7 @@ type SyncStatus struct {
 }
 
 func (status SyncStatus) IsSynced() bool {
-
-	if status.globalSyncState == api.StageSyncComplete {
-		return true
-	}
-
-	return false
+	return status.globalSyncState == api.StageSyncComplete
 }
 
 func (status SyncStatus) GetMaxHeight() int64 {

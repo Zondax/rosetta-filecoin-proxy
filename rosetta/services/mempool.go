@@ -1,7 +1,6 @@
 package services
 
 import (
-
 	"context"
 	"github.com/ipfs/go-cid"
 
@@ -13,7 +12,7 @@ import (
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type MemPoolAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
@@ -41,7 +40,7 @@ func (m *MemPoolAPIService) Mempool(
 		return nil, syncErr
 	}
 
-	if !status.IsSynced(){
+	if !status.IsSynced() {
 		return nil, ErrUnableToGetUnsyncedBlock
 	}
 
@@ -59,13 +58,13 @@ func (m *MemPoolAPIService) Mempool(
 	var transactions []*types.TransactionIdentifier
 	for _, msg := range pendingMsg {
 		transactions = append(transactions, &types.TransactionIdentifier{
-							Hash: msg.Cid().String(),
-						})
+			Hash: msg.Cid().String(),
+		})
 	}
 
 	resp := &types.MempoolResponse{
-				TransactionIdentifiers: transactions,
-			}
+		TransactionIdentifiers: transactions,
+	}
 
 	return resp, nil
 }
@@ -87,7 +86,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 		return nil, syncErr
 	}
 
-	if !status.IsSynced(){
+	if !status.IsSynced() {
 		return nil, ErrUnableToGetUnsyncedBlock
 	}
 
@@ -129,21 +128,21 @@ func (m MemPoolAPIService) MempoolTransaction(
 				Index:        int64(msg.Message.Nonce),
 				NetworkIndex: nil,
 			},
-			RelatedOperations:   nil,
-			Type:                "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
-			Status:              "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
-			Account:             &types.AccountIdentifier{
-									Address: msg.Message.From.String(),
-								 },
-			Amount:              &types.Amount{
-									Value:    msg.Message.ValueReceived().String(),
-									Currency: &types.Currency{
-										Symbol: "FIL",  //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
-										Decimals: 18,   //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
-									},
-									Metadata: nil,
-								},
-			Metadata:            nil,
+			RelatedOperations: nil,
+			Type:              "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
+			Status:            "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
+			Account: &types.AccountIdentifier{
+				Address: msg.Message.From.String(),
+			},
+			Amount: &types.Amount{
+				Value: msg.Message.ValueReceived().String(),
+				Currency: &types.Currency{
+					Symbol:   "FIL", //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
+					Decimals: 18,    //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
+				},
+				Metadata: nil,
+			},
+			Metadata: nil,
 		}
 		operations = append(operations, op)
 

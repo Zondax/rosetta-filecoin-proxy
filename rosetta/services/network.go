@@ -14,14 +14,14 @@ const DummyHash = "0000000000000000000000000000000000000000"
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
 type NetworkAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
 func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.NetworkAPIServicer {
 	return &NetworkAPIService{
 		network: network,
-		node: *node,
+		node:    *node,
 	}
 }
 
@@ -57,11 +57,11 @@ func (s *NetworkAPIService) NetworkStatus(
 ) (*types.NetworkStatusResponse, *types.Error) {
 
 	var (
-		headTipSet   *filTypes.TipSet
-		err          error
-		useDummyHead = false
+		headTipSet            *filTypes.TipSet
+		err                   error
+		useDummyHead          = false
 		blockIndex, timeStamp int64
-		blockHashedTipSet string
+		blockHashedTipSet     string
 	)
 
 	//Check sync status
@@ -87,7 +87,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, ErrUnableToBuildTipSetHash
 	}
 
-    //Get genesis TipSet
+	//Get genesis TipSet
 	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
 		return nil, ErrUnableToGetGenesisBlk
