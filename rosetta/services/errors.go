@@ -147,13 +147,13 @@ var (
 		Retriable: true,
 	}
 
-	ErrUnableToGetSyncStatus= &types.Error{
+	ErrUnableToGetSyncStatus = &types.Error{
 		Code:      25,
 		Message:   "unable to get sync status",
 		Retriable: true,
 	}
 
-	ErrUnableToGetUnsyncedBlock= &types.Error{
+	ErrUnableToGetUnsyncedBlock = &types.Error{
 		Code:      26,
 		Message:   "requested block not yet synchronized",
 		Retriable: true,

@@ -23,14 +23,14 @@ const (
 // AccountAPIService implements the server.BlockAPIServicer interface.
 type AccountAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
 func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.AccountAPIServicer {
 	return &AccountAPIService{
 		network: network,
-		node: *node,
+		node:    *node,
 	}
 }
 
@@ -143,7 +143,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		},
 		Balances: []*types.Amount{
 			{
-				Value: balance.String(),
+				Value:    balance.String(),
 				Currency: GetCurrencyData(),
 			},
 		},
