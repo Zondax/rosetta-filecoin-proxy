@@ -79,7 +79,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 func (c *ConstructionAPIService) ConstructionSubmit(
 	ctx context.Context,
 	request *types.ConstructionSubmitRequest,
-) (*types.ConstructionSubmitResponse, *types.Error) {
+) (*types.TransactionIdentifierResponse, *types.Error) {
 
 	if request.SignedTransaction == "" {
 		return nil, ErrMalformedValue
@@ -105,7 +105,7 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 		return nil, ErrUnableToSubmitTx
 	}
 
-	resp := &types.ConstructionSubmitResponse{
+	resp := &types.TransactionIdentifierResponse{
 		TransactionIdentifier: &types.TransactionIdentifier{
 			Hash: cid.String(),
 		},
@@ -122,7 +122,7 @@ func (c *ConstructionAPIService) ConstructionDerive(ctx context.Context, request
 	return nil, ErrNotImplemented
 }
 
-func (c *ConstructionAPIService) ConstructionHash(ctx context.Context, request *types.ConstructionHashRequest) (*types.ConstructionHashResponse, *types.Error) {
+func (c *ConstructionAPIService) ConstructionHash(ctx context.Context, request *types.ConstructionHashRequest) (*types.TransactionIdentifierResponse, *types.Error) {
 	return nil, ErrNotImplemented
 }
 
