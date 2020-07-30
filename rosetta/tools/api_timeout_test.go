@@ -21,7 +21,7 @@ func TestTimeout(t *testing.T) {
 	// Calculate Elapsed time
 	elapsed := time.Since(start)
 
-	assert.Error(t, err, "Lotus RPC call Timed out!")
+	assert.Error(t, err, "call to Lotus RPC timed out!")
 
 	assert.Assert(t, elapsed.Milliseconds() < 1100)
 	assert.Assert(t, elapsed.Milliseconds() > 900)

@@ -66,7 +66,7 @@ func TestBlockAPIService_Block(t *testing.T) {
 	///
 
 	// Output
-	var response_test1 = &types.BlockResponse{
+	var responseTest1 = &types.BlockResponse{
 		Block: &types.Block{
 			BlockIdentifier: &types.BlockIdentifier{
 				Index: requestedIndex,
@@ -114,7 +114,7 @@ func TestBlockAPIService_Block(t *testing.T) {
 					},
 				},
 			},
-			want:  response_test1,
+			want:  responseTest1,
 			want1: nil,
 		},
 	}

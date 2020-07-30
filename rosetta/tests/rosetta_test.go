@@ -30,8 +30,8 @@ func setupRosettaClient() *client.APIClient {
 		},
 	)
 
-	client := client.NewAPIClient(clientCfg)
-	return client
+	rosettaClient := client.NewAPIClient(clientCfg)
+	return rosettaClient
 }
 
 func TestNetworkList(t *testing.T) {

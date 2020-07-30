@@ -131,8 +131,10 @@ func (s *BlockAPIService) Block(
 		return nil, ErrMsgsAndReceiptsCountMismatch
 	}
 
-	for i, msg := range messages {
+	for i := range messages {
 		var opStatus string
+		msg := messages[i]
+
 		if receipts[i].ExitCode.IsSuccess() {
 			opStatus = OperationStatusOk
 		} else {

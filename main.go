@@ -107,14 +107,19 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: router}
 
 	sigCh := make(chan os.Signal, 2)
+
 	go func() {
-		select {
-		case <-sigCh:
-		}
+		<-sigCh
 		log.Warn("Shutting down rosetta...")
-		srv.Shutdown(context.TODO())
-		log.Warn("Graceful shutdown of rosetta successful")
+
+		err = srv.Shutdown(context.TODO())
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Warn("Graceful shutdown of rosetta successful")
+		}
 	}()
+
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
 	log.Infof("Rosetta listening on port %d\n", ServerPort)
