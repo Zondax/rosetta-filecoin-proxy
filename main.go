@@ -148,10 +148,10 @@ func main() {
 	var lotusAPI api.FullNode
 	var clientCloser jsonrpc.ClientCloser
 	var err error
+
 	for i := 1; i <= RetryConnectAttempts; i++ {
 		lotusAPI, clientCloser, err = connectAPI(addr, token)
 		if err == nil {
-			clientCloser()
 			break
 		}
 		log.Errorf("Could not connect to api. Retrying attempt %d", i)
@@ -162,6 +162,7 @@ func main() {
 		log.Fatalf("Connect to Lotus api gave up after %d attempts", RetryConnectAttempts)
 		return
 	}
+	defer clientCloser()
 
 	log.Info("Connected to Lotus")
 
