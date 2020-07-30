@@ -69,25 +69,6 @@ func TestBlockAPIService_Block(t *testing.T) {
 	nodeMock.On("ChainGetParentReceipts", mock.Anything, mock.Anything).
 		Return( []*filTypes.MessageReceipt{}, nil )
 	///
-
-	// Output
-	var response_test1 = &types.BlockResponse{
-		Block:             &types.Block{
-			BlockIdentifier:       &types.BlockIdentifier{
-										Index: requestedIndex,
-										Hash: requestedHash,
-									},
-			ParentBlockIdentifier: &types.BlockIdentifier{
-										Index: requestedIndex,
-										Hash: requestedHash,
-									},
-			Timestamp:             0,
-			Metadata:              mockMetadata,
-		},
-	}
-
-	///
-
 	// Output
 	var response_test1 = &types.BlockResponse{
 		Block:             &types.Block{
