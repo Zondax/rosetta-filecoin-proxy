@@ -57,7 +57,7 @@ func TestConstructionAPIService_ConstructionSubmit(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *types.ConstructionSubmitResponse
+		want   *types.TransactionIdentifierResponse
 		want1  *types.Error
 	}{
 		// TODO: Add test cases.

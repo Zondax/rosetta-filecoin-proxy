@@ -63,8 +63,12 @@ func TestBlockAPIService_Block(t *testing.T) {
 			nil)
 	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockTipSet, nil)
-	///
+	nodeMock.On("ChainGetParentMessages", mock.Anything, mock.Anything).
+		Return([]api.Message{}, nil)
 
+	nodeMock.On("ChainGetParentReceipts", mock.Anything, mock.Anything).
+		Return([]*filTypes.MessageReceipt{}, nil)
+	///
 	// Output
 	var responseTest1 = &types.BlockResponse{
 		Block: &types.Block{

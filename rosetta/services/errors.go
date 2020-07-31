@@ -65,7 +65,7 @@ var (
 
 	ErrMustSpecifySubAccount = &types.Error{
 		Code:      11,
-		Message:   "a valid subaccount must be specified ('general' or 'escrow')",
+		Message:   "a valid subaccount must be specified ('LockedBalance' or 'VestingSchedule')",
 		Retriable: false,
 	}
 
@@ -123,9 +123,9 @@ var (
 		Retriable: true,
 	}
 
-	ErrUnableToGetWalletBalance = &types.Error{
+	ErrUnableToGetBalance = &types.Error{
 		Code:      21,
-		Message:   "unable to get wallet balance for address",
+		Message:   "unable to get balance for address",
 		Retriable: true,
 	}
 
@@ -225,6 +225,42 @@ var (
 		Retriable: false,
 	}
 
+	ErrUnableToGetActor = &types.Error{
+		Code:      38,
+		Message:   "could not retrieve actor from address",
+		Retriable: false,
+	}
+
+	ErrUnableToGetActorState = &types.Error{
+		Code:      39,
+		Message:   "could not retrieve actor state",
+		Retriable: false,
+	}
+
+	ErrAddNotMSig = &types.Error{
+		Code:      40,
+		Message:   "address does not correspond to a multisig account",
+		Retriable: false,
+	}
+
+	ErrNodeNotSynced = &types.Error{
+		Code:      41,
+		Message:   "node is not yet fully synced",
+		Retriable: true,
+	}
+
+	ErrUnableToGetLockedBalance = &types.Error{
+		Code:      42,
+		Message:   "unable to get locked balance for address",
+		Retriable: true,
+	}
+
+	ErrUnableToGetVesting = &types.Error{
+		Code:      43,
+		Message:   "unable to get vesting schedule parameters",
+		Retriable: true,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -247,7 +283,7 @@ var (
 		ErrUnableToGetNodeStatus,
 		ErrUnableToGetTipsetCID,
 		ErrUnableToGetPeers,
-		ErrUnableToGetWalletBalance,
+		ErrUnableToGetBalance,
 		ErrUnableToGetTipset,
 		ErrUnableToGetParentBlk,
 		ErrUnableToGetNodeInfo,
@@ -263,5 +299,11 @@ var (
 		ErrInsufficientBalanceForGas,
 		ErrLotusCallTimedOut,
 		ErrCouldNotRetrieveMethodName,
+		ErrUnableToGetActor,
+		ErrAddNotMSig,
+		ErrNodeNotSynced,
+		ErrUnableToGetActorState,
+		ErrUnableToGetLockedBalance,
+		ErrUnableToGetVesting,
 	}
 )

@@ -65,9 +65,15 @@ func (s *NetworkAPIService) NetworkStatus(
 	)
 
 	//Check sync status
+
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
+	}
+	syncStatus := &types.SyncStatus{
+		Stage:        status.GetGlobalStageName(),
+		CurrentIndex: status.GetMaxHeight(),
+		TargetIndex:  status.GetTargetIndex(),
 	}
 	if !status.IsSynced() {
 		//Cannot retrieve any TipSet while node is syncing
@@ -107,8 +113,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	var peers []*types.Peer
 	for _, peerFil := range peersFil {
 		peers = append(peers, &types.Peer{
-			PeerID:   peerFil.ID.String(),
-			Metadata: nil,
+			PeerID: peerFil.ID.String(),
 		})
 	}
 
@@ -117,7 +122,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		timeStamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
-		blockIndex = status.GetMaxHeight()
+		blockIndex = 0
 		timeStamp = 0
 		blockHashedTipSet = DummyHash
 	}
@@ -132,7 +137,8 @@ func (s *NetworkAPIService) NetworkStatus(
 			Index: int64(genesisTipSet.Height()),
 			Hash:  *hashGenesisTipSet,
 		},
-		Peers: peers,
+		Peers:      peers,
+		SyncStatus: syncStatus,
 	}
 
 	return resp, nil

@@ -107,11 +107,13 @@ func (f *FullNodeMock) ChainGetBlockMessages(ctx context.Context, blockCid cid.C
 }
 
 func (f *FullNodeMock) ChainGetParentReceipts(ctx context.Context, blockCid cid.Cid) ([]*filTypes.MessageReceipt, error) {
-	panic("implement me")
+	args := f.Called(ctx, blockCid)
+	return args.Get(0).([]*filTypes.MessageReceipt), args.Error(1)
 }
 
 func (f *FullNodeMock) ChainGetParentMessages(ctx context.Context, blockCid cid.Cid) ([]api.Message, error) {
-	panic("implement me")
+	args := f.Called(ctx, blockCid)
+	return args.Get(0).([]api.Message), args.Error(1)
 }
 
 func (f *FullNodeMock) ChainGetTipSetByHeight(ctx context.Context, epoch abi.ChainEpoch, key filTypes.TipSetKey) (*filTypes.TipSet, error) {
