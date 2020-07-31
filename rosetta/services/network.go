@@ -113,7 +113,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	var peers []*types.Peer
 	for _, peerFil := range peersFil {
 		peers = append(peers, &types.Peer{
-			PeerID:   peerFil.ID.String(),
+			PeerID: peerFil.ID.String(),
 		})
 	}
 
