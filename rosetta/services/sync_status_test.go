@@ -52,9 +52,9 @@ func TestCheckSyncStatus(t *testing.T) {
 				ctx:  context.Background(),
 				node: setupMockForScenario(ScnAllComplete),
 			},
-			want:  &SyncStatus{
-				currentHeight:   []int64{100,200},
-				targetIndex: []int64{100,200},
+			want: &SyncStatus{
+				currentHeight:   []int64{100, 200},
+				targetIndex:     []int64{100, 200},
 				globalSyncState: api.StageSyncComplete,
 			},
 			want1: nil,
@@ -65,9 +65,9 @@ func TestCheckSyncStatus(t *testing.T) {
 				ctx:  context.Background(),
 				node: setupMockForScenario(ScnAllIdle),
 			},
-			want:  &SyncStatus{
-				currentHeight:   []int64{0,0},
-				targetIndex: []int64{100,200},
+			want: &SyncStatus{
+				currentHeight:   []int64{0, 0},
+				targetIndex:     []int64{100, 200},
 				globalSyncState: api.StageIdle,
 			},
 			want1: nil,
@@ -78,9 +78,9 @@ func TestCheckSyncStatus(t *testing.T) {
 				ctx:  context.Background(),
 				node: setupMockForScenario(ScnAllIdle),
 			},
-			want:  &SyncStatus{
-				currentHeight:   []int64{0,0},
-				targetIndex: []int64{100,200},
+			want: &SyncStatus{
+				currentHeight:   []int64{0, 0},
+				targetIndex:     []int64{100, 200},
 				globalSyncState: api.StageIdle,
 			},
 			want1: nil,
@@ -170,7 +170,7 @@ func TestSyncStatus_GetTargetIndex(t *testing.T) {
 		globalSyncState api.SyncStateStage
 	}
 
-	var  want1 int64 = 200
+	var want1 int64 = 200
 
 	tests := []struct {
 		name   string
@@ -180,7 +180,7 @@ func TestSyncStatus_GetTargetIndex(t *testing.T) {
 		{
 			name: "ReturnMaxValue",
 			fields: fields{
-				targetIndex: []int64{100, want1},
+				targetIndex:     []int64{100, want1},
 				globalSyncState: api.StageSyncComplete},
 			want: want1,
 		},
@@ -189,7 +189,7 @@ func TestSyncStatus_GetTargetIndex(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			status := SyncStatus{
-				targetIndex: tt.fields.targetIndex,
+				targetIndex:     tt.fields.targetIndex,
 				globalSyncState: tt.fields.globalSyncState,
 			}
 			got := status.GetTargetIndex()
@@ -333,7 +333,7 @@ func TestSyncStatus_IsSynced(t *testing.T) {
 	}
 }
 
-func buildMockTargetTipSet (epoch int64) *filTypes.TipSet {
+func buildMockTargetTipSet(epoch int64) *filTypes.TipSet {
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
 	mockTargetTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
@@ -375,12 +375,12 @@ func setupMockForScenario(scn int) *mocks.FullNodeMock {
 			Return(&api.SyncState{
 				ActiveSyncs: []api.ActiveSync{
 					{
-						Stage: api.StageSyncComplete,
+						Stage:  api.StageSyncComplete,
 						Height: 100,
 						Target: mockTargetTipSet1,
 					},
 					{
-						Stage: api.StageSyncComplete,
+						Stage:  api.StageSyncComplete,
 						Height: 200,
 						Target: mockTargetTipSet2,
 					},

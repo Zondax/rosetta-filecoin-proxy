@@ -71,9 +71,9 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, syncErr
 	}
 	syncStatus := &types.SyncStatus{
-		Stage: status.GetGlobalStageName(),
+		Stage:        status.GetGlobalStageName(),
 		CurrentIndex: status.GetMaxHeight(),
-		TargetIndex: status.GetTargetIndex(),
+		TargetIndex:  status.GetTargetIndex(),
 	}
 	if !status.IsSynced() {
 		//Cannot retrieve any TipSet while node is syncing
@@ -138,7 +138,7 @@ func (s *NetworkAPIService) NetworkStatus(
 			Index: int64(genesisTipSet.Height()),
 			Hash:  *hashGenesisTipSet,
 		},
-		Peers: peers,
+		Peers:      peers,
 		SyncStatus: syncStatus,
 	}
 

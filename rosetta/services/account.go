@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	LockedBalanceStr = "LockedBalance"
+	LockedBalanceStr   = "LockedBalance"
 	VestingScheduleStr = "VestingSchedule"
 
-	LockedFundsKey = "LockedFunds"
-	VestingStartEpochKey = "StartEpoch"
+	LockedFundsKey           = "LockedFunds"
+	VestingStartEpochKey     = "StartEpoch"
 	VestingUnlockDurationKey = "UnlockDuration"
 )
 
@@ -84,7 +84,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 	}
 
-	md := make( map[string]interface{} )
+	md := make(map[string]interface{})
 	actor, err := a.node.StateGetActor(context.Background(), addr, queryTipSet.Key())
 	if err != nil {
 		return nil, ErrUnableToGetActor
@@ -108,25 +108,25 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 
 		switch request.AccountIdentifier.SubAccount.Address {
-			case LockedBalanceStr:
-				lkFunds, ok := stateMap[LockedFundsKey]
-				if !ok {
-					return nil, ErrUnableToGetLockedBalance
-				}
-				balance = filTypes.FromFil(lkFunds.(uint64))
-			case VestingScheduleStr:
-				//TODO check this
-				stEpoch, ok1 := stateMap[VestingStartEpochKey]
-				unlkDuration, ok2 := stateMap[VestingUnlockDurationKey]
-				if !ok1 || !ok2 {
-					return nil, ErrUnableToGetVesting
-				}
-				vestingMap := map[string]string{}
-				vestingMap[VestingStartEpochKey] = stEpoch.(string)
-				vestingMap[VestingUnlockDurationKey] = unlkDuration.(string)
-				md[VestingScheduleStr] = vestingMap
-			default:
-				return nil, ErrMustSpecifySubAccount
+		case LockedBalanceStr:
+			lkFunds, ok := stateMap[LockedFundsKey]
+			if !ok {
+				return nil, ErrUnableToGetLockedBalance
+			}
+			balance = filTypes.FromFil(lkFunds.(uint64))
+		case VestingScheduleStr:
+			//TODO check this
+			stEpoch, ok1 := stateMap[VestingStartEpochKey]
+			unlkDuration, ok2 := stateMap[VestingUnlockDurationKey]
+			if !ok1 || !ok2 {
+				return nil, ErrUnableToGetVesting
+			}
+			vestingMap := map[string]string{}
+			vestingMap[VestingStartEpochKey] = stEpoch.(string)
+			vestingMap[VestingUnlockDurationKey] = unlkDuration.(string)
+			md[VestingScheduleStr] = vestingMap
+		default:
+			return nil, ErrMustSpecifySubAccount
 		}
 	}
 
