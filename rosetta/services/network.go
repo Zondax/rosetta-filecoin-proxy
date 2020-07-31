@@ -14,14 +14,14 @@ const DummyHash = "0000000000000000000000000000000000000000"
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
 type NetworkAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
 func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.NetworkAPIServicer {
 	return &NetworkAPIService{
 		network: network,
-		node: *node,
+		node:    *node,
 	}
 }
 
@@ -57,17 +57,23 @@ func (s *NetworkAPIService) NetworkStatus(
 ) (*types.NetworkStatusResponse, *types.Error) {
 
 	var (
-		headTipSet   *filTypes.TipSet
-		err          error
-		useDummyHead = false
+		headTipSet            *filTypes.TipSet
+		err                   error
+		useDummyHead          = false
 		blockIndex, timeStamp int64
-		blockHashedTipSet string
+		blockHashedTipSet     string
 	)
 
 	//Check sync status
+
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
+	}
+	syncStatus := &types.SyncStatus{
+		Stage:        status.GetGlobalStageName(),
+		CurrentIndex: status.GetMaxHeight(),
+		TargetIndex:  status.GetTargetIndex(),
 	}
 	if !status.IsSynced() {
 		//Cannot retrieve any TipSet while node is syncing
@@ -87,7 +93,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, ErrUnableToBuildTipSetHash
 	}
 
-    //Get genesis TipSet
+	//Get genesis TipSet
 	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
 		return nil, ErrUnableToGetGenesisBlk
@@ -107,8 +113,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	var peers []*types.Peer
 	for _, peerFil := range peersFil {
 		peers = append(peers, &types.Peer{
-			PeerID:   peerFil.ID.String(),
-			Metadata: nil,
+			PeerID: peerFil.ID.String(),
 		})
 	}
 
@@ -117,7 +122,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		timeStamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
-		blockIndex = status.GetMaxHeight()
+		blockIndex = 0
 		timeStamp = 0
 		blockHashedTipSet = DummyHash
 	}
@@ -132,7 +137,8 @@ func (s *NetworkAPIService) NetworkStatus(
 			Index: int64(genesisTipSet.Height()),
 			Hash:  *hashGenesisTipSet,
 		},
-		Peers: peers,
+		Peers:      peers,
+		SyncStatus: syncStatus,
 	}
 
 	return resp, nil

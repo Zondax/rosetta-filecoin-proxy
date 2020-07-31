@@ -10,17 +10,13 @@ import (
 const FactorSecondToMillisecond int64 = 1e3
 
 type SyncStatus struct {
+	targetIndex     []int64
 	currentHeight   []int64
 	globalSyncState api.SyncStateStage
 }
 
 func (status SyncStatus) IsSynced() bool {
-
-	if status.globalSyncState == api.StageSyncComplete {
-		return true
-	}
-
-	return false
+	return status.globalSyncState == api.StageSyncComplete
 }
 
 func (status SyncStatus) GetMaxHeight() int64 {
@@ -70,6 +66,39 @@ func (status SyncStatus) GetMinHeight() int64 {
 	return min
 }
 
+func (status SyncStatus) GetTargetIndex() *int64 {
+	var target int64
+	for _, height := range status.targetIndex {
+		if height > target {
+			target = height
+		}
+	}
+
+	return &target
+}
+
+func (status SyncStatus) GetGlobalStageName() *string {
+	var str string
+	switch status.globalSyncState {
+	case api.StageSyncErrored:
+		str = "Sync Error"
+	case api.StageSyncComplete:
+		str = "Sync Complete"
+	case api.StageIdle:
+		str = "Idle"
+	case api.StageMessages:
+		str = "Sync Messages"
+	case api.StageHeaders:
+		str = "Sync Headers"
+	case api.StagePersistHeaders:
+		str = "Persist Headers"
+	default:
+		str = "unknown sync stage"
+	}
+
+	return &str
+}
+
 func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *types.Error) {
 
 	fullAPI := *node
@@ -104,6 +133,7 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 		}
 
 		status.currentHeight = append(status.currentHeight, int64(w.Height))
+		status.targetIndex = append(status.targetIndex, int64(w.Target.Height()))
 	}
 
 	if syncComplete {

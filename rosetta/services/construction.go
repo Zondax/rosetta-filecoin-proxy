@@ -10,7 +10,6 @@ import (
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
-
 // OptionsIDKey is the name of the key in the Options map inside a
 // ConstructionMetadataRequest that specifies the account ID.
 const OptionsIDKey = "id"
@@ -22,10 +21,8 @@ const NonceKey = "nonce"
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
-
-
 
 // NewConstructionAPIService creates a new instance of an ConstructionAPIService.
 func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.ConstructionAPIServicer {
@@ -79,7 +76,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 func (c *ConstructionAPIService) ConstructionSubmit(
 	ctx context.Context,
 	request *types.ConstructionSubmitRequest,
-) (*types.ConstructionSubmitResponse, *types.Error) {
+) (*types.TransactionIdentifierResponse, *types.Error) {
 
 	if request.SignedTransaction == "" {
 		return nil, ErrMalformedValue
@@ -105,7 +102,7 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 		return nil, ErrUnableToSubmitTx
 	}
 
-	resp := &types.ConstructionSubmitResponse{
+	resp := &types.TransactionIdentifierResponse{
 		TransactionIdentifier: &types.TransactionIdentifier{
 			Hash: cid.String(),
 		},
@@ -122,7 +119,7 @@ func (c *ConstructionAPIService) ConstructionDerive(ctx context.Context, request
 	return nil, ErrNotImplemented
 }
 
-func (c *ConstructionAPIService) ConstructionHash(ctx context.Context, request *types.ConstructionHashRequest) (*types.ConstructionHashResponse, *types.Error) {
+func (c *ConstructionAPIService) ConstructionHash(ctx context.Context, request *types.ConstructionHashRequest) (*types.TransactionIdentifierResponse, *types.Error) {
 	return nil, ErrNotImplemented
 }
 
@@ -137,4 +134,3 @@ func (c *ConstructionAPIService) ConstructionPayloads(ctx context.Context, reque
 func (c *ConstructionAPIService) ConstructionPreprocess(ctx context.Context, request *types.ConstructionPreprocessRequest) (*types.ConstructionPreprocessResponse, *types.Error) {
 	return nil, ErrNotImplemented
 }
-

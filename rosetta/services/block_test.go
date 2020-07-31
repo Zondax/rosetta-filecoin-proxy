@@ -53,31 +53,35 @@ func TestBlockAPIService_Block(t *testing.T) {
 		Return(dtypes.NetworkName(NetworkID.Network), nil)
 	nodeMock.On("SyncState", mock.Anything).
 		Return(&api.SyncState{
-				ActiveSyncs: []api.ActiveSync{
-					{
-						Stage: api.StageSyncComplete,
-						Target: &filTypes.TipSet{},
-					},
+			ActiveSyncs: []api.ActiveSync{
+				{
+					Stage:  api.StageSyncComplete,
+					Target: &filTypes.TipSet{},
 				},
 			},
+		},
 			nil)
 	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockTipSet, nil)
-	///
+	nodeMock.On("ChainGetParentMessages", mock.Anything, mock.Anything).
+		Return([]api.Message{}, nil)
 
+	nodeMock.On("ChainGetParentReceipts", mock.Anything, mock.Anything).
+		Return([]*filTypes.MessageReceipt{}, nil)
+	///
 	// Output
-	var response_test1 = &types.BlockResponse{
-		Block:             &types.Block{
-			BlockIdentifier:       &types.BlockIdentifier{
-										Index: requestedIndex,
-										Hash: requestedHash,
-									},
+	var responseTest1 = &types.BlockResponse{
+		Block: &types.Block{
+			BlockIdentifier: &types.BlockIdentifier{
+				Index: requestedIndex,
+				Hash:  requestedHash,
+			},
 			ParentBlockIdentifier: &types.BlockIdentifier{
-										Index: requestedIndex,
-										Hash: requestedHash,
-									},
-			Timestamp:             0,
-			Metadata:              mockMetadata,
+				Index: requestedIndex,
+				Hash:  requestedHash,
+			},
+			Timestamp: 0,
+			Metadata:  mockMetadata,
 		},
 	}
 
@@ -101,20 +105,20 @@ func TestBlockAPIService_Block(t *testing.T) {
 	}{
 		{
 			name: "RetrieveGenesisTipSet",
-			fields: fields {
-				network: NetworkID ,
+			fields: fields{
+				network: NetworkID,
 				node:    &nodeMock,
 			},
 			args: args{
 				ctx: context.Background(),
 				request: &types.BlockRequest{
 					NetworkIdentifier: NetworkID,
-					BlockIdentifier:   &types.PartialBlockIdentifier{
+					BlockIdentifier: &types.PartialBlockIdentifier{
 						Index: &requestedIndex,
 					},
 				},
 			},
-			want: response_test1,
+			want:  responseTest1,
 			want1: nil,
 		},
 	}

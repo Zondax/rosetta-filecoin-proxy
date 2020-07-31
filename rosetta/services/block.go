@@ -21,14 +21,14 @@ const BlockCIDsKey = "blockCIDs"
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
 	network *types.NetworkIdentifier
-	node api.FullNode
+	node    api.FullNode
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
 func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode) server.BlockAPIServicer {
 	return &BlockAPIService{
 		network: network,
-		node: *api,
+		node:    *api,
 	}
 }
 
@@ -131,8 +131,10 @@ func (s *BlockAPIService) Block(
 		return nil, ErrMsgsAndReceiptsCountMismatch
 	}
 
-	for i, msg := range messages {
+	for i := range messages {
 		var opStatus string
+		msg := messages[i]
+
 		if receipts[i].ExitCode.IsSuccess() {
 			opStatus = OperationStatusOk
 		} else {
@@ -159,7 +161,7 @@ func (s *BlockAPIService) Block(
 
 	//Add block metadata
 	md := make(map[string]interface{})
-	var blockCIDs[] string
+	var blockCIDs []string
 	for _, cid := range tipSet.Cids() {
 		blockCIDs = append(blockCIDs, cid.String())
 	}
@@ -183,10 +185,10 @@ func (s *BlockAPIService) Block(
 	parentBlockId.Hash = *hashParentTipSet
 
 	respBlock := &types.Block{
-		BlockIdentifier: blockId,
+		BlockIdentifier:       blockId,
 		ParentBlockIdentifier: parentBlockId,
-		Timestamp:    int64(tipSet.MinTimestamp()) * FactorSecondToMillisecond, // [ms]
-		Metadata: md,
+		Timestamp:             int64(tipSet.MinTimestamp()) * FactorSecondToMillisecond, // [ms]
+		Metadata:              md,
 	}
 	if transactions != nil {
 		respBlock.Transactions = transactions

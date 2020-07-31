@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const ServerURL= "http://localhost:8080"
+const ServerURL = "http://localhost:8080"
 
 var (
 	ctx = context.Background()
@@ -30,8 +30,8 @@ func setupRosettaClient() *client.APIClient {
 		},
 	)
 
-	client := client.NewAPIClient(clientCfg)
-	return client
+	rosettaClient := client.NewAPIClient(clientCfg)
+	return rosettaClient
 }
 
 func TestNetworkList(t *testing.T) {
@@ -64,7 +64,7 @@ func TestGetGenesisBlock(t *testing.T) {
 	var requestHeight int64 = 0
 	var request = types.BlockRequest{
 		NetworkIdentifier: Network,
-		BlockIdentifier:   &types.PartialBlockIdentifier{
+		BlockIdentifier: &types.PartialBlockIdentifier{
 			Index: &requestHeight,
 		},
 	}
