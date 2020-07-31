@@ -86,7 +86,7 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	if err != nil {
 		return nil, err
 	}
-
+	
 	rawIn := json.RawMessage(request.SignedTransaction)
 
 	bytes, errJson := rawIn.MarshalJSON()
@@ -94,13 +94,13 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 		return nil, ErrMalformedValue
 	}
 
-	var signedTx *filTypes.SignedMessage
-	errUnmarshal := json.Unmarshal(bytes, signedTx)
+	var signedTx filTypes.SignedMessage
+	errUnmarshal := json.Unmarshal(bytes, &signedTx)
 	if errUnmarshal != nil {
 		return nil, ErrMalformedValue
 	}
 
-	cid, errTx := c.node.MpoolPush(ctx, signedTx)
+	cid, errTx := c.node.MpoolPush(ctx, &signedTx)
 	if errTx != nil {
 		return nil, ErrUnableToSubmitTx
 	}
