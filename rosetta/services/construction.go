@@ -2,12 +2,12 @@ package services
 
 import (
 	"context"
-	"encoding/hex"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"encoding/json"
 )
 
 // OptionsIDKey is the name of the key in the Options map inside a
@@ -86,15 +86,18 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	if err != nil {
 		return nil, err
 	}
+	
+	rawIn := json.RawMessage(request.SignedTransaction)
 
-	byteTx, errTx := hex.DecodeString(request.SignedTransaction)
-	if errTx != nil {
-		return nil, ErrMalformedTx
+	bytes, errJson := rawIn.MarshalJSON()
+	if errJson != nil {
+		return nil, ErrMalformedValue
 	}
 
-	signedTx, errTx := filTypes.DecodeSignedMessage(byteTx)
-	if errTx != nil {
-		return nil, ErrMalformedTx
+	var signedTx *filTypes.SignedMessage
+	errUnmarshal := json.Unmarshal(bytes, signedTx)
+	if errUnmarshal != nil {
+		return nil, ErrMalformedValue
 	}
 
 	cid, errTx := c.node.MpoolPush(ctx, signedTx)
