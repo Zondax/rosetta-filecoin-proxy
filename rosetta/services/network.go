@@ -122,7 +122,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		timeStamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
-		blockIndex = status.GetMaxHeight()
+		blockIndex = 0
 		timeStamp = 0
 		blockHashedTipSet = DummyHash
 	}
