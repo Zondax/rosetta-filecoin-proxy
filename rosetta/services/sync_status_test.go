@@ -112,7 +112,6 @@ func TestCheckSyncStatus(t *testing.T) {
 func TestSyncStatus_GetMaxHeight(t *testing.T) {
 	type fields struct {
 		currentHeight   []int64
-		targetIndex     []int64
 		globalSyncState api.SyncStateStage
 	}
 	tests := []struct {
