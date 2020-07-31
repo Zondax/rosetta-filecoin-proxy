@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"encoding/hex"
+	"encoding/json"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
@@ -87,14 +87,17 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 		return nil, err
 	}
 
-	byteTx, errTx := hex.DecodeString(request.SignedTransaction)
-	if errTx != nil {
-		return nil, ErrMalformedTx
+	rawIn := json.RawMessage(request.SignedTransaction)
+
+	bytes, errJson := rawIn.MarshalJSON()
+	if errJson != nil {
+		return nil, ErrMalformedValue
 	}
 
-	signedTx, errTx := filTypes.DecodeSignedMessage(byteTx)
-	if errTx != nil {
-		return nil, ErrMalformedTx
+	var signedTx *filTypes.SignedMessage
+	errUnmarshal := json.Unmarshal(bytes, signedTx)
+	if errUnmarshal != nil {
+		return nil, ErrMalformedValue
 	}
 
 	cid, errTx := c.node.MpoolPush(ctx, signedTx)
