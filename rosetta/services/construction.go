@@ -2,12 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"encoding/json"
 )
 
 // OptionsIDKey is the name of the key in the Options map inside a
@@ -86,7 +86,7 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	if err != nil {
 		return nil, err
 	}
-	
+
 	rawIn := json.RawMessage(request.SignedTransaction)
 
 	bytes, errJson := rawIn.MarshalJSON()
