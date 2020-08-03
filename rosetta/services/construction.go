@@ -9,6 +9,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/specs-actors/actors/builtin"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -73,9 +74,9 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		blockInclUint = uint64(blockIncl.(float64))
 	}
 
-	err := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
-	if err != nil {
-		return nil, err
+	errNet := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
+	if errNet != nil {
+		return nil, errNet
 	}
 
 	addressParsed, adErr := address.NewFromString(addressRaw.(string))
@@ -83,8 +84,8 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		return nil, ErrInvalidAccountAddress
 	}
 
-	nonce, adErr := c.node.MpoolGetNonce(ctx, addressParsed)
-	if adErr != nil {
+	nonce, err := c.node.MpoolGetNonce(ctx, addressParsed)
+	if err != nil {
 		return nil, ErrUnableToGetNextNonce
 	}
 
@@ -96,11 +97,23 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	}
 
 	//Check if gas is affordable for address
-	balance, balErr := c.node.WalletBalance(ctx, addressParsed) // TODO this should return unlocked balance
-	if balErr != nil {
-		return nil, ErrUnableToGetBalance
+	actor, errAct := c.node.StateGetActor(context.Background(), addressParsed, filTypes.EmptyTSK)
+	if errAct != nil {
+		return nil, ErrUnableToGetActor
 	}
-	if balance.Int64() < (gasPrice.Int64() * build.BlockGasLimit) {
+
+	var availableFunds filTypes.BigInt
+	if actor.Code == builtin.MultisigActorCodeID {
+		//Get the unlocked funds of the multisig account
+		availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressParsed, filTypes.EmptyTSK)
+		if err != nil {
+			return nil, ErrUnableToGetBalance
+		}
+	} else {
+		availableFunds = actor.Balance
+	}
+
+	if availableFunds.Int64() < (gasPrice.Int64() * build.BlockGasLimit) {
 		return nil, ErrInsufficientBalanceForGas
 	}
 
