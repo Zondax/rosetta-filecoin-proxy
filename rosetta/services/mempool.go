@@ -44,7 +44,7 @@ func (m *MemPoolAPIService) Mempool(
 		return nil, ErrUnableToGetUnsyncedBlock
 	}
 
-	//Get latest TipSet
+	//Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
 		return nil, ErrUnableToGetLatestBlk
@@ -99,7 +99,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 		return nil, ErrMalformedValue
 	}
 
-	//Get latest TipSet
+	//Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
 		return nil, ErrUnableToGetLatestBlk
@@ -117,40 +117,25 @@ func (m MemPoolAPIService) MempoolTransaction(
 			continue
 		}
 		found = true
-
-		txId := &types.TransactionIdentifier{
-			Hash: msg.Cid().String(),
-		}
-
-		var operations []*types.Operation
-		op := &types.Operation{
-			OperationIdentifier: &types.OperationIdentifier{
-				Index:        int64(msg.Message.Nonce),
-				NetworkIndex: nil,
-			},
-			RelatedOperations: nil,
-			Type:              "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
-			Status:            "", //TODO https://github.com/Zondax/rosetta-filecoin/issues/11
-			Account: &types.AccountIdentifier{
-				Address: msg.Message.From.String(),
-			},
-			Amount: &types.Amount{
-				Value: msg.Message.ValueReceived().String(),
-				Currency: &types.Currency{
-					Symbol:   "FIL", //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
-					Decimals: 18,    //TODO https://github.com/Zondax/rosetta-filecoin/issues/6
-				},
-				Metadata: nil,
-			},
-			Metadata: nil,
-		}
-		operations = append(operations, op)
-
 		transaction = &types.Transaction{
-			TransactionIdentifier: txId,
-			Operations:            operations,
-			Metadata:              nil,
+			TransactionIdentifier: &types.TransactionIdentifier{
+				Hash: msg.Cid().String(),
+			},
+			Operations: []*types.Operation{},
 		}
+
+		opType, err := GetMethodName(&msg.Message, &m.node)
+		if err != nil {
+			return nil, ErrCouldNotRetrieveMethodName
+		}
+		opStatus := "Pending" //TODO get status from receipt?
+
+		transaction.Operations = appendOp(transaction.Operations, opType,
+			msg.Message.From.String(), msg.Message.Value.String(), opStatus)
+		transaction.Operations = appendOp(transaction.Operations, opType,
+			msg.Message.To.String(), msg.Message.Value.String(), opStatus)
+
+		break
 	}
 
 	if !found {
@@ -159,7 +144,6 @@ func (m MemPoolAPIService) MempoolTransaction(
 
 	resp := &types.MempoolTransactionResponse{
 		Transaction: transaction,
-		Metadata:    nil,
 	}
 
 	return resp, nil
