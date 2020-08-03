@@ -7,16 +7,34 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/build"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
+// ChainIDKey is the name of the key in the Options map inside a
+// ConstructionMetadataRequest that specifies the current chain id
+const ChainIDKey = "ChainID"
+
 // OptionsIDKey is the name of the key in the Options map inside a
-// ConstructionMetadataRequest that specifies the account ID.
-const OptionsIDKey = "id"
+// ConstructionMetadataRequest that specifies the account ID
+const OptionsIDKey = "Id"
+
+// OptionsBlockInclKey is the name of the key in the Metadata map inside a
+// ConstructionMetadataResponse determines on how many epochs message should included
+// being 0 the fastest (and the most gas expensive one)
+const OptionsBlockInclKey = "BlockIncl"
 
 // NonceKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies the next valid nonce.
-const NonceKey = "nonce"
+const NonceKey = "Nonce"
+
+// GasPriceKey is the name of the key in the Metadata map inside a
+// ConstructionMetadataResponse that specifies tx's gas price
+const GasPriceKey = "GasPrice"
+
+// GasLimitKey is the name of the key in the Metadata map inside a
+// ConstructionMetadataResponse that specifies tx's gas limit
+const GasLimitKey = "GasLimit"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
@@ -47,6 +65,14 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		return nil, ErrInvalidAccountAddress
 	}
 
+	var blockInclUint uint64
+	blockIncl, ok := request.Options[OptionsBlockInclKey]
+	if !ok {
+		blockInclUint = 1
+	} else {
+		blockInclUint = uint64(blockIncl.(float64))
+	}
+
 	err := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
 	if err != nil {
 		return nil, err
@@ -62,8 +88,27 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		return nil, ErrUnableToGetNextNonce
 	}
 
+	gasLimit := int64(build.BlockGasLimit)
+	gasPrice, gasErr := c.node.MpoolEstimateGasPrice(ctx, blockInclUint, addressParsed,
+		gasLimit, filTypes.TipSetKey{})
+	if gasErr != nil {
+		return nil, ErrUnableToEstimateGasPrice
+	}
+
+	//Check if gas is affordable for address
+	balance, balErr := c.node.WalletBalance(ctx, addressParsed) // TODO this should return unlocked balance
+	if balErr != nil {
+		return nil, ErrUnableToGetBalance
+	}
+	if balance.Int64() < (gasPrice.Int64() * build.BlockGasLimit) {
+		return nil, ErrInsufficientBalanceForGas
+	}
+
 	md := make(map[string]interface{})
 	md[NonceKey] = nonce
+	md[GasLimitKey] = gasLimit
+	md[GasPriceKey] = gasPrice.Int64()
+	md[ChainIDKey] = request.NetworkIdentifier.Network
 
 	resp := &types.ConstructionMetadataResponse{
 		Metadata: md,
