@@ -30,10 +30,7 @@ func (s *NetworkAPIService) NetworkList(
 	ctx context.Context,
 	request *types.MetadataRequest,
 ) (*types.NetworkListResponse, *types.Error) {
-
-	var blockchainName = "Filecoin" //TODO: Is this available on the api ?
 	networkName, err := s.node.StateNetworkName(ctx)
-
 	if err != nil {
 		return nil, ErrUnableToGetChainID
 	}
@@ -41,7 +38,7 @@ func (s *NetworkAPIService) NetworkList(
 	resp := &types.NetworkListResponse{
 		NetworkIdentifiers: []*types.NetworkIdentifier{
 			{
-				Blockchain: blockchainName,
+				Blockchain: BlockChainName,
 				Network:    string(networkName),
 			},
 		},
@@ -144,7 +141,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	return resp, nil
 }
 
-// NetworkOptions implements the /network/options endpoint. //TODO
+// NetworkOptions implements the /network/options endpoint.
 func (s *NetworkAPIService) NetworkOptions(
 	ctx context.Context,
 	request *types.NetworkRequest,
@@ -157,7 +154,7 @@ func (s *NetworkAPIService) NetworkOptions(
 
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
-			RosettaVersion: "1.4.0", //TODO get this from an extern config.yml
+			RosettaVersion: RosettaSDKVersion,
 			NodeVersion:    version.Version,
 		},
 		Allow: &types.Allow{
@@ -171,7 +168,7 @@ func (s *NetworkAPIService) NetworkOptions(
 					Successful: false,
 				},
 			},
-			OperationTypes: []string{
+			OperationTypes: []string{ //TODO https://github.com/Zondax/rosetta-filecoin-proxy/issues/6
 				"Transfer",
 				"Reward",
 			},

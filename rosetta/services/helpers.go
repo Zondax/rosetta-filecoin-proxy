@@ -11,11 +11,6 @@ import (
 	"github.com/multiformats/go-multihash"
 )
 
-const (
-	OperationStatusOk     = "Ok"
-	OperationStatusFailed = "Fail"
-)
-
 func BuildTipSetKeyHash(key filTypes.TipSetKey) (*string, error) {
 
 	cidBuilder := cid.V1Builder{Codec: cid.DagCBOR, MhType: multihash.BLAKE2B_MIN + 31}
@@ -51,13 +46,13 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 func GetCurrencyData() *types.Currency {
 	//TODO get this from external config file
 	return &types.Currency{
-		Symbol:   "FIL",
-		Decimals: 18,
+		Symbol:   CurrencySymbol,
+		Decimals: CurrencyDecimals,
 		Metadata: nil,
 	}
 }
 
-func GetMethodName(msg *api.Message, api *api.FullNode) (string, *types.Error) {
+func GetMethodName(msg *filTypes.Message, api *api.FullNode) (string, *types.Error) {
 
 	return "Transfer", nil //TODO: https://github.com/Zondax/rosetta-filecoin-proxy/issues/6
 
@@ -93,7 +88,7 @@ func GetMethodName(msg *api.Message, api *api.FullNode) (string, *types.Error) {
 	//}
 	//
 	//val := reflect.Indirect(reflect.ValueOf(method))
-	//methodName := val.Type().Field(int(msg.Message.Method) -1).Name
+	//methodName := val.Type().Field(int(msg.Method) - 1).Name
 	//
 	//return methodName, nil
 }
