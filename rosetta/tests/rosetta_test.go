@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"net/http"
 	"reflect"
 	"testing"
@@ -82,5 +83,73 @@ func TestGetGenesisBlock(t *testing.T) {
 		blockResponse.Block.ParentBlockIdentifier) {
 
 		t.Fatalf("Invalid parent for genesis block")
+	}
+}
+
+func TestConstructionMetadata(t *testing.T) {
+
+	rosettaClient := setupRosettaClient()
+
+	var options = make(map[string]interface{})
+	options[services.OptionsIDKey] = "t034453"
+	options[services.OptionsBlockInclKey] = 2
+
+	request := &types.ConstructionMetadataRequest{
+		NetworkIdentifier: Network,
+		Options:           options,
+	}
+
+	resp, err1, err2 := rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
+}
+
+func TestMempool(t *testing.T) {
+
+	rosettaClient := setupRosettaClient()
+	req := &types.NetworkRequest{
+		NetworkIdentifier: Network,
+		Metadata:          nil,
+	}
+
+	resp, err1, err2 := rosettaClient.MempoolAPI.Mempool(ctx, req)
+
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil || len(resp.TransactionIdentifiers) == 0 {
+		t.Fatal()
+	}
+
+	txReq := &types.MempoolTransactionRequest{
+		NetworkIdentifier:     Network,
+		TransactionIdentifier: resp.TransactionIdentifiers[0],
+	}
+	txResp, err1, err2 := rosettaClient.MempoolAPI.MempoolTransaction(ctx, txReq)
+
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if txResp == nil {
+		t.Fatal()
 	}
 }

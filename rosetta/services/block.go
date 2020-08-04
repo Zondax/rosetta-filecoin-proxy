@@ -148,7 +148,7 @@ func (s *BlockAPIService) Block(
 			Operations: []*types.Operation{},
 		})
 
-		opType, err := GetMethodName(&msg, &s.node)
+		opType, err := GetMethodName(msg.Message, &s.node)
 		if err != nil {
 			return nil, err
 		}

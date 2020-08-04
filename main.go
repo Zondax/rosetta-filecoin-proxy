@@ -123,7 +123,9 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
 	log.Infof("Rosetta listening on port %d\n", ServerPort)
-	return srv.ListenAndServe()
+	loggedRouter := server.LoggerMiddleware(router)
+	corsRouter := server.CorsMiddleware(loggedRouter)
+	return http.ListenAndServe(fmt.Sprintf(":%d", ServerPort), corsRouter)
 }
 
 func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
