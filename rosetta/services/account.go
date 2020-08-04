@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
@@ -85,16 +86,17 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 	}
 
-	md := make(map[string]interface{})
 	actor, err := a.node.StateGetActor(context.Background(), addr, queryTipSet.Key())
 	if err != nil {
 		return nil, ErrUnableToGetActor
 	}
-	balanceStr := actor.Balance.String() // locked + unlocked balance
 
+	md := make(map[string]interface{})
+	var balanceStr string
 	isMultiSig := actor.Code == builtin.MultisigActorCodeID
+
 	if request.AccountIdentifier.SubAccount != nil {
-		// First check if account is multisig, then get the corresponding balance
+		// First, check if account is multisig
 		if !isMultiSig {
 			return nil, ErrAddNotMSig
 		}
@@ -103,21 +105,40 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		if err != nil || actorState == nil {
 			return nil, ErrUnableToGetActorState
 		}
-		stateMap := actorState.State.(multisig.State)
+
+		tmpMap, ok := actorState.State.(map[string]interface{})
+		if !ok {
+			return nil, ErrMalformedValue
+		}
+		stateMultisig, err := getMultisigState(tmpMap)
+		if err != nil {
+			return nil, ErrMalformedValue
+		}
 
 		switch request.AccountIdentifier.SubAccount.Address {
 		case LockedBalanceStr:
-			lockedFunds := stateMap.AmountLocked(queryTipSet.Height())
+			lockedFunds := stateMultisig.AmountLocked(queryTipSet.Height())
 			balanceStr = lockedFunds.String()
 		case VestingScheduleStr:
-			stEpoch := stateMap.StartEpoch.String()
-			unlockDuration := stateMap.UnlockDuration.String()
+			stEpoch := stateMultisig.StartEpoch.String()
+			unlockDuration := stateMultisig.UnlockDuration.String()
 			vestingMap := map[string]string{}
 			vestingMap[VestingStartEpochKey] = stEpoch
 			vestingMap[VestingUnlockDurationKey] = unlockDuration
 			md[VestingScheduleStr] = vestingMap
 		default:
 			return nil, ErrMustSpecifySubAccount
+		}
+	} else {
+		//Get available balance
+		if isMultiSig {
+			balance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
+			if err != nil {
+				return nil, ErrUnableToGetBalance
+			}
+			balanceStr = balance.String()
+		} else {
+			balanceStr = actor.Balance.String()
 		}
 	}
 
@@ -145,4 +166,11 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	return resp, nil
+}
+
+func getMultisigState(m map[string]interface{}) (multisig.State, error) {
+	data, _ := json.Marshal(m)
+	var result multisig.State
+	err := json.Unmarshal(data, &result)
+	return result, err
 }
