@@ -319,11 +319,13 @@ func (f *FullNodeMock) StateReplay(ctx context.Context, key filTypes.TipSetKey, 
 }
 
 func (f *FullNodeMock) StateGetActor(ctx context.Context, actor address.Address, tsk filTypes.TipSetKey) (*filTypes.Actor, error) {
-	panic("implement me")
+	args := f.Called(ctx, actor, tsk)
+	return args.Get(0).(*filTypes.Actor), args.Error(1)
 }
 
 func (f *FullNodeMock) StateReadState(ctx context.Context, actor address.Address, tsk filTypes.TipSetKey) (*api.ActorState, error) {
-	panic("implement me")
+	args := f.Called(ctx, actor, tsk)
+	return args.Get(0).(*api.ActorState), args.Error(1)
 }
 
 func (f *FullNodeMock) StateListMessages(ctx context.Context, match *filTypes.Message, tsk filTypes.TipSetKey, toht abi.ChainEpoch) ([]cid.Cid, error) {
@@ -448,7 +450,8 @@ func (f *FullNodeMock) StateCompute(ctx context.Context, epoch abi.ChainEpoch, m
 }
 
 func (f *FullNodeMock) MsigGetAvailableBalance(ctx context.Context, a address.Address, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	panic("implement me")
+	args := f.Called(ctx, a, key)
+	return args.Get(0).(filTypes.BigInt), args.Error(1)
 }
 
 func (f *FullNodeMock) MsigCreate(ctx context.Context, i int64, addresses []address.Address, bigInt filTypes.BigInt, a address.Address, bigInt2 filTypes.BigInt) (cid.Cid, error) {
