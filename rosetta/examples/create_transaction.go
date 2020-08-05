@@ -5,10 +5,13 @@ import (
   "context"
   "time"
   "fmt"
+  "encoding/base64"
+  "strconv"
   "github.com/coinbase/rosetta-sdk-go/types"
-  //"github.com/zondax/rosetta-filecoin-lib"
+  "github.com/zondax/rosetta-filecoin-lib"
   "github.com/coinbase/rosetta-sdk-go/client"
   "github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
+  //filtypes "github.com/filecoin-project/lotus/chain/types"
 )
 
 const ServerURL = "http://localhost:8080"
@@ -43,12 +46,12 @@ func main() {
   options[services.OptionsIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
   options[services.OptionsBlockInclKey] = 2
 
-  request := &types.ConstructionMetadataRequest{
+  requestMetadata := &types.ConstructionMetadataRequest{
     NetworkIdentifier: Network,
     Options:           options,
   }
 
-  resp, err1, err2 := rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
+  respMetadata, err1, err2 := rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, requestMetadata)
   if err1 != nil {
     panic(err1.Message)
   }
@@ -57,9 +60,62 @@ func main() {
     panic(err2.Error())
   }
 
-  if resp == nil {
+  if respMetadata == nil {
     panic("Panicking")
   }
+  
+  r := &rosettaFilecoinLib.RosettaConstructionFilecoin{false}
+  
+  gasLimit, err := strconv.ParseUint(respMetadata.Metadata["GasLimit"].(string), 10, 64)
+  if err != nil {
+    panic(err)
+  }
+  
+  mtx := rosettaFilecoinLib.TxMetadata{
+    Nonce: uint64(respMetadata.Metadata["Nonce"].(float64)),
+    GasPrice: uint64(respMetadata.Metadata["GasPrice"].(float64)),
+    GasLimit: gasLimit,
+  }
+  pr := &rosettaFilecoinLib.PaymentRequest{
+    From: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    To: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+    Quantity: 100000,
+    Metadata: mtx,
+  }
 
-  fmt.Println(resp)
+  txBase64, err := r.ConstructPayment(pr)
+  if err != nil {
+    panic(err)
+  }
+    
+  sk, err := base64.StdEncoding.DecodeString("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=")
+  if err != nil {
+    panic(err)
+  }
+
+  sig, err := r.SignTx(txBase64, sk)
+  if err != nil {
+    panic(err)
+  }
+  
+  fmt.Println(sig)
+  requestSubmit := &types.ConstructionSubmitRequest{
+    NetworkIdentifier: Network,
+    SignedTransaction: sig,
+  }
+
+  respSubmit, err1, err2 := rosettaClient.ConstructionAPI.ConstructionSubmit(ctx, requestSubmit)
+  if err1 != nil {
+    panic(err1.Message)
+  }
+
+  if err2 != nil {
+    panic(err2.Error())
+  }
+
+  if respSubmit == nil {
+    panic("Panicking")
+  }
+  fmt.Println(respSubmit)
+
 }
