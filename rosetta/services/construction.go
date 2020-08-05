@@ -121,8 +121,8 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 
 	md := make(map[string]interface{})
 	md[NonceKey] = nonce
-	md[GasLimitKey] = gasLimit
-	md[GasPriceKey] = gasPrice.Int64()
+	md[GasLimitKey] = gasLimit.String()
+	md[GasPriceKey] = gasPrice.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
 
 	resp := &types.ConstructionMetadataResponse{
