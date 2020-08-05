@@ -11,5 +11,6 @@ require (
 	github.com/ipfs/go-cid v0.0.6
 	github.com/ipfs/go-log v1.0.4
 	github.com/multiformats/go-multihash v0.0.13
+	github.com/zondax/rosetta-filecoin-lib v0.0.0-20200731185237-cf4e1aa0ad71 // indirect
 	gotest.tools v2.2.0+incompatible
 )
