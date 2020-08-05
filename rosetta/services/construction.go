@@ -89,9 +89,9 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		return nil, ErrUnableToGetNextNonce
 	}
 
-	gasLimit := int64(build.BlockGasLimit)
+	gasLimit := filTypes.NewInt(uint64(build.BlockGasLimit))
 	gasPrice, gasErr := c.node.MpoolEstimateGasPrice(ctx, blockInclUint, addressParsed,
-		gasLimit, filTypes.TipSetKey{})
+		gasLimit.Int64(), filTypes.TipSetKey{})
 	if gasErr != nil {
 		return nil, ErrUnableToEstimateGasPrice
 	}
@@ -113,14 +113,16 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		availableFunds = actor.Balance
 	}
 
-	if availableFunds.Int64() < (gasPrice.Int64() * build.BlockGasLimit) {
+	var gasCost = filTypes.NewInt(0)
+	gasCost.Mul(gasLimit.Int, gasPrice.Int)
+	if availableFunds.Cmp(gasCost.Int) < 0 {
 		return nil, ErrInsufficientBalanceForGas
 	}
 
 	md := make(map[string]interface{})
 	md[NonceKey] = nonce
-	md[GasLimitKey] = gasLimit
-	md[GasPriceKey] = gasPrice.Int64()
+	md[GasLimitKey] = gasLimit.String()
+	md[GasPriceKey] = gasPrice.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
 
 	resp := &types.ConstructionMetadataResponse{
