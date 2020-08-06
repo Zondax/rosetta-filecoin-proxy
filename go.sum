@@ -133,6 +133,8 @@ github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa/go.mod h1:z
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
 github.com/coinbase/rosetta-sdk-go v0.3.2 h1:2Fep2gIHBGDUNZVaRgSYp6KYfGeFbHp97OlJzw2YRsU=
 github.com/coinbase/rosetta-sdk-go v0.3.2/go.mod h1:xTq9qdqHVg6uA87pMUJLE+PqyXFM4PyqOY79J8MCNGA=
+github.com/coinbase/rosetta-sdk-go v0.3.3 h1:69Ncq9GeyVEANJexd72IdjN249Hn6Dntb7KmHoct5WU=
+github.com/coinbase/rosetta-sdk-go v0.3.3/go.mod h1:xTq9qdqHVg6uA87pMUJLE+PqyXFM4PyqOY79J8MCNGA=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
@@ -1350,6 +1352,8 @@ github.com/x-cray/logrus-prefixed-formatter v0.5.2/go.mod h1:2duySbKsL6M18s5GU7V
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
+github.com/zondax/rosetta-filecoin-lib v0.0.0-20200731185237-cf4e1aa0ad71 h1:wYSvx0+Ab2I76WuuZeXafkGJlkYp8zkZTSGlHIXbKss=
+github.com/zondax/rosetta-filecoin-lib v0.0.0-20200731185237-cf4e1aa0ad71/go.mod h1:2QEhB2Mlx34eVVAKXsRzqZSyrecYf1i2H4fbOsCnc/4=
 go.dedis.ch/fixbuf v1.0.3/go.mod h1:yzJMt34Wa5xD37V5RTdmp38cz3QhMagdGoem9anUalw=
 go.dedis.ch/kyber/v3 v3.0.4/go.mod h1:OzvaEnPvKlyrWyp3kGXlFdp7ap1VC6RkZDTaPikqhsQ=
 go.dedis.ch/kyber/v3 v3.0.9/go.mod h1:rhNjUUg6ahf8HEg5HUvVBYoWY4boAafX8tYxX+PS+qg=
