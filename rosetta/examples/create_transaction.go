@@ -116,6 +116,17 @@ func main() {
   if respSubmit == nil {
     panic("Panicking")
   }
-  fmt.Println(respSubmit)
+  
+  fmt.Println(respSubmit.TransactionIdentifier.Hash)
+  
+  hash, err := r.Hash(sig)
+  if err != nil {
+    panic(err)
+  }
+  
+  fmt.Println(hash)
+  if hash != respSubmit.TransactionIdentifier.Hash {
+    panic("NOT MATCHING")
+  }
 
 }
