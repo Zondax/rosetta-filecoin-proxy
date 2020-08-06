@@ -21,11 +21,19 @@ import (
 
 const (
 	RetryConnectAttempts = 10
-	BlockchainName       = "Filecoin"
-	ServerPort           = 8080
+	BlockchainName       = services.BlockChainName
+	ServerPort           = services.RosettaServerPort
 )
 
 var log = logging.Logger("rosetta-filecoin-proxy")
+
+func logVersionsInfo() {
+	log.Info("****************************************************")
+	log.Infof("Rosetta SDK version: %s", services.RosettaSDKVersion)
+	log.Infof("Lotus version: %s", services.LotusVersion)
+	log.Infof("Git revision: %s", services.GitRevision)
+	log.Info("****************************************************")
+}
 
 func startLogger(level string) {
 	lvl, err := logging.LevelFromString(level)
@@ -140,6 +148,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 
 func main() {
 	startLogger("info")
+	logVersionsInfo()
 
 	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
