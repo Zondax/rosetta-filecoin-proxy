@@ -141,13 +141,13 @@ func TestSyncStatus_GetMaxHeight(t *testing.T) {
 			name: "MaxForSyncingMessagesStage",
 			fields: fields{currentHeight: []int64{100, 200, 300},
 				globalSyncState: api.StageMessages},
-			want: 299,
+			want: 300,
 		},
 		{
 			name: "MaxForSyncCompleteStage",
 			fields: fields{currentHeight: []int64{100, 200, 300},
 				globalSyncState: api.StageSyncComplete},
-			want: 299,
+			want: 300,
 		},
 	}
 	for _, tt := range tests {
