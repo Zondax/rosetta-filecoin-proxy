@@ -112,7 +112,9 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	}
 
 	router := newBlockchainRouter(network, asserter, api)
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: router}
+	loggedRouter := server.LoggerMiddleware(router)
+	corsRouter := server.CorsMiddleware(loggedRouter)
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
 
 	sigCh := make(chan os.Signal, 2)
 
@@ -131,9 +133,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
 	log.Infof("Rosetta listening on port %d\n", ServerPort)
-	loggedRouter := server.LoggerMiddleware(router)
-	corsRouter := server.CorsMiddleware(loggedRouter)
-	return http.ListenAndServe(fmt.Sprintf(":%d", ServerPort), corsRouter)
+	return srv.ListenAndServe()
 }
 
 func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
