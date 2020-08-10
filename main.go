@@ -21,11 +21,19 @@ import (
 
 const (
 	RetryConnectAttempts = 10
-	BlockchainName       = "Filecoin"
-	ServerPort           = 8080
+	BlockchainName       = services.BlockChainName
+	ServerPort           = services.RosettaServerPort
 )
 
 var log = logging.Logger("rosetta-filecoin-proxy")
+
+func logVersionsInfo() {
+	log.Info("****************************************************")
+	log.Infof("Rosetta SDK version: %s", services.RosettaSDKVersion)
+	log.Infof("Lotus version: %s", services.LotusVersion)
+	log.Infof("Git revision: %s", services.GitRevision)
+	log.Info("****************************************************")
+}
 
 func startLogger(level string) {
 	lvl, err := logging.LevelFromString(level)
@@ -104,7 +112,9 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	}
 
 	router := newBlockchainRouter(network, asserter, api)
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: router}
+	loggedRouter := server.LoggerMiddleware(router)
+	corsRouter := server.CorsMiddleware(loggedRouter)
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
 
 	sigCh := make(chan os.Signal, 2)
 
@@ -123,9 +133,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
 	log.Infof("Rosetta listening on port %d\n", ServerPort)
-	loggedRouter := server.LoggerMiddleware(router)
-	corsRouter := server.CorsMiddleware(loggedRouter)
-	return http.ListenAndServe(fmt.Sprintf(":%d", ServerPort), corsRouter)
+	return srv.ListenAndServe()
 }
 
 func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
@@ -140,6 +148,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 
 func main() {
 	startLogger("info")
+	logVersionsInfo()
 
 	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")

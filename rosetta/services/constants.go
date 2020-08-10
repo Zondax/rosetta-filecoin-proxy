@@ -1,13 +1,26 @@
 package services
 
+var (
+	//Versions info to be injected on build time
+	RosettaSDKVersion = "Unknown"
+	LotusVersion      = "Unknown"
+	GitRevision       = "Unknown"
+	///
+)
+
 const (
-	RosettaSDKVersion = "1.4.1"
+	//Network related
+	BlockChainName    = "Filecoin"
+	RosettaServerPort = 8080
+	///
 
-	BlockChainName = "Filecoin"
-
+	//Currency related
 	CurrencySymbol   = "FIL"
 	CurrencyDecimals = 18
+	///
 
+	//Operation related
 	OperationStatusOk     = "Ok"
 	OperationStatusFailed = "Fail"
+	///
 )
