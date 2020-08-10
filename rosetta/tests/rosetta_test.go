@@ -91,8 +91,34 @@ func TestConstructionMetadata(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsIDKey] = "t034453"
-	options[services.OptionsBlockInclKey] = 2
+	options[services.OptionsIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+	options[services.OptionsBlockInclKey] = 1
+
+	request := &types.ConstructionMetadataRequest{
+		NetworkIdentifier: Network,
+		Options:           options,
+	}
+
+	resp, err1, err2 := rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
+}
+
+func TestConstructionMetadataForGasPriceTrack(t *testing.T) {
+
+	rosettaClient := setupRosettaClient()
+
+	var options = make(map[string]interface{})
+	options[services.OptionsBlockInclKey] = 1
 
 	request := &types.ConstructionMetadataRequest{
 		NetworkIdentifier: Network,

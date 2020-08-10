@@ -56,71 +56,74 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	ctx context.Context,
 	request *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
-
-	if request.Options == nil {
-		return nil, ErrInvalidAccountAddress
-	}
-
-	addressRaw, ok := request.Options[OptionsIDKey]
-	if !ok {
-		return nil, ErrInvalidAccountAddress
-	}
-
-	var blockInclUint uint64
-	blockIncl, ok := request.Options[OptionsBlockInclKey]
-	if !ok {
-		blockInclUint = 1
-	} else {
-		blockInclUint = uint64(blockIncl.(float64))
-	}
+	var (
+		addressParsed     = address.Address{}
+		availableFunds    filTypes.BigInt
+		err               error
+		blockInclUint     uint64 = 1
+		nonce             uint64 = 0
+		checkGasAfordable        = false
+	)
 
 	errNet := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
-	addressParsed, adErr := address.NewFromString(addressRaw.(string))
-	if adErr != nil {
-		return nil, ErrInvalidAccountAddress
-	}
-
-	nonce, err := c.node.MpoolGetNonce(ctx, addressParsed)
-	if err != nil {
-		return nil, ErrUnableToGetNextNonce
-	}
-
 	gasLimit := filTypes.NewInt(uint64(build.BlockGasLimit))
+	md := make(map[string]interface{})
+
+	if request.Options != nil {
+		//Parse block include epochs - this field is optional
+		blockIncl, ok := request.Options[OptionsBlockInclKey]
+		if ok {
+			blockInclUint = uint64(blockIncl.(float64))
+		}
+		//Parse address - this field is optional
+		addressRaw, ok := request.Options[OptionsIDKey]
+		if ok {
+			addressParsed, err = address.NewFromString(addressRaw.(string))
+			if err != nil {
+				return nil, ErrInvalidAccountAddress
+			}
+
+			nonce, err = c.node.MpoolGetNonce(ctx, addressParsed)
+			if err != nil {
+				return nil, ErrUnableToGetNextNonce
+			}
+			md[NonceKey] = nonce
+
+			//Get available balance
+			actor, errAct := c.node.StateGetActor(context.Background(), addressParsed, filTypes.EmptyTSK)
+			if errAct != nil {
+				return nil, ErrUnableToGetActor
+			}
+			if actor.Code == builtin.MultisigActorCodeID {
+				//Get the unlocked funds of the multisig account
+				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressParsed, filTypes.EmptyTSK)
+				if err != nil {
+					return nil, ErrUnableToGetBalance
+				}
+			} else {
+				availableFunds = actor.Balance
+			}
+
+			checkGasAfordable = true
+		}
+	}
+
 	gasPrice, gasErr := c.node.MpoolEstimateGasPrice(ctx, blockInclUint, addressParsed,
 		gasLimit.Int64(), filTypes.TipSetKey{})
 	if gasErr != nil {
 		return nil, ErrUnableToEstimateGasPrice
 	}
 
-	//Check if gas is affordable for address
-	actor, errAct := c.node.StateGetActor(context.Background(), addressParsed, filTypes.EmptyTSK)
-	if errAct != nil {
-		return nil, ErrUnableToGetActor
-	}
-
-	var availableFunds filTypes.BigInt
-	if actor.Code == builtin.MultisigActorCodeID {
-		//Get the unlocked funds of the multisig account
-		availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressParsed, filTypes.EmptyTSK)
-		if err != nil {
-			return nil, ErrUnableToGetBalance
-		}
-	} else {
-		availableFunds = actor.Balance
-	}
-
 	var gasCost = filTypes.NewInt(0)
 	gasCost.Mul(gasLimit.Int, gasPrice.Int)
-	if availableFunds.Cmp(gasCost.Int) < 0 {
+	if checkGasAfordable && (availableFunds.Cmp(gasCost.Int) < 0) {
 		return nil, ErrInsufficientBalanceForGas
 	}
 
-	md := make(map[string]interface{})
-	md[NonceKey] = nonce
 	md[GasLimitKey] = gasLimit.String()
 	md[GasPriceKey] = gasPrice.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
