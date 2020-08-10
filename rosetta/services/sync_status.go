@@ -36,10 +36,6 @@ func (status SyncStatus) GetMaxHeight() int64 {
 		}
 	}
 
-	if max > 0 {
-		max--
-	}
-
 	return max
 }
 
