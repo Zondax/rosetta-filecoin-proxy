@@ -14,28 +14,28 @@ import (
 
 // ChainIDKey is the name of the key in the Options map inside a
 // ConstructionMetadataRequest that specifies the current chain id
-const ChainIDKey = "ChainID"
+const ChainIDKey = "chainID"
 
 // OptionsIDKey is the name of the key in the Options map inside a
 // ConstructionMetadataRequest that specifies the account ID
-const OptionsIDKey = "Id"
+const OptionsIDKey = "id"
 
 // OptionsBlockInclKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse determines on how many epochs message should included
 // being 0 the fastest (and the most gas expensive one)
-const OptionsBlockInclKey = "BlockIncl"
+const OptionsBlockInclKey = "blockIncl"
 
 // NonceKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies the next valid nonce.
-const NonceKey = "Nonce"
+const NonceKey = "nonce"
 
 // GasPriceKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas price
-const GasPriceKey = "GasPrice"
+const GasPriceKey = "gasPrice"
 
 // GasLimitKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas limit
-const GasLimitKey = "GasLimit"
+const GasLimitKey = "gasLimit"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
