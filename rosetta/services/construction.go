@@ -57,12 +57,12 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	request *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
 	var (
-		addressParsed     = address.Address{}
-		availableFunds    filTypes.BigInt
-		err               error
-		blockInclUint     uint64 = 1
-		nonce             uint64 = 0
-		checkGasAfordable        = false
+		addressParsed      = address.Address{}
+		availableFunds     filTypes.BigInt
+		err                error
+		checkGasAffordable bool
+		nonce              uint64
+		blockInclUint      uint64 = 1
 	)
 
 	errNet := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
@@ -108,7 +108,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				availableFunds = actor.Balance
 			}
 
-			checkGasAfordable = true
+			checkGasAffordable = true
 		}
 	}
 
@@ -120,7 +120,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 
 	var gasCost = filTypes.NewInt(0)
 	gasCost.Mul(gasLimit.Int, gasPrice.Int)
-	if checkGasAfordable && (availableFunds.Cmp(gasCost.Int) < 0) {
+	if checkGasAffordable && (availableFunds.Cmp(gasCost.Int) < 0) {
 		return nil, ErrInsufficientBalanceForGas
 	}
 
