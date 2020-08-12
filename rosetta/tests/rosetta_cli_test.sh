@@ -6,7 +6,7 @@ trap "exit 1" INT
 GRN=$'\e[32;1m'
 OFF=$'\e[0m'
 
-go get github.com/coinbase/rosetta-cli
+go get github.com/coinbase/rosetta-cli@v0.4.0
 
 printf "${GRN}### Running rosetta-cli tests${OFF}\n"
 
