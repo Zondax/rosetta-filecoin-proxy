@@ -4,9 +4,12 @@ ROSETTASDKVER := $(shell go list -m all | grep github.com/coinbase/rosetta-sdk-g
 LOTUSVER := $(shell go list -m all | grep github.com/filecoin-project/lotus | awk '{print $$2}')
 APPNAME := rosetta-filecoin-proxy
 
-build:
+build: 	build_ffi
 	go build -ldflags "-X $(PACKAGE).GitRevision=$(REVISION) -X $(PACKAGE).RosettaSDKVersion=$(ROSETTASDKVER) \
  	-X $(PACKAGE).LotusVersion=$(LOTUSVER)" -o $(APPNAME)
+
+build_ffi:
+	make -C extern/filecoin-ffi
 
 test:
 	go test
