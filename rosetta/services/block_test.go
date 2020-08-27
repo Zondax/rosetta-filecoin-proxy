@@ -29,9 +29,9 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	// Mock needed input arguments
 	var requestedIndex int64 = 0
-	requestedHash := "0171a0e40220a63ae9efee6a34c827982013a398f6efcd714d414c2435170efae73669713fe3"
+	requestedHash := "0171a0e40220bb47c05c217eae793e828a9f5a48713470bf811cda2cb32f186c842d6af1d4e9"
 	mockMetadata := make(map[string]interface{})
-	mockMetadata[BlockCIDsKey] = []string{"bafy2bzacedecjgc3svxb7itplzqpebioa2g2bdowizz4suv6swg4ctipzgy5o"}
+	mockMetadata[BlockCIDsKey] = []string{"bafy2bzacebpqu5wuaddffscppacgu2cxk75skzldo45atrhwbnl4fnvb2l75m"}
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
 	mockTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
