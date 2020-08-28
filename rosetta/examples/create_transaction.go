@@ -43,7 +43,7 @@ func main() {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+	options[services.OptionsSenderIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
 	options[services.OptionsBlockInclKey] = 2
 
 	requestMetadata := &types.ConstructionMetadataRequest{
@@ -72,10 +72,10 @@ func main() {
 	}
 
 	mtx := rosettaFilecoinLib.TxMetadata{
-		Nonce:    uint64(respMetadata.Metadata[services.NonceKey].(float64)),
-		GasPremium: uint64(respMetadata.Metadata[services.GasPremiumeKey].(float64)),
-		GasFeeCap: uint64(respMetadata.Metadata[services.GasFeeCapKey].(float64)),
-		GasLimit: gasLimit,
+		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
+		GasPremium: uint64(respMetadata.Metadata[services.GasPremiumKey].(float64)),
+		GasFeeCap:  uint64(respMetadata.Metadata[services.GasFeeCapKey].(float64)),
+		GasLimit:   gasLimit,
 	}
 	pr := &rosettaFilecoinLib.PaymentRequest{
 		From:     "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",

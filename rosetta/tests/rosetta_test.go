@@ -16,9 +16,9 @@ const ServerURL = "http://localhost:8080"
 var (
 	ctx = context.Background()
 
-	Network = &types.NetworkIdentifier{
+	NetworkID = &types.NetworkIdentifier{
 		Blockchain: "Filecoin",
-		Network:    "testnet",
+		Network:    "testnetnet",
 	}
 )
 
@@ -27,7 +27,7 @@ func setupRosettaClient() *client.APIClient {
 		ServerURL,
 		"rosetta-test",
 		&http.Client{
-			Timeout: 4 * time.Second,
+			Timeout: 10 * time.Second,
 		},
 	)
 
@@ -49,11 +49,11 @@ func TestNetworkList(t *testing.T) {
 		t.Fatal("NetworkIdentifiers is empty")
 	}
 
-	if resp.NetworkIdentifiers[0].Blockchain != "Filecoin" {
+	if resp.NetworkIdentifiers[0].Blockchain != NetworkID.Blockchain {
 		t.Error()
 	}
 
-	if resp.NetworkIdentifiers[0].Network != "testnet" {
+	if resp.NetworkIdentifiers[0].Network != NetworkID.Network {
 		t.Error()
 	}
 }
@@ -64,7 +64,7 @@ func TestGetGenesisBlock(t *testing.T) {
 
 	var requestHeight int64 = 0
 	var request = types.BlockRequest{
-		NetworkIdentifier: Network,
+		NetworkIdentifier: NetworkID,
 		BlockIdentifier: &types.PartialBlockIdentifier{
 			Index: &requestHeight,
 		},
@@ -91,11 +91,11 @@ func TestConstructionMetadata(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+	options[services.OptionsSenderIDKey] = "t3s3uxcwe35xgfemfjpllxt26ceq7hexvs4t6hxpj2vagl7osqhae2nm23docajo6y7w45jy5zalrntx4dsruq"
 	options[services.OptionsBlockInclKey] = 1
 
 	request := &types.ConstructionMetadataRequest{
-		NetworkIdentifier: Network,
+		NetworkIdentifier: NetworkID,
 		Options:           options,
 	}
 
@@ -111,9 +111,24 @@ func TestConstructionMetadata(t *testing.T) {
 	if resp == nil {
 		t.Fatal()
 	}
+
+	options[services.OptionsReceiverIDKey] = "t3s3uxcwe35xgfemfjpllxt26ceq7hexvs4t6hxpj2vagl7osqhae2nm23docajo6y7w45jy5zalrntx4dsruq"
+
+	resp, err1, err2 = rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
 }
 
-func TestConstructionMetadataForGasPriceTrack(t *testing.T) {
+func TestConstructionMetadataForGasPremiumTrack(t *testing.T) {
 
 	rosettaClient := setupRosettaClient()
 
@@ -121,7 +136,7 @@ func TestConstructionMetadataForGasPriceTrack(t *testing.T) {
 	options[services.OptionsBlockInclKey] = 1
 
 	request := &types.ConstructionMetadataRequest{
-		NetworkIdentifier: Network,
+		NetworkIdentifier: NetworkID,
 		Options:           options,
 	}
 
@@ -143,7 +158,7 @@ func TestMempool(t *testing.T) {
 
 	rosettaClient := setupRosettaClient()
 	req := &types.NetworkRequest{
-		NetworkIdentifier: Network,
+		NetworkIdentifier: NetworkID,
 		Metadata:          nil,
 	}
 
@@ -162,7 +177,7 @@ func TestMempool(t *testing.T) {
 	}
 
 	txReq := &types.MempoolTransactionRequest{
-		NetworkIdentifier:     Network,
+		NetworkIdentifier:     NetworkID,
 		TransactionIdentifier: resp.TransactionIdentifiers[0],
 	}
 	txResp, err1, err2 := rosettaClient.MempoolAPI.MempoolTransaction(ctx, txReq)
