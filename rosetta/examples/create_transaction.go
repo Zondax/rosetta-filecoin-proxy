@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/zondax/rosetta-filecoin-lib"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"net/http"
 	"strconv"
@@ -73,7 +73,8 @@ func main() {
 
 	mtx := rosettaFilecoinLib.TxMetadata{
 		Nonce:    uint64(respMetadata.Metadata[services.NonceKey].(float64)),
-		GasPrice: uint64(respMetadata.Metadata[services.GasPriceKey].(float64)),
+		GasPremium: uint64(respMetadata.Metadata[services.GasPremiumeKey].(float64)),
+		GasFeeCap: uint64(respMetadata.Metadata[services.GasFeeCapKey].(float64)),
 		GasLimit: gasLimit,
 	}
 	pr := &rosettaFilecoinLib.PaymentRequest{

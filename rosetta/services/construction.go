@@ -29,13 +29,17 @@ const OptionsBlockInclKey = "blockIncl"
 // ConstructionMetadataResponse that specifies the next valid nonce.
 const NonceKey = "nonce"
 
-// GasPriceKey is the name of the key in the Metadata map inside a
+// GasPremiumeKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas price
-const GasPriceKey = "gasPrice"
+const GasPremiumeKey = "gasPremium"
 
 // GasLimitKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas limit
 const GasLimitKey = "gasLimit"
+
+// GasFeeCapKey is the name of the key in the Metadata map inside a
+// ConstructionMetadataResponse that specifies gas fee cap
+const GasFeeCapKey = "gasFeeCap"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
@@ -70,8 +74,8 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		return nil, errNet
 	}
 
-	gasLimit := filTypes.NewInt(uint64(build.BlockGasLimit))
 	md := make(map[string]interface{})
+	gasLimit := int64(build.BlockGasLimit)
 
 	if request.Options != nil {
 		//Parse block include epochs - this field is optional
@@ -107,25 +111,40 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			} else {
 				availableFunds = actor.Balance
 			}
-
 			checkGasAffordable = true
 		}
 	}
+	message := &filTypes.Message{From: addressParsed}
 
-	gasPrice, gasErr := c.node.MpoolEstimateGasPrice(ctx, blockInclUint, addressParsed,
-		gasLimit.Int64(), filTypes.TipSetKey{})
+	gasPremium, gasErr := c.node.GasEstimateGasPremium(ctx, blockInclUint, addressParsed, gasLimit, filTypes.TipSetKey{})
 	if gasErr != nil {
-		return nil, ErrUnableToEstimateGasPrice
+		return nil, ErrUnableToEstimateGasPremium
 	}
 
+	gasLimit, gasErr = c.node.GasEstimateGasLimit(ctx, message, filTypes.TipSetKey{})
+	if gasErr != nil {
+		return nil, ErrUnableToEstimateGasLimit
+	}
+	message.GasLimit = gasLimit
+
+	gasFeeCap, gasErr := c.node.GasEstimateFeeCap(ctx, message, int64(blockInclUint), filTypes.TipSetKey{})
+	if gasErr != nil {
+		return nil, ErrUnableToEstimateGasFeeCap
+	}
+	message.GasFeeCap = gasFeeCap
+
+	gasLimitBigInt := filTypes.NewInt(uint64(gasLimit))
+
+	// gasCost is the maximum amount of FIL to be paid for the execution of this message
 	var gasCost = filTypes.NewInt(0)
-	gasCost.Mul(gasLimit.Int, gasPrice.Int)
+	gasCost.Mul(gasLimitBigInt.Int, gasFeeCap.Int)
 	if checkGasAffordable && (availableFunds.Cmp(gasCost.Int) < 0) {
 		return nil, ErrInsufficientBalanceForGas
 	}
 
-	md[GasLimitKey] = gasLimit.String()
-	md[GasPriceKey] = gasPrice.String()
+	md[GasLimitKey] = string(gasLimit)
+	md[GasPremiumeKey] = gasPremium.String()
+	md[GasFeeCapKey] = gasFeeCap.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
 
 	resp := &types.ConstructionMetadataResponse{
