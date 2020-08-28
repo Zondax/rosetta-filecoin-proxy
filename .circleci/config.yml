@@ -1,4 +1,10 @@
-version: 2
+version: 2.1
+
+commands:
+  ffi_deps:
+    steps:
+      - run: apt update && apt install -yy mesa-opencl-icd
+      - run: ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
 
 jobs:
   build:
@@ -7,6 +13,7 @@ jobs:
     working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
+      - ffi_deps
       - run: make build
       - run: go test ./rosetta/services
 
@@ -21,6 +28,8 @@ jobs:
           command: |
             go mod tidy
             git diff --exit-code -- go.mod go.sum
+      - run: ffi_deps
+      - run: make build
       - run: golangci-lint --version
       - run: golangci-lint run -E gofmt -E gosec -E goconst -E gocritic
   #      - run: golangci-lint run -E gofmt -E gosec -E goconst -E godox -E gocritic
@@ -30,6 +39,7 @@ jobs:
       - image: golang:1.14
     steps:
       - checkout
+      - ffi_deps
       - run:
           name: "Prebuild"
           command: |
@@ -54,6 +64,7 @@ jobs:
       - image: golang:1.14
     steps:
       - checkout
+      - ffi_deps
       - run:
           name: "Prebuild"
           command: |
