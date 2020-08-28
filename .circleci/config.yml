@@ -3,8 +3,9 @@ version: 2.1
 commands:
   ffi_deps:
     steps:
-      - run: apt update && apt install -yy mesa-opencl-icd
+      - run: apt update && apt install -yy mesa-opencl-icd jq
       - run: ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
+      - run: git submodule update --init --recursive --remote
 
 jobs:
   build:
