@@ -1,7 +1,7 @@
 {
  "network": {
   "blockchain": "Filecoin",
-  "network": "testnet"
+  "network": "testnetnet"
  },
  "online_url": "http://localhost:8080",
  "data_directory": "",
