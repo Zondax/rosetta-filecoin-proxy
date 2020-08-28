@@ -23,13 +23,13 @@ jobs:
       - image: golang:1.14
     steps:
       - checkout
+      - ffi_deps
       - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
       - run:
           name: "check go mod tidy"
           command: |
             go mod tidy
             git diff --exit-code -- go.mod go.sum
-      - run: ffi_deps
       - run: make build
       - run: golangci-lint --version
       - run: golangci-lint run -E gofmt -E gosec -E goconst -E gocritic
