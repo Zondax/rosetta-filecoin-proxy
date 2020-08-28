@@ -10,15 +10,20 @@ import (
 	"github.com/filecoin-project/lotus/build"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/specs-actors/actors/builtin"
+	"strconv"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
 // ConstructionMetadataRequest that specifies the current chain id
 const ChainIDKey = "chainID"
 
-// OptionsIDKey is the name of the key in the Options map inside a
-// ConstructionMetadataRequest that specifies the account ID
-const OptionsIDKey = "id"
+// OptionsSenderIDKey is the name of the key in the Options map inside a
+// ConstructionMetadataRequest that specifies the sender's account ID
+const OptionsSenderIDKey = "idSender"
+
+// OptionsReceiverIDKey is the name of the key in the Options map inside a
+// ConstructionMetadataRequest that specifies the receiver's account ID
+const OptionsReceiverIDKey = "idReceiver"
 
 // OptionsBlockInclKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse determines on how many epochs message should included
@@ -29,9 +34,9 @@ const OptionsBlockInclKey = "blockIncl"
 // ConstructionMetadataResponse that specifies the next valid nonce.
 const NonceKey = "nonce"
 
-// GasPremiumeKey is the name of the key in the Metadata map inside a
+// GasPremiumKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas price
-const GasPremiumeKey = "gasPremium"
+const GasPremiumKey = "gasPremium"
 
 // GasLimitKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies tx's gas limit
@@ -61,12 +66,11 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	request *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
 	var (
-		addressParsed      = address.Address{}
-		availableFunds     filTypes.BigInt
-		err                error
-		checkGasAffordable bool
-		nonce              uint64
-		blockInclUint      uint64 = 1
+		addressSenderParsed = address.Address{}
+		availableFunds      filTypes.BigInt
+		err                 error
+		nonce               uint64
+		blockInclUint       uint64 = 1
 	)
 
 	errNet := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
@@ -83,68 +87,79 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		if ok {
 			blockInclUint = uint64(blockIncl.(float64))
 		}
-		//Parse address - this field is optional
-		addressRaw, ok := request.Options[OptionsIDKey]
-		if ok {
-			addressParsed, err = address.NewFromString(addressRaw.(string))
+		//Parse sender address - this field is optional
+		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
+		//Parse reciever address - this field is optional
+		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
+
+		if okSender {
+			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
 			if err != nil {
 				return nil, ErrInvalidAccountAddress
 			}
 
-			nonce, err = c.node.MpoolGetNonce(ctx, addressParsed)
+			nonce, err = c.node.MpoolGetNonce(ctx, addressSenderParsed)
 			if err != nil {
 				return nil, ErrUnableToGetNextNonce
 			}
 			md[NonceKey] = nonce
 
 			//Get available balance
-			actor, errAct := c.node.StateGetActor(context.Background(), addressParsed, filTypes.EmptyTSK)
+			actor, errAct := c.node.StateGetActor(context.Background(), addressSenderParsed, filTypes.EmptyTSK)
 			if errAct != nil {
 				return nil, ErrUnableToGetActor
 			}
 			if actor.Code == builtin.MultisigActorCodeID {
 				//Get the unlocked funds of the multisig account
-				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressParsed, filTypes.EmptyTSK)
+				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
 					return nil, ErrUnableToGetBalance
 				}
 			} else {
 				availableFunds = actor.Balance
 			}
-			checkGasAffordable = true
+
+			var gasErr error
+			message := &filTypes.Message{From: addressSenderParsed}
+			// GasEstimateGasLimit requires receiver address
+			if okReceiver {
+				addressReceiverParsed, err := address.NewFromString(addressReceiverRaw.(string))
+				if err != nil {
+					return nil, ErrInvalidAccountAddress
+				}
+				message.To = addressReceiverParsed
+				gasLimit, gasErr = c.node.GasEstimateGasLimit(ctx, message, filTypes.TipSetKey{})
+				if gasErr != nil {
+					return nil, ErrUnableToEstimateGasLimit
+				}
+			}
+			md[GasLimitKey] = strconv.FormatInt(gasLimit, 10)
+
+			// GasEstimateFeeCap requires sender address
+			gasFeeCap, gasErr := c.node.GasEstimateFeeCap(ctx, message, int64(blockInclUint), filTypes.TipSetKey{})
+			if gasErr != nil {
+				return nil, ErrUnableToEstimateGasFeeCap
+			}
+			md[GasFeeCapKey] = gasFeeCap.String()
+
+			// Check if gas is affordable for sender
+			// gasCost is the maximum amount of FIL to be paid for the execution of this message
+			var gasCost = filTypes.NewInt(0)
+			gasLimitBigInt := filTypes.NewInt(uint64(gasLimit))
+			gasCost.Mul(gasLimitBigInt.Int, gasFeeCap.Int)
+			if availableFunds.Cmp(gasCost.Int) < 0 {
+				return nil, ErrInsufficientBalanceForGas
+			}
 		}
 	}
-	message := &filTypes.Message{From: addressParsed}
 
-	gasPremium, gasErr := c.node.GasEstimateGasPremium(ctx, blockInclUint, addressParsed, gasLimit, filTypes.TipSetKey{})
+	// GasEstimateGasPremium doesn't need sender info, we can use an empty addressSenderParsed (at least on filecoin v0.5.4)
+	gasPremium, gasErr := c.node.GasEstimateGasPremium(ctx, blockInclUint, addressSenderParsed, gasLimit, filTypes.TipSetKey{})
 	if gasErr != nil {
 		return nil, ErrUnableToEstimateGasPremium
 	}
+	md[GasPremiumKey] = gasPremium.String()
 
-	gasLimit, gasErr = c.node.GasEstimateGasLimit(ctx, message, filTypes.TipSetKey{})
-	if gasErr != nil {
-		return nil, ErrUnableToEstimateGasLimit
-	}
-	message.GasLimit = gasLimit
-
-	gasFeeCap, gasErr := c.node.GasEstimateFeeCap(ctx, message, int64(blockInclUint), filTypes.TipSetKey{})
-	if gasErr != nil {
-		return nil, ErrUnableToEstimateGasFeeCap
-	}
-	message.GasFeeCap = gasFeeCap
-
-	gasLimitBigInt := filTypes.NewInt(uint64(gasLimit))
-
-	// gasCost is the maximum amount of FIL to be paid for the execution of this message
-	var gasCost = filTypes.NewInt(0)
-	gasCost.Mul(gasLimitBigInt.Int, gasFeeCap.Int)
-	if checkGasAffordable && (availableFunds.Cmp(gasCost.Int) < 0) {
-		return nil, ErrInsufficientBalanceForGas
-	}
-
-	md[GasLimitKey] = string(gasLimit)
-	md[GasPremiumeKey] = gasPremium.String()
-	md[GasFeeCapKey] = gasFeeCap.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
 
 	resp := &types.ConstructionMetadataResponse{
