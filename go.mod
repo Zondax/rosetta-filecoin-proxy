@@ -15,7 +15,7 @@ require (
 	github.com/libp2p/go-libp2p-core v0.6.1
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/stretchr/testify v1.6.1
-	github.com/zondax/rosetta-filecoin-lib v0.0.0-20200731185237-cf4e1aa0ad71
+	github.com/zondax/rosetta-filecoin-lib v0.0.1
 	gotest.tools v2.2.0+incompatible
 )
 
