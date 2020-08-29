@@ -66,15 +66,15 @@ func main() {
 
 	r := &rosettaFilecoinLib.RosettaConstructionFilecoin{false}
 
-	gasLimit, err := strconv.ParseUint(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
+	gasLimit, err := strconv.ParseInt(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
 	mtx := rosettaFilecoinLib.TxMetadata{
 		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
-		GasPremium: uint64(respMetadata.Metadata[services.GasPremiumKey].(float64)),
-		GasFeeCap:  uint64(respMetadata.Metadata[services.GasFeeCapKey].(float64)),
+		GasPremium: int64(respMetadata.Metadata[services.GasPremiumKey].(float64)),
+		GasFeeCap:  int64(respMetadata.Metadata[services.GasFeeCapKey].(float64)),
 		GasLimit:   gasLimit,
 	}
 	pr := &rosettaFilecoinLib.PaymentRequest{
