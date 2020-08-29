@@ -91,7 +91,8 @@ func TestConstructionMetadata(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsSenderIDKey] = "t3s3uxcwe35xgfemfjpllxt26ceq7hexvs4t6hxpj2vagl7osqhae2nm23docajo6y7w45jy5zalrntx4dsruq"
+	options[services.OptionsSenderIDKey] = "t3sqdk3xwrfrxb77upn4jjnqzamoiuzmykavyguodsmxghb3odxi5vu6tunbuyjdjnodml2dw3ztfkzg5ub7nq"
+	options[services.OptionsReceiverIDKey] = "t3v23xwqycr7myhmu7ccfdreqssqozb2zxzatffkv7cdmtpoaobbfc5vi74e7mzc4jlxvvzzj5cuemzyqedsxq"
 	options[services.OptionsBlockInclKey] = 1
 
 	request := &types.ConstructionMetadataRequest{
@@ -100,21 +101,6 @@ func TestConstructionMetadata(t *testing.T) {
 	}
 
 	resp, err1, err2 := rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
-	if err1 != nil {
-		t.Fatal(err1.Message)
-	}
-
-	if err2 != nil {
-		t.Fatal(err2.Error())
-	}
-
-	if resp == nil {
-		t.Fatal()
-	}
-
-	options[services.OptionsReceiverIDKey] = "t3s3uxcwe35xgfemfjpllxt26ceq7hexvs4t6hxpj2vagl7osqhae2nm23docajo6y7w45jy5zalrntx4dsruq"
-
-	resp, err1, err2 = rosettaClient.ConstructionAPI.ConstructionMetadata(ctx, request)
 	if err1 != nil {
 		t.Fatal(err1.Message)
 	}
