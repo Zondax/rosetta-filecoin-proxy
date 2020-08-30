@@ -35,7 +35,7 @@ const OptionsBlockInclKey = "blockIncl"
 const NonceKey = "nonce"
 
 // GasPremiumKey is the name of the key in the Metadata map inside a
-// ConstructionMetadataResponse that specifies tx's gas price
+// ConstructionMetadataResponse that specifies tx's gas premium
 const GasPremiumKey = "gasPremium"
 
 // GasLimitKey is the name of the key in the Metadata map inside a
