@@ -143,6 +143,13 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 		return nil, nil, err
 	}
 
+	version, err := lotusAPI.Version(context.Background())
+	if err != nil {
+		log.Warn("Could not get Lotus api version!")
+	}
+
+	log.Info("Connected to Lotus version: ", version.String())
+
 	return lotusAPI, clientCloser, nil
 }
 
@@ -174,8 +181,6 @@ func main() {
 		return
 	}
 	defer clientCloser()
-
-	log.Info("Connected to Lotus")
 
 	ctx := context.Background()
 	err = startRosettaRPC(ctx, lotusAPI)
