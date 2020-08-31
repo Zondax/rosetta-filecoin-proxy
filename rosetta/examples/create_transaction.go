@@ -36,7 +36,7 @@ func main() {
 
 		Network = &types.NetworkIdentifier{
 			Blockchain: "Filecoin",
-			Network:    "testnet",
+			Network:    "testnetnet",
 		}
 	)
 
@@ -44,6 +44,7 @@ func main() {
 
 	var options = make(map[string]interface{})
 	options[services.OptionsSenderIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+	options[services.OptionsReceiverIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
 	options[services.OptionsBlockInclKey] = 2
 
 	requestMetadata := &types.ConstructionMetadataRequest{
