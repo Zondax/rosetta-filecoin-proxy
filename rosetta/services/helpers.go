@@ -44,7 +44,6 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 }
 
 func GetCurrencyData() *types.Currency {
-	//TODO get this from external config file
 	return &types.Currency{
 		Symbol:   CurrencySymbol,
 		Decimals: CurrencyDecimals,
