@@ -25,6 +25,14 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) ClientGetDealUpdates(ctx context.Context) (<-chan api.DealInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherSubmit(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (cid.Cid, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) MpoolPushMessage(ctx context.Context, msg *filTypes.Message, spec *api.MessageSendSpec) (*filTypes.SignedMessage, error) {
 	panic("implement me")
 }
@@ -642,9 +650,5 @@ func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, v
 }
 
 func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherSubmit(ctx context.Context, a address.Address, voucher *paych.SignedVoucher) (cid.Cid, error) {
 	panic("implement me")
 }
