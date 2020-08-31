@@ -49,7 +49,7 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, jsonrpc.ClientClos
 		headers.Add("Authorization", "Bearer "+token)
 	}
 
-	return client.NewFullNodeRPC(addr, headers)
+	return client.NewFullNodeRPC(context.Background(), addr, headers)
 }
 
 // newBlockchainRouter creates a Mux http.Handler from a collection
@@ -154,7 +154,7 @@ func main() {
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
 	log.Info("Starting Rosetta Proxy")
-	log.Infof("LOTUS_RPC_ENDPOINT: %s", addr)
+	log.Infof("LOTUS_RPC_URL: %s", addr)
 
 	var lotusAPI api.FullNode
 	var clientCloser jsonrpc.ClientCloser

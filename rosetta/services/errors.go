@@ -201,9 +201,9 @@ var (
 		Retriable: false,
 	}
 
-	ErrUnableToEstimateGasPrice = &types.Error{
+	ErrUnableToEstimateGasPremium = &types.Error{
 		Code:      34,
-		Message:   "unable to estimate gas price",
+		Message:   "unable to estimate gas premium",
 		Retriable: false,
 	}
 
@@ -261,6 +261,18 @@ var (
 		Retriable: true,
 	}
 
+	ErrUnableToEstimateGasLimit = &types.Error{
+		Code:      44,
+		Message:   "unable to estimate gas limit",
+		Retriable: false,
+	}
+
+	ErrUnableToEstimateGasFeeCap = &types.Error{
+		Code:      45,
+		Message:   "unable to estimate gas fee cap",
+		Retriable: false,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -295,7 +307,7 @@ var (
 		ErrInvalidHash,
 		ErrUnableToGetTxnReceipt,
 		ErrMsgsAndReceiptsCountMismatch,
-		ErrUnableToEstimateGasPrice,
+		ErrUnableToEstimateGasPremium,
 		ErrInsufficientBalanceForGas,
 		ErrLotusCallTimedOut,
 		ErrCouldNotRetrieveMethodName,
@@ -305,5 +317,7 @@ var (
 		ErrUnableToGetActorState,
 		ErrUnableToGetLockedBalance,
 		ErrUnableToGetVesting,
+		ErrUnableToEstimateGasLimit,
+		ErrUnableToEstimateGasFeeCap,
 	}
 )
