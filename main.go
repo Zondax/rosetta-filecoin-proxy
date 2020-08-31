@@ -143,7 +143,7 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 		return nil, nil, err
 	}
 
-	version, err :=lotusAPI.Version(context.Background())
+	version, err := lotusAPI.Version(context.Background())
 	if err != nil {
 		log.Warn("Could not get Lotus api version!")
 	}
