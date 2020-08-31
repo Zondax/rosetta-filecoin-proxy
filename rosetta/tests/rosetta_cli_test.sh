@@ -11,6 +11,6 @@ go get github.com/coinbase/rosetta-cli@v0.4.1
 printf "${GRN}### Running rosetta-cli tests${OFF}\n"
 
 #Add all rosetta-cli checks here
-rosetta-cli check:data --configuration-file ./rosetta-config.txt --end 50
+rosetta-cli check:data --configuration-file ./rosetta-config.txt --start 4000 --end 4050
 
 printf "${GRN}### Tests finished.${OFF}\n"

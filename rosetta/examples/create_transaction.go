@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/zondax/rosetta-filecoin-lib"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"net/http"
 	"strconv"
@@ -43,7 +43,7 @@ func main() {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+	options[services.OptionsSenderIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
 	options[services.OptionsBlockInclKey] = 2
 
 	requestMetadata := &types.ConstructionMetadataRequest{
@@ -66,15 +66,25 @@ func main() {
 
 	r := &rosettaFilecoinLib.RosettaConstructionFilecoin{false}
 
-	gasLimit, err := strconv.ParseUint(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
+	gasLimit, err := strconv.ParseInt(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	gasPremium, err := strconv.ParseInt(respMetadata.Metadata[services.GasPremiumKey].(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	gasFeeCap, err := strconv.ParseInt(respMetadata.Metadata[services.GasFeeCapKey].(string), 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
 	mtx := rosettaFilecoinLib.TxMetadata{
-		Nonce:    uint64(respMetadata.Metadata[services.NonceKey].(float64)),
-		GasPrice: uint64(respMetadata.Metadata[services.GasPriceKey].(float64)),
-		GasLimit: gasLimit,
+		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
+		GasPremium: gasPremium,
+		GasFeeCap:  gasFeeCap,
+		GasLimit:   gasLimit,
 	}
 	pr := &rosettaFilecoinLib.PaymentRequest{
 		From:     "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
