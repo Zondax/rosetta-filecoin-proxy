@@ -94,6 +94,11 @@ func (s *BlockAPIService) Block(
 		}
 	}
 
+	//Check if the retrieved TipSet is actually the requested one
+	if int64(tipSet.Height()) != requestedHeight {
+		return &types.BlockResponse{}, nil
+	}
+
 	//Get parent TipSet
 	var parentTipSet *filTypes.TipSet
 	if requestedHeight > 0 {
