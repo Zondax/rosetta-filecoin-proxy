@@ -84,6 +84,13 @@ func (s *BlockAPIService) Block(
 		return nil, ErrUnableToGetTipset
 	}
 
+	//If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
+	//Check if the retrieved TipSet is actually the requested one
+	//details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
+	if int64(tipSet.Height()) != requestedHeight {
+		return &types.BlockResponse{}, nil
+	}
+
 	if request.BlockIdentifier.Hash != nil {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
@@ -92,11 +99,6 @@ func (s *BlockAPIService) Block(
 		if *tipSetKeyHash != *request.BlockIdentifier.Hash {
 			return nil, ErrInvalidHash
 		}
-	}
-
-	//Check if the retrieved TipSet is actually the requested one
-	if int64(tipSet.Height()) != requestedHeight {
-		return &types.BlockResponse{}, nil
 	}
 
 	//Get parent TipSet
