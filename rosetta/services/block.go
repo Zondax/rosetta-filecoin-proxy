@@ -142,6 +142,15 @@ func (s *BlockAPIService) Block(
 		var opStatus string
 		msg := messages[i]
 
+		opType, err := GetMethodName(msg.Message)
+		if err != nil {
+			return nil, err
+		}
+
+		if !IsOpSupported(opType) {
+			continue
+		}
+
 		if receipts[i].ExitCode.IsSuccess() {
 			opStatus = OperationStatusOk
 		} else {
@@ -154,11 +163,6 @@ func (s *BlockAPIService) Block(
 			},
 			Operations: []*types.Operation{},
 		})
-
-		opType, err := GetMethodName(msg.Message, &s.node)
-		if err != nil {
-			return nil, err
-		}
 
 		transactions[i].Operations = appendOp(transactions[i].Operations, opType,
 			msg.Message.From.String(), msg.Message.Value.String(), opStatus)
@@ -235,6 +239,15 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 	}
 
 	return append(ops, op)
+}
+
+func IsOpSupported(op string) bool {
+	supported, ok := SupportedOperations[op]
+	if ok && supported {
+		return true
+	}
+
+	return false
 }
 
 // BlockTransaction implements the /block/transaction endpoint.
