@@ -153,7 +153,7 @@ func (s *NetworkAPIService) NetworkOptions(
 	}
 
 	operations := make([]string, 0, len(SupportedOperations))
-	for op, _ := range SupportedOperations {
+	for op := range SupportedOperations {
 		operations = append(operations, op)
 	}
 
