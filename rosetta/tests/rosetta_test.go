@@ -30,7 +30,7 @@ func setupRosettaClient() *client.APIClient {
 		ServerURL,
 		"rosetta-test",
 		&http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 50 * time.Second,
 		},
 	)
 

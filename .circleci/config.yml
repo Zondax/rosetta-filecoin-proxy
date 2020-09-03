@@ -16,7 +16,7 @@ jobs:
       - checkout
       - ffi_deps
       - run: make build
-      - run: go test ./rosetta/services
+      - run: go test -race ./rosetta/services
 
   checks:
     docker:
@@ -52,7 +52,7 @@ jobs:
       - run:
           name: "Run tests"
           command: |
-            go test ./rosetta/tests
+            go test -race ./rosetta/tests
 
   integration_rosetta_cli:
     docker:
