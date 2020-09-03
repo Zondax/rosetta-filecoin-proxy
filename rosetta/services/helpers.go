@@ -3,6 +3,9 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"github.com/filecoin-project/specs-actors/actors/builtin"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
+	"reflect"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
@@ -51,43 +54,63 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
-func GetMethodName(msg *filTypes.Message, api *api.FullNode) (string, *types.Error) {
+func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
-	return "Transfer", nil //TODO: https://github.com/Zondax/rosetta-filecoin-proxy/issues/6
+	var (
+		actorCode cid.Cid
+		skipDB    bool
+	)
 
-	//actor, err := (*api).StateGetActor(context.Background(), msg.Message.From, filTypes.EmptyTSK)
-	//if err != nil {
-	//	return "", ErrCouldNotRetrieveMethodName
-	//}
-	//
-	//var method interface{}
-	//switch actor.Code {
-	//case builtin.InitActorCodeID:
-	//	method = builtin.MethodsInit
-	//case builtin.CronActorCodeID:
-	//	method = builtin.MethodsCron
-	//case builtin.AccountActorCodeID:
-	//	method = builtin.MethodsMultisig
-	//case builtin.StoragePowerActorCodeID:
-	//	method = builtin.MethodsPower
-	//case builtin.StorageMinerActorCodeID:
-	//	method = builtin.MethodsMiner
-	//case builtin.StorageMarketActorCodeID:
-	//	method = builtin.MethodsMarket
-	//case builtin.PaymentChannelActorCodeID:
-	//	method = builtin.MethodsPaych
-	//case builtin.MultisigActorCodeID:
-	//	method = builtin.MethodsMultisig
-	//case builtin.RewardActorCodeID:
-	//	method = builtin.MethodsReward
-	//case builtin.VerifiedRegistryActorCodeID:
-	//	method = builtin.MethodsVerifiedRegistry
-	//default:
-	//	return "", ErrCouldNotRetrieveMethodName
-	//}
-	//
-	//val := reflect.Indirect(reflect.ValueOf(method))
-	//methodName := val.Type().Field(int(msg.Method) - 1).Name
-	//
-	//return methodName, nil
+	//Shortcut 1 - t1 and t3 address are always account actors
+	if len(msg.To.String()) > 2 {
+		addPrefix := msg.To.String()[0:2]
+		if addPrefix == "t1" || addPrefix == "t3" {
+			actorCode = builtin.AccountActorCodeID
+			skipDB = true
+		}
+	}
+
+	// Search for actor in cache
+	if !skipDB {
+		var err error
+		actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
+		if err != nil {
+			return "", ErrCouldNotRetrieveMethodName
+		}
+	}
+
+	var method interface{}
+	switch actorCode {
+	case builtin.InitActorCodeID:
+		method = builtin.MethodsInit
+	case builtin.CronActorCodeID:
+		method = builtin.MethodsCron
+	case builtin.AccountActorCodeID:
+		method = builtin.MethodsMultisig
+	case builtin.StoragePowerActorCodeID:
+		method = builtin.MethodsPower
+	case builtin.StorageMinerActorCodeID:
+		method = builtin.MethodsMiner
+	case builtin.StorageMarketActorCodeID:
+		method = builtin.MethodsMarket
+	case builtin.PaymentChannelActorCodeID:
+		method = builtin.MethodsPaych
+	case builtin.MultisigActorCodeID:
+		method = builtin.MethodsMultisig
+	case builtin.RewardActorCodeID:
+		method = builtin.MethodsReward
+	case builtin.VerifiedRegistryActorCodeID:
+		method = builtin.MethodsVerifiedRegistry
+	default:
+		return "Unknown", nil
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(method))
+	idx := int(msg.Method)
+	if idx > 0 {
+		idx--
+	}
+
+	methodName := val.Type().Field(idx).Name
+	return methodName, nil
 }
