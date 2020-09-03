@@ -15,6 +15,7 @@ require (
 	github.com/ipfs/go-log v1.0.4
 	github.com/libp2p/go-libp2p-core v0.6.1
 	github.com/multiformats/go-multihash v0.0.14
+	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.6.1
 	github.com/zondax/rosetta-filecoin-lib v0.1.0
 	gotest.tools v2.2.0+incompatible
