@@ -17,6 +17,7 @@ import (
 	"github.com/filecoin-project/lotus/api/client"
 	logging "github.com/ipfs/go-log"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
 
 const (
@@ -153,6 +154,12 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 	return lotusAPI, clientCloser, nil
 }
 
+func setupActorsDatabase(api *api.FullNode) {
+	var db tools.Database = &tools.Cache{}
+	db.NewImpl(api)
+	tools.ActorsDB = db
+}
+
 func main() {
 	startLogger("info")
 	logVersionsInfo()
@@ -181,6 +188,8 @@ func main() {
 		return
 	}
 	defer clientCloser()
+
+	setupActorsDatabase(&lotusAPI)
 
 	ctx := context.Background()
 	err = startRosettaRPC(ctx, lotusAPI)
