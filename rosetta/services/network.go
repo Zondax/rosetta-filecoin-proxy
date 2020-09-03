@@ -152,6 +152,11 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, ErrUnableToGetNodeInfo
 	}
 
+	operations := make([]string, 0, len(SupportedOperations))
+	for op, _ := range SupportedOperations {
+		operations = append(operations, op)
+	}
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
@@ -168,11 +173,8 @@ func (s *NetworkAPIService) NetworkOptions(
 					Successful: false,
 				},
 			},
-			OperationTypes: []string{ //TODO https://github.com/Zondax/rosetta-filecoin-proxy/issues/6
-				"Transfer",
-				"Reward",
-			},
-			Errors: ErrorList,
+			OperationTypes: operations,
+			Errors:         ErrorList,
 		},
 	}, nil
 }
