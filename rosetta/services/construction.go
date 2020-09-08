@@ -89,7 +89,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		}
 		//Parse sender address - this field is optional
 		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
-		//Parse reciever address - this field is optional
+		//Parse receiver address - this field is optional
 		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
 
 		if okSender {
