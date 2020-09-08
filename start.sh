@@ -13,11 +13,18 @@ error() {
   else
     echo -e "${RED} Error; exiting with status ${code} ${OFF}"
   fi
-  kill 0
-  exit "${code}"
+  exit_func "${code}"
 }
 
-trap 'error ${LINENO}' ERR INT SIGINT
+exit_func() {
+  echo -e "${GRN}Exiting...${OFF}"
+  trap - SIGINT SIGTERM
+  kill -- -$$
+  exit "$1"
+}
+
+trap 'error ${LINENO}' ERR
+trap 'exit_func 0' INT SIGINT
 
 lotus daemon 2>&1 &
 sleep 30
