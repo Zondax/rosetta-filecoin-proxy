@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	BlockchainName       = services.BlockChainName
-	ServerPort           = services.RosettaServerPort
+	BlockchainName = services.BlockChainName
+	ServerPort     = services.RosettaServerPort
 )
 
 var log = logging.Logger("rosetta-filecoin-proxy")
