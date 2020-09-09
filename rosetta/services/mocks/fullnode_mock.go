@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-bitfield"
 	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-multistore"
@@ -53,11 +54,11 @@ func (f *FullNodeMock) StateMinerDeadlines(ctx context.Context, a address.Addres
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerFaults(ctx context.Context, a address.Address, key filTypes.TipSetKey) (abi.BitField, error) {
+func (f *FullNodeMock) StateMinerFaults(ctx context.Context, a address.Address, key filTypes.TipSetKey) (bitfield.BitField, error) {
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerRecoveries(ctx context.Context, a address.Address, key filTypes.TipSetKey) (abi.BitField, error) {
+func (f *FullNodeMock) StateMinerRecoveries(ctx context.Context, a address.Address, key filTypes.TipSetKey) (bitfield.BitField, error) {
 	panic("implement me")
 }
 
@@ -496,7 +497,7 @@ func (f *FullNodeMock) StateNetworkName(ctx context.Context) (dtypes.NetworkName
 	return args.Get(0).(dtypes.NetworkName), args.Error(1)
 }
 
-func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *abi.BitField, b bool, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
+func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *bitfield.BitField, b bool, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
 	panic("implement me")
 }
 
