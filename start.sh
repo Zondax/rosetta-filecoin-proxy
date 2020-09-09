@@ -3,6 +3,7 @@ set -e
 
 GRN='\e[32;1m'
 RED='\033[0;31m'
+BOLDW='\e[1m'
 OFF='\e[0m'
 
 error() {
@@ -26,7 +27,9 @@ exit_func() {
 trap 'error ${LINENO}' ERR
 trap 'exit_func 0' INT SIGINT
 
-lotus daemon 2>&1 &
+echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
+
+lotus daemon $1 $2 2>&1 &
 sleep 30
 
 lotus log set-level ERROR
