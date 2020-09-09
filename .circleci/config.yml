@@ -15,7 +15,7 @@ jobs:
     steps:
       - checkout
       - ffi_deps
-      - run: make build
+      - run: make build_CI
       - run: go test ./rosetta/services
 
   checks:
@@ -25,7 +25,7 @@ jobs:
       - checkout
       - ffi_deps
       - run: make install_lint
-      - run: make build
+      - run: make build_CI
       - run: make check-modtidy
       - run: make lint
 
@@ -38,7 +38,7 @@ jobs:
       - run:
           name: "Prebuild"
           command: |
-            make build
+            make build_CI
       - run:
           name: "Launch proxy"
           background: true
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: "Prebuild"
           command: |
-            make build
+            make build_CI
       - run:
           name: "Launch proxy"
           background: true
