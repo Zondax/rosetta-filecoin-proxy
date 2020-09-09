@@ -17,13 +17,51 @@ import (
 	"github.com/filecoin-project/specs-actors/actors/builtin/paych"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/stretchr/testify/mock"
 )
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) NetAgentVersion(ctx context.Context, p peer.ID) (string, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStats(ctx context.Context) (metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStatsByPeer(ctx context.Context) (map[string]metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStatsByProtocol(ctx context.Context) (map[protocol.ID]metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, tsk filTypes.TipSetKey) (<-chan []byte, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRetrieveTryRestartInsufficientFunds(ctx context.Context, paymentChannel address.Address) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFunds(ch address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFundsByFromTo(from, to address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherCreate(ctx context.Context, a address.Address, bigInt filTypes.BigInt, u uint64) (*api.VoucherCreateResult, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) ClientGetDealUpdates(ctx context.Context) (<-chan api.DealInfo, error) {
@@ -333,10 +371,6 @@ func (f *FullNodeMock) ChainGetPath(ctx context.Context, from filTypes.TipSetKey
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ChainExport(ctx context.Context, key filTypes.TipSetKey) (<-chan []byte, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) SyncState(ctx context.Context) (*api.SyncState, error) {
 	args := f.Called(ctx)
 	return args.Get(0).(*api.SyncState), args.Error(1)
@@ -639,10 +673,6 @@ func (f *FullNodeMock) PaychVoucherCheckValid(ctx context.Context, a address.Add
 }
 
 func (f *FullNodeMock) PaychVoucherCheckSpendable(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (bool, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherCreate(ctx context.Context, a address.Address, bigInt filTypes.BigInt, u uint64) (*paych.SignedVoucher, error) {
 	panic("implement me")
 }
 
