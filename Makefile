@@ -8,6 +8,9 @@ build: 	build_ffi
 	go build -ldflags "-X $(PACKAGE).GitRevision=$(REVISION) -X $(PACKAGE).RosettaSDKVersion=$(ROSETTASDKVER) \
  	-X $(PACKAGE).LotusVersion=$(LOTUSVER)" -o $(APPNAME)
 
+clean:
+	go clean
+
 build_ffi:
 	make -C extern/filecoin-ffi
 
