@@ -6,6 +6,10 @@ var (
 	LotusVersion      = "Unknown"
 	GitRevision       = "Unknown"
 	///
+
+	//Other configs
+	RetryConnectAttempts = "1000000"
+	///
 )
 
 const (
