@@ -30,9 +30,9 @@ trap 'exit_func 0' INT SIGINT
 echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
 
 lotus daemon $1 $2 2>&1 &
-sleep 30
+sleep 5
 
-lotus log set-level ERROR
+lotus log set-level INFO
 
 LOTUS_CHAIN_INDEX_CACHE=32768
 LOTUS_CHAIN_TIPSET_CACHE=8192
