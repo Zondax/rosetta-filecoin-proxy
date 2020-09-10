@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"github.com/filecoin-project/specs-actors/actors/abi"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
@@ -82,6 +82,13 @@ func (s *BlockAPIService) Block(
 
 	if err != nil {
 		return nil, ErrUnableToGetTipset
+	}
+
+	//If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
+	//Check if the retrieved TipSet is actually the requested one
+	//details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
+	if int64(tipSet.Height()) != requestedHeight {
+		return &types.BlockResponse{}, nil
 	}
 
 	if request.BlockIdentifier.Hash != nil {
