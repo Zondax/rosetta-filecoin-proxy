@@ -24,15 +24,17 @@ exit_func() {
   exit "$1"
 }
 
-trap 'error ${LINENO}' ERR
-trap 'exit_func 0' INT SIGINT
-
 echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
 
 lotus daemon $1 $2 2>&1 &
-sleep 30
 
-lotus log set-level ERROR
+until lotus wait-api
+do
+    sleep 1
+done
+
+trap 'error ${LINENO}' ERR
+trap 'exit_func 0' INT SIGINT
 
 LOTUS_CHAIN_INDEX_CACHE=32768
 LOTUS_CHAIN_TIPSET_CACHE=8192
