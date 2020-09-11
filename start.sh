@@ -26,12 +26,10 @@ exit_func() {
 
 echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
 
-lotus daemon $1 $2 2>&1 &
+[ -z "$GOLOG_LOG_LEVEL" ] && export GOLOG_LOG_LEVEL=ERROR
+echo -e "${GRN}Using Lotus logger level:${OFF}${BOLDW} ${GOLOG_LOG_LEVEL} ${OFF}"
 
-until lotus wait-api
-do
-    sleep 1
-done
+lotus daemon $1 $2 2>&1 &
 
 trap 'error ${LINENO}' ERR
 trap 'exit_func 0' INT SIGINT
