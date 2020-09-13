@@ -92,7 +92,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	md := make(map[string]interface{})
-	var balanceStr  = "0"
+	var balanceStr = "0"
 	isMultiSig := actor.Code == builtin.MultisigActorCodeID
 
 	if request.AccountIdentifier.SubAccount != nil {
