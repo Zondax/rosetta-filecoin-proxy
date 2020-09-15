@@ -91,9 +91,6 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 
 		//Parse sender address - this field is optional
 		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
-		//Parse receiver address - this field is optional
-		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
-
 		if okSender {
 			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
 			if err != nil {
@@ -103,7 +100,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		}
 
 		//Parse receiver address - this field is optional
-		addressReceiverRaw, okReceiver = request.Options[OptionsReceiverIDKey]
+		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
 		if okReceiver {
 			addressReceiverParsed, err = address.NewFromString(addressReceiverRaw.(string))
 			if err != nil {
