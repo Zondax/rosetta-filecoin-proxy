@@ -25,10 +25,6 @@ func (status SyncStatus) GetMaxHeight() int64 {
 		return -1
 	}
 
-	if status.globalSyncState < api.StageMessages {
-		return 0
-	}
-
 	var max int64
 	for _, height := range status.currentHeight {
 		if height > max {
@@ -73,28 +69,6 @@ func (status SyncStatus) GetTargetIndex() *int64 {
 	return &target
 }
 
-func (status SyncStatus) GetGlobalStageName() *string {
-	var str string
-	switch status.globalSyncState {
-	case api.StageSyncErrored:
-		str = "Sync Error"
-	case api.StageSyncComplete:
-		str = "Sync Complete"
-	case api.StageIdle:
-		str = "Idle"
-	case api.StageMessages:
-		str = "Sync Messages"
-	case api.StageHeaders:
-		str = "Sync Headers"
-	case api.StagePersistHeaders:
-		str = "Persist Headers"
-	default:
-		str = "unknown sync stage"
-	}
-
-	return &str
-}
-
 func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *types.Error) {
 
 	fullAPI := *node
@@ -113,10 +87,6 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 	)
 
 	for _, w := range syncState.ActiveSyncs {
-		if w.Target == nil {
-			continue
-		}
-
 		switch w.Stage {
 		case api.StageSyncErrored:
 			return nil, ErrSyncErrored

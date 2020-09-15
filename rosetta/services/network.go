@@ -67,8 +67,9 @@ func (s *NetworkAPIService) NetworkStatus(
 	if syncErr != nil {
 		return nil, syncErr
 	}
+	stage := status.globalSyncState.String()
 	syncStatus := &types.SyncStatus{
-		Stage:        status.GetGlobalStageName(),
+		Stage:        &stage,
 		CurrentIndex: status.GetMaxHeight(),
 		TargetIndex:  status.GetTargetIndex(),
 	}

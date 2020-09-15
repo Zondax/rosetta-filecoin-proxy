@@ -174,7 +174,7 @@ var (
 	ErrUnableToRetrieveNetworkName = &types.Error{
 		Code:      29,
 		Message:   "error when querying network name",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	ErrMalformedTx = &types.Error{
