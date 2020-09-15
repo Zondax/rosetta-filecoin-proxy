@@ -26,7 +26,7 @@ exit_func() {
 
 echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
 
-[ -z "$GOLOG_LOG_LEVEL" ] && export GOLOG_LOG_LEVEL=ERROR
+[ -z "$GOLOG_LOG_LEVEL" ] && export GOLOG_LOG_LEVEL=INFO
 echo -e "${GRN}Using Lotus logger level:${OFF}${BOLDW} ${GOLOG_LOG_LEVEL} ${OFF}"
 
 lotus daemon $1 $2 2>&1 &
