@@ -9,6 +9,7 @@ import (
 	"github.com/filecoin-project/go-multistore"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
+	"github.com/filecoin-project/go-state-types/dline"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
@@ -26,6 +27,34 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) SyncCheckpoint(ctx context.Context, tsk filTypes.TipSetKey) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) SyncUnmarkBad(ctx context.Context, bcid cid.Cid) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerProvingDeadline(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*dline.Info, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigGetVested(ctx context.Context, a address.Address, key filTypes.TipSetKey, key2 filTypes.TipSetKey) (filTypes.BigInt, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) NetAgentVersion(ctx context.Context, p peer.ID) (string, error) {
@@ -536,10 +565,6 @@ func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address,
 }
 
 func (f *FullNodeMock) StateMinerProvingSet(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerProvingDeadline(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*miner.DeadlineInfo, error) {
 	panic("implement me")
 }
 
