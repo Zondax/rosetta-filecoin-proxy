@@ -5,7 +5,7 @@
  },
  "online_url": "http://localhost:8080",
  "data_directory": "",
- "http_timeout": 10,
+ "http_timeout": 60,
  "retry_elapsed_time": 60,
  "max_online_connections": 120,
  "max_sync_concurrency": 64,
