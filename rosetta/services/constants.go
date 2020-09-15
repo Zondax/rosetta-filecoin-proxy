@@ -13,18 +13,29 @@ var (
 )
 
 const (
-	//Network related
+	//Network
 	BlockChainName    = "Filecoin"
 	RosettaServerPort = 8080
 	///
 
-	//Currency related
+	//Currency
 	CurrencySymbol   = "FIL"
 	CurrencyDecimals = 18
 	///
 
-	//Operation related
+	//Operation status
 	OperationStatusOk     = "Ok"
 	OperationStatusFailed = "Fail"
 	///
 )
+
+//Supported operations
+var SupportedOperations = map[string]bool{
+	"Send":             true, //Common
+	"AwardBlockReward": true, //MethodsReward
+	"ThisEpochReward":  true, //MethodsReward
+	"SwapSigner":       true, //MethodsMultisig
+	"LockBalance":      true, //MethodsMultisig
+	"AddBalance":       true, //MethodsMarket
+	"WithdrawBalance":  true, //MethodsMarket
+}

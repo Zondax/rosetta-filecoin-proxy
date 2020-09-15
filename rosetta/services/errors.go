@@ -174,7 +174,7 @@ var (
 	ErrUnableToRetrieveNetworkName = &types.Error{
 		Code:      29,
 		Message:   "error when querying network name",
-		Retriable: false,
+		Retriable: true,
 	}
 
 	ErrMalformedTx = &types.Error{
@@ -273,6 +273,12 @@ var (
 		Retriable: false,
 	}
 
+	ErrOperationNotSupported = &types.Error{
+		Code:      46,
+		Message:   "operation not supported",
+		Retriable: false,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -319,5 +325,6 @@ var (
 		ErrUnableToGetVesting,
 		ErrUnableToEstimateGasLimit,
 		ErrUnableToEstimateGasFeeCap,
+		ErrOperationNotSupported,
 	}
 )

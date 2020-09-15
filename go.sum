@@ -283,6 +283,8 @@ github.com/filecoin-project/specs-actors v0.9.7 h1:7PAZ8kdqwBdmgf/23FCkQZLCXcVu0
 github.com/filecoin-project/specs-actors v0.9.7/go.mod h1:wM2z+kwqYgXn5Z7scV1YHLyd1Q1cy0R8HfTIWQ0BFGU=
 github.com/filecoin-project/specs-actors v0.9.8 h1:45fnx/BsseFL3CtvSoR6CszFY26TFtsh9AHwCW2vkg8=
 github.com/filecoin-project/specs-actors v0.9.8/go.mod h1:xFObDoWPySBNTNBrGXVVrutmgSZH/mMo46Q1bec/0hw=
+github.com/filecoin-project/specs-actors v0.9.10 h1:gU0TrRhgkCsBEOP42sGDE7RQuR0Cov9hJhBqq+RJmjU=
+github.com/filecoin-project/specs-actors v0.9.10/go.mod h1:czlvLQGEX0fjLLfdNHD7xLymy6L3n7aQzRWzsYGf+ys=
 github.com/filecoin-project/specs-storage v0.1.1-0.20200907031224-ed2e5cd13796 h1:dJsTPWpG2pcTeojO2pyn0c6l+x/3MZYCBgo/9d11JEk=
 github.com/filecoin-project/specs-storage v0.1.1-0.20200907031224-ed2e5cd13796/go.mod h1:nJRRM7Aa9XVvygr3W9k6xGF46RWzr2zxF/iGoAIfA/g=
 github.com/filecoin-project/test-vectors/schema v0.0.1/go.mod h1:iQ9QXLpYWL3m7warwvK1JC/pTri8mnfEmKygNDqqY6E=
@@ -1231,6 +1233,8 @@ github.com/openzipkin/zipkin-go v0.1.1/go.mod h1:NtoC/o8u3JlF1lSlyPNswIbeQH9bJTm
 github.com/openzipkin/zipkin-go v0.1.6/go.mod h1:QgAqvLzwWbR/WpD4A3cGpPtJrZXNIiJc5AZX7/PBEpw=
 github.com/openzipkin/zipkin-go v0.2.1/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
 github.com/openzipkin/zipkin-go v0.2.2/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 h1:lNCW6THrCKBiJBpz8kbVGjC7MgdCGKwuvBgc7LoD6sw=
+github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6/go.mod h1:Lu3tH6HLW3feq74c2GC+jIMS/K2CFcDWnWD9XkenwhI=
 github.com/pact-foundation/pact-go v1.0.4/go.mod h1:uExwJY4kCzNPcHRj+hCR/HBbOOIwwtUjcrb0b5/5kLM=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pborman/uuid v0.0.0-20170112150404-1b00554d8222/go.mod h1:VyrYX9gd7irzKovcSS6BIIEwPRkP2Wm2m9ufcdFSJ34=
@@ -1485,8 +1489,8 @@ github.com/xorcare/golden v0.6.1-0.20191112154924-b87f686d7542 h1:oWgZJmC1DorFZD
 github.com/xorcare/golden v0.6.1-0.20191112154924-b87f686d7542/go.mod h1:7T39/ZMvaSEZlBPoYfVFmsBLmUl3uz9IuzWj/U6FtvQ=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-github.com/zondax/rosetta-filecoin-lib v0.7.0 h1:px4uWN/lagN+Fkws2+csb/AIeT4vDy2KhMG6qLTJBTM=
-github.com/zondax/rosetta-filecoin-lib v0.7.0/go.mod h1:tEkFJVf0IeM/qiryV4j0LGwdx09PsGlqXeuKDZ/Ijdc=
+github.com/zondax/rosetta-filecoin-lib v0.7.1 h1:frnQi8mlMxThx2wUBdUSKd79g1xvpq9GVhdz1LX3g/E=
+github.com/zondax/rosetta-filecoin-lib v0.7.1/go.mod h1:tEkFJVf0IeM/qiryV4j0LGwdx09PsGlqXeuKDZ/Ijdc=
 go.dedis.ch/fixbuf v1.0.3/go.mod h1:yzJMt34Wa5xD37V5RTdmp38cz3QhMagdGoem9anUalw=
 go.dedis.ch/kyber/v3 v3.0.4/go.mod h1:OzvaEnPvKlyrWyp3kGXlFdp7ap1VC6RkZDTaPikqhsQ=
 go.dedis.ch/kyber/v3 v3.0.9/go.mod h1:rhNjUUg6ahf8HEg5HUvVBYoWY4boAafX8tYxX+PS+qg=
@@ -1889,7 +1893,6 @@ gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.3/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.4/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.5/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
-gopkg.in/yaml.v2 v2.2.8 h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=
 gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.3.0 h1:clyUAQHOM3G0M3f5vQj7LuJrETvjVot3Z5el9nffUtU=
 gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
