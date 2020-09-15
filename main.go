@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -21,9 +22,8 @@ import (
 )
 
 const (
-	RetryConnectAttempts = 10
-	BlockchainName       = services.BlockChainName
-	ServerPort           = services.RosettaServerPort
+	BlockchainName = services.BlockChainName
+	ServerPort     = services.RosettaServerPort
 )
 
 var log = logging.Logger("rosetta-filecoin-proxy")
@@ -174,7 +174,9 @@ func main() {
 	var clientCloser jsonrpc.ClientCloser
 	var err error
 
-	for i := 1; i <= RetryConnectAttempts; i++ {
+	retryAttempts, _ := strconv.Atoi(services.RetryConnectAttempts)
+
+	for i := 1; i <= retryAttempts; i++ {
 		lotusAPI, clientCloser, err = connectAPI(addr, token)
 		if err == nil {
 			break
@@ -184,7 +186,7 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatalf("Connect to Lotus api gave up after %d attempts", RetryConnectAttempts)
+		log.Fatalf("Connect to Lotus api gave up after %d attempts", retryAttempts)
 		return
 	}
 	defer clientCloser()

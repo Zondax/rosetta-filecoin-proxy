@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
@@ -30,7 +31,7 @@ func setupRosettaClient() *client.APIClient {
 		ServerURL,
 		"rosetta-test",
 		&http.Client{
-			Timeout: 50 * time.Second,
+			Timeout: 120 * time.Second,
 		},
 	)
 
@@ -94,8 +95,8 @@ func TestConstructionMetadata(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
 	var options = make(map[string]interface{})
-	options[services.OptionsSenderIDKey] = "t3sqdk3xwrfrxb77upn4jjnqzamoiuzmykavyguodsmxghb3odxi5vu6tunbuyjdjnodml2dw3ztfkzg5ub7nq"
-	options[services.OptionsReceiverIDKey] = "t3v23xwqycr7myhmu7ccfdreqssqozb2zxzatffkv7cdmtpoaobbfc5vi74e7mzc4jlxvvzzj5cuemzyqedsxq"
+	options[services.OptionsSenderIDKey] = "t1itpqzzcx6yf52oc35dgsoxfqkoxpy6kdmygbaja"
+	options[services.OptionsReceiverIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
 	options[services.OptionsBlockInclKey] = 1
 
 	request := &types.ConstructionMetadataRequest{
@@ -115,6 +116,11 @@ func TestConstructionMetadata(t *testing.T) {
 	if resp == nil {
 		t.Fatal()
 	}
+
+	fmt.Println("gasPremium", resp.Metadata[services.GasPremiumKey])
+	fmt.Println("gasLimit", resp.Metadata[services.GasLimitKey])
+	fmt.Println("gasFeeCap", resp.Metadata[services.GasFeeCapKey])
+	fmt.Println("nonce", resp.Metadata[services.NonceKey])
 }
 
 func TestConstructionMetadataForGasPremiumTrack(t *testing.T) {
@@ -141,6 +147,10 @@ func TestConstructionMetadataForGasPremiumTrack(t *testing.T) {
 	if resp == nil {
 		t.Fatal()
 	}
+
+	fmt.Println("gasPremium", resp.Metadata[services.GasPremiumKey])
+	fmt.Println("gasLimit", resp.Metadata[services.GasLimitKey])
+	fmt.Println("gasFeeCap", resp.Metadata[services.GasFeeCapKey])
 }
 
 func TestMempool(t *testing.T) {
@@ -191,11 +201,12 @@ func TestSendTransaction(t *testing.T) {
 	pkA := "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
 	pkB := "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
 	var options = make(map[string]interface{})
+	var amount uint64 = 1
 
 	//Send from A to B
 	options[services.OptionsSenderIDKey] = addressA
 	options[services.OptionsReceiverIDKey] = addressB
-	options[services.OptionsBlockInclKey] = 2
+	options[services.OptionsBlockInclKey] = 1
 
 	requestMetadata := &types.ConstructionMetadataRequest{
 		NetworkIdentifier: NetworkID,
@@ -240,7 +251,7 @@ func TestSendTransaction(t *testing.T) {
 	pr := &rosettaFilecoinLib.PaymentRequest{
 		From:     addressA,
 		To:       addressB,
-		Quantity: 100000,
+		Quantity: amount,
 		Metadata: mtx,
 	}
 
@@ -334,7 +345,7 @@ func TestSendTransaction(t *testing.T) {
 	pr = &rosettaFilecoinLib.PaymentRequest{
 		From:     addressB,
 		To:       addressA,
-		Quantity: 100000,
+		Quantity: amount,
 		Metadata: mtx,
 	}
 

@@ -5,7 +5,7 @@ commands:
     steps:
       - run: apt update && apt install -yy mesa-opencl-icd jq
       - run: ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
-      - run: git submodule update --init --recursive --remote
+      - run: git submodule update --init --recursive
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
       - checkout
       - ffi_deps
       - run: make install_lint
-      - run: make build
+      - run: make build_CI
       - run: make check-modtidy
       - run: make lint
 
@@ -38,7 +38,7 @@ jobs:
       - run:
           name: "Prebuild"
           command: |
-            make build
+            make build_CI
       - run:
           name: "Launch proxy"
           background: true
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: "Prebuild"
           command: |
-            make build
+            make build_CI
       - run:
           name: "Launch proxy"
           background: true

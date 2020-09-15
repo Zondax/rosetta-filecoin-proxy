@@ -9,6 +9,7 @@ import (
 	"github.com/filecoin-project/go-multistore"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
+	"github.com/filecoin-project/go-state-types/dline"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
@@ -17,13 +18,79 @@ import (
 	"github.com/filecoin-project/specs-actors/actors/builtin/paych"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/stretchr/testify/mock"
 )
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) SyncCheckpoint(ctx context.Context, tsk filTypes.TipSetKey) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) SyncUnmarkBad(ctx context.Context, bcid cid.Cid) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerProvingDeadline(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*dline.Info, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigGetVested(ctx context.Context, a address.Address, key filTypes.TipSetKey, key2 filTypes.TipSetKey) (filTypes.BigInt, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, b bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetAgentVersion(ctx context.Context, p peer.ID) (string, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStats(ctx context.Context) (metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStatsByPeer(ctx context.Context) (map[string]metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBandwidthStatsByProtocol(ctx context.Context) (map[protocol.ID]metrics.Stats, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, tsk filTypes.TipSetKey) (<-chan []byte, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRetrieveTryRestartInsufficientFunds(ctx context.Context, paymentChannel address.Address) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFunds(ch address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFundsByFromTo(from, to address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherCreate(ctx context.Context, a address.Address, bigInt filTypes.BigInt, u uint64) (*api.VoucherCreateResult, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) ClientGetDealUpdates(ctx context.Context) (<-chan api.DealInfo, error) {
@@ -333,10 +400,6 @@ func (f *FullNodeMock) ChainGetPath(ctx context.Context, from filTypes.TipSetKey
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ChainExport(ctx context.Context, key filTypes.TipSetKey) (<-chan []byte, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) SyncState(ctx context.Context) (*api.SyncState, error) {
 	args := f.Called(ctx)
 	return args.Get(0).(*api.SyncState), args.Error(1)
@@ -505,10 +568,6 @@ func (f *FullNodeMock) StateMinerProvingSet(ctx context.Context, a address.Addre
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerProvingDeadline(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*miner.DeadlineInfo, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerPower(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*api.MinerPower, error) {
 	panic("implement me")
 }
@@ -639,10 +698,6 @@ func (f *FullNodeMock) PaychVoucherCheckValid(ctx context.Context, a address.Add
 }
 
 func (f *FullNodeMock) PaychVoucherCheckSpendable(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (bool, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherCreate(ctx context.Context, a address.Address, bigInt filTypes.BigInt, u uint64) (*paych.SignedVoucher, error) {
 	panic("implement me")
 }
 

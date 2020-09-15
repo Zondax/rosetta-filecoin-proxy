@@ -3,6 +3,7 @@ set -e
 
 GRN='\e[32;1m'
 RED='\033[0;31m'
+BOLDW='\e[1m'
 OFF='\e[0m'
 
 error() {
@@ -23,19 +24,15 @@ exit_func() {
   exit "$1"
 }
 
+echo -e "${GRN}Running command: ${OFF}${BOLDW}lotus daemon $1 $2${OFF}"
+
+[ -z "$GOLOG_LOG_LEVEL" ] && export GOLOG_LOG_LEVEL=ERROR
+echo -e "${GRN}Using Lotus logger level:${OFF}${BOLDW} ${GOLOG_LOG_LEVEL} ${OFF}"
+
+lotus daemon $1 $2 2>&1 &
+
 trap 'error ${LINENO}' ERR
 trap 'exit_func 0' INT SIGINT
-
-lotus daemon 2>&1 &
-sleep 30
-
-lotus log set-level ERROR
-
-while [ "$(lotus net peers | wc -l)" -eq 0 ]
-do
-  echo -e "${GRN}### Waiting for peers...${OFF}"
-  sleep 5
-done
 
 LOTUS_CHAIN_INDEX_CACHE=32768
 LOTUS_CHAIN_TIPSET_CACHE=8192
