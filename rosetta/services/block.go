@@ -164,9 +164,11 @@ func (s *BlockAPIService) Block(
 			Operations: []*types.Operation{},
 		})
 
-		transactions[i].Operations = appendOp(transactions[i].Operations, opType,
+		idx := len(transactions) - 1
+
+		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
 			msg.Message.From.String(), msg.Message.Value.String(), opStatus)
-		transactions[i].Operations = appendOp(transactions[i].Operations, opType,
+		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
 			msg.Message.To.String(), msg.Message.Value.String(), opStatus)
 	}
 
