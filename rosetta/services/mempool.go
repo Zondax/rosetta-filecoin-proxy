@@ -129,10 +129,6 @@ func (m MemPoolAPIService) MempoolTransaction(
 			return nil, err
 		}
 
-		if !IsOpSupported(opType) {
-			return nil, ErrOperationNotSupported
-		}
-
 		opStatus := "Pending" //TODO get status from receipt?
 
 		transaction.Operations = appendOp(transaction.Operations, opType,
