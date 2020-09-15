@@ -30,4 +30,12 @@ const (
 )
 
 //Supported operations
-var SupportedOperations = map[string]bool{"Propose": true, "Approve": true}
+var SupportedOperations = map[string]bool{
+	"Send":             true, //Common
+	"AwardBlockReward": true, //MethodsReward
+	"ThisEpochReward":  true, //MethodsReward
+	"SwapSigner":       true, //MethodsMultisig
+	"LockBalance":      true, //MethodsMultisig
+	"AddBalance":       true, //MethodsMarket
+	"WithdrawBalance":  true, //MethodsMarket
+}
