@@ -66,8 +66,8 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	request *types.ConstructionMetadataRequest,
 ) (*types.ConstructionMetadataResponse, *types.Error) {
 	var (
-		addressSenderParsed   = address.Address{}
-		addressReceiverParsed = address.Address{}
+		addressSenderParsed   address.Address
+		addressReceiverParsed address.Address
 		message               = &filTypes.Message{GasLimit: 0, GasFeeCap: filTypes.NewInt(0), GasPremium: filTypes.NewInt(0)}
 		availableFunds        filTypes.BigInt
 		err                   error
