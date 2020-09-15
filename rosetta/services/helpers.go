@@ -75,8 +75,13 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		var err error
 		actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
 		if err != nil {
-			return "", ErrCouldNotRetrieveMethodName
+			return "Unknown", nil
 		}
+	}
+
+	//Method "0" corresponds to "MethodSend"
+	if msg.Method == 0 {
+		return "Send", nil
 	}
 
 	var method interface{}
