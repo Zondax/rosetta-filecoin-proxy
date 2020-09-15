@@ -183,7 +183,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 					Hash:  *mockTipSetHash,
 				},
 				Balances: []*types.Amount{{
-					Value:    "",
+					Value:    "0",
 					Currency: GetCurrencyData(),
 					Metadata: nil,
 				},
