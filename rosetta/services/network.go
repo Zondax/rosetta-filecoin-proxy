@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"time"
 
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
@@ -121,7 +122,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
 		blockIndex = 0
-		timeStamp = 0
+		timeStamp = time.Now().Unix() * FactorSecondToMillisecond
 		blockHashedTipSet = DummyHash
 	}
 
