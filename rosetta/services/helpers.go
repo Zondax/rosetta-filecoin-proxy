@@ -119,3 +119,12 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
 }
+
+func GetSupportedOpList() []string  {
+	operations := make([]string, 0, len(SupportedOperations))
+	for op := range SupportedOperations {
+		operations = append(operations, op)
+	}
+
+	return operations
+}

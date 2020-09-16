@@ -153,11 +153,6 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, ErrUnableToGetNodeInfo
 	}
 
-	operations := make([]string, 0, len(SupportedOperations))
-	for op := range SupportedOperations {
-		operations = append(operations, op)
-	}
-
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
@@ -174,7 +169,7 @@ func (s *NetworkAPIService) NetworkOptions(
 					Successful: false,
 				},
 			},
-			OperationTypes: operations,
+			OperationTypes: GetSupportedOpList(),
 			Errors:         ErrorList,
 		},
 	}, nil
