@@ -104,7 +104,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	// The asserter automatically rejects incorrectly formatted
 	// requests.
 	asserter, err := rosettaAsserter.NewServer(
-		[]string{"Transfer", "Fee", "Reward"}, // TODO: Fix this, maybe getting names from api ?
+		services.GetSupportedOpList(),
 		false,
 		[]*types.NetworkIdentifier{network},
 	)
