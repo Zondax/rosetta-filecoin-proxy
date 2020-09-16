@@ -120,7 +120,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	return methodName, nil
 }
 
-func GetSupportedOpList() []string  {
+func GetSupportedOpList() []string {
 	operations := make([]string, 0, len(SupportedOperations))
 	for op := range SupportedOperations {
 		operations = append(operations, op)
