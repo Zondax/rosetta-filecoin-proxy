@@ -61,6 +61,8 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		skipDB    bool
 	)
 
+	const unknownStr = "Unknown"
+
 	//Shortcut 1 - t1 and t3 address are always account actors
 	if len(msg.To.String()) > 2 {
 		addPrefix := msg.To.String()[0:2]
@@ -75,7 +77,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		var err error
 		actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
 		if err != nil {
-			return "Unknown", nil
+			return unknownStr, nil
 		}
 	}
 
@@ -107,7 +109,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	case builtin.VerifiedRegistryActorCodeID:
 		method = builtin.MethodsVerifiedRegistry
 	default:
-		return "Unknown", nil
+		return unknownStr, nil
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
@@ -116,6 +118,19 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		idx--
 	}
 
+	if val.Type().NumField() < idx {
+		return unknownStr, nil
+	}
+
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
+}
+
+func GetSupportedOpList() []string {
+	operations := make([]string, 0, len(SupportedOperations))
+	for op := range SupportedOperations {
+		operations = append(operations, op)
+	}
+
+	return operations
 }

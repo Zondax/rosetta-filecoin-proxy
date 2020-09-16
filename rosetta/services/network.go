@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
+	"time"
 
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
@@ -121,7 +122,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
 		blockIndex = 0
-		timeStamp = 0
+		timeStamp = time.Now().Unix() * FactorSecondToMillisecond
 		blockHashedTipSet = DummyHash
 	}
 
@@ -153,11 +154,6 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, ErrUnableToGetNodeInfo
 	}
 
-	operations := make([]string, 0, len(SupportedOperations))
-	for op := range SupportedOperations {
-		operations = append(operations, op)
-	}
-
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
@@ -174,7 +170,7 @@ func (s *NetworkAPIService) NetworkOptions(
 					Successful: false,
 				},
 			},
-			OperationTypes: operations,
+			OperationTypes: GetSupportedOpList(),
 			Errors:         ErrorList,
 		},
 	}, nil
