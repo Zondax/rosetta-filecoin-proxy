@@ -116,6 +116,10 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		idx--
 	}
 
+	if val.Type().NumField() < idx {
+		return "Unknown", nil
+	}
+
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
 }
