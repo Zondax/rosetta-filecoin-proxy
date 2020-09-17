@@ -91,6 +91,10 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 	)
 
 	for _, w := range syncState.ActiveSyncs {
+		if w.Target == nil {
+			continue
+		}
+
 		switch w.Stage {
 		case api.StageSyncErrored:
 			return nil, ErrSyncErrored
