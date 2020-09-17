@@ -36,6 +36,13 @@ trap 'exit_func 0' INT SIGINT
 
 LOTUS_CHAIN_INDEX_CACHE=32768
 LOTUS_CHAIN_TIPSET_CACHE=8192
+
+until [ -f /data/node/token ]
+do
+     echo -e "${GRN}Waiting for token file to be created by lotus... ${OFF}$"
+     sleep 5
+done
+
 LOTUS_RPC_TOKEN=$( cat /data/node/token )
 
 echo -e "${GRN}### Launching rosetta-filecoin-proxy${OFF}"
