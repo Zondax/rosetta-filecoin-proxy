@@ -29,6 +29,22 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, oldmsgskip bool, tsk filTypes.TipSetKey) (<-chan []byte, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMsgGasCost(ctx context.Context, c cid.Cid, key filTypes.TipSetKey) (*api.MsgGasCost, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFunds(ctx context.Context, ch address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychAvailableFundsByFromTo(ctx context.Context, from, to address.Address) (*api.ChannelAvailableFunds, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) SyncCheckpoint(ctx context.Context, tsk filTypes.TipSetKey) error {
 	panic("implement me")
 }
@@ -73,19 +89,7 @@ func (f *FullNodeMock) NetBandwidthStatsByProtocol(ctx context.Context) (map[pro
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, tsk filTypes.TipSetKey) (<-chan []byte, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) ClientRetrieveTryRestartInsufficientFunds(ctx context.Context, paymentChannel address.Address) error {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychAvailableFunds(ch address.Address) (*api.ChannelAvailableFunds, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychAvailableFundsByFromTo(from, to address.Address) (*api.ChannelAvailableFunds, error) {
 	panic("implement me")
 }
 

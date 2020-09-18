@@ -33,3 +33,7 @@ lint:
 
 test:
 	go test
+
+gitclean:
+	git clean -xfd
+	git submodule foreach --recursive git clean -xfd
