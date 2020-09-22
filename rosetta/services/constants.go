@@ -27,6 +27,10 @@ const (
 	OperationStatusOk     = "Ok"
 	OperationStatusFailed = "Fail"
 	///
+
+	///Misc
+	ProxyLoggerName = "rosetta-filecoin-proxy"
+	///
 )
 
 //Supported operations
