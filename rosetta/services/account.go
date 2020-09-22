@@ -38,7 +38,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	addr, filErr := address.NewFromString(request.AccountIdentifier.Address)
 	if filErr != nil {
-		return nil, ErrInvalidAccountAddress
+		return nil, BuildError(ErrInvalidAccountAddress, nil)
 	}
 
 	//Check sync status
@@ -47,39 +47,39 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, syncErr
 	}
 	if !status.IsSynced() {
-		return nil, ErrNodeNotSynced
+		return nil, BuildError(ErrNodeNotSynced, nil)
 	}
 
 	var queryTipSet *filTypes.TipSet
 
 	if request.BlockIdentifier != nil {
 		if request.BlockIdentifier.Index == nil {
-			return nil, ErrInsufficientQueryInputs
+			return nil, BuildError(ErrInsufficientQueryInputs, nil)
 		}
 
 		queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(*request.BlockIdentifier.Index), filTypes.EmptyTSK)
 		if filErr != nil {
-			return nil, ErrUnableToGetBlk
+			return nil, BuildError(ErrUnableToGetBlk, filErr)
 		}
 		if request.BlockIdentifier.Hash != nil {
 			tipSetKeyHash, encErr := BuildTipSetKeyHash(queryTipSet.Key())
 			if encErr != nil {
-				return nil, ErrUnableToBuildTipSetHash
+				return nil, BuildError(ErrUnableToBuildTipSetHash, encErr)
 			}
 			if *tipSetKeyHash != *request.BlockIdentifier.Hash {
-				return nil, ErrInvalidHash
+				return nil, BuildError(ErrInvalidHash, nil)
 			}
 		}
 	} else {
 		queryTipSet, filErr = a.node.ChainHead(ctx)
 		if filErr != nil {
-			return nil, ErrUnableToGetLatestBlk
+			return nil, BuildError(ErrUnableToGetLatestBlk, filErr)
 		}
 	}
 
 	actor, err := a.node.StateGetActor(context.Background(), addr, queryTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToGetActor
+		return nil, BuildError(ErrUnableToGetActor, err)
 	}
 
 	md := make(map[string]interface{})
@@ -89,21 +89,21 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is multisig
 		if !isMultiSig {
-			return nil, ErrAddNotMSig
+			return nil, BuildError(ErrAddNotMSig, nil)
 		}
 
 		actorState, err := a.node.StateReadState(ctx, addr, queryTipSet.Key())
 		if err != nil || actorState == nil {
-			return nil, ErrUnableToGetActorState
+			return nil, BuildError(ErrUnableToGetActorState, err)
 		}
 
 		tmpMap, ok := actorState.State.(map[string]interface{})
 		if !ok {
-			return nil, ErrMalformedValue
+			return nil, BuildError(ErrMalformedValue, nil)
 		}
 		stateMultisig, err := getMultisigState(tmpMap)
 		if err != nil {
-			return nil, ErrMalformedValue
+			return nil, BuildError(ErrMalformedValue, err)
 		}
 
 		switch request.AccountIdentifier.SubAccount.Address {
@@ -118,14 +118,14 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			vestingMap[VestingUnlockDurationKey] = unlockDuration
 			md[VestingScheduleStr] = vestingMap
 		default:
-			return nil, ErrMustSpecifySubAccount
+			return nil, BuildError(ErrMustSpecifySubAccount, nil)
 		}
 	} else {
 		//Get available balance
 		if isMultiSig {
 			balance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
-				return nil, ErrUnableToGetBalance
+				return nil, BuildError(ErrUnableToGetBalance, err)
 			}
 			balanceStr = balance.String()
 		} else {
@@ -136,7 +136,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	queryTipSetHeight := int64(queryTipSet.Height())
 	queryTipSetHash, err := BuildTipSetKeyHash(queryTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToBuildTipSetHash
+		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
 	resp := &types.AccountBalanceResponse{

@@ -41,18 +41,18 @@ func (m *MemPoolAPIService) Mempool(
 	}
 
 	if !status.IsSynced() {
-		return nil, ErrUnableToGetUnsyncedBlock
+		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil)
 	}
 
 	//Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
-		return nil, ErrUnableToGetLatestBlk
+		return nil, BuildError(ErrUnableToGetLatestBlk, err)
 	}
 
 	pendingMsg, err := m.node.MpoolPending(ctx, headTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToGetTxns
+		return nil, BuildError(ErrUnableToGetTxns, err)
 	}
 
 	var transactions []*types.TransactionIdentifier
@@ -87,7 +87,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 	}
 
 	if !status.IsSynced() {
-		return nil, ErrUnableToGetUnsyncedBlock
+		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil)
 	}
 
 	if request.TransactionIdentifier == nil {
@@ -96,18 +96,18 @@ func (m MemPoolAPIService) MempoolTransaction(
 
 	requestedCid, err := cid.Parse(request.TransactionIdentifier.Hash)
 	if err != nil {
-		return nil, ErrMalformedValue
+		return nil, BuildError(ErrMalformedValue, err)
 	}
 
 	//Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
-		return nil, ErrUnableToGetLatestBlk
+		return nil, BuildError(ErrUnableToGetLatestBlk, err)
 	}
 
 	pendingMsg, err := m.node.MpoolPending(ctx, headTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToGetTxns
+		return nil, BuildError(ErrUnableToGetTxns, err)
 	}
 
 	var found = false
@@ -140,7 +140,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 	}
 
 	if !found {
-		return nil, ErrUnableToGetTxns
+		return nil, BuildError(ErrUnableToGetTxns, nil)
 	}
 
 	resp := &types.MempoolTransactionResponse{

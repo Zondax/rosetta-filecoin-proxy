@@ -84,29 +84,29 @@ func (s *NetworkAPIService) NetworkStatus(
 	headTipSet, err = s.node.ChainHead(ctx)
 
 	if err != nil || headTipSet == nil {
-		return nil, ErrUnableToGetLatestBlk
+		return nil, BuildError(ErrUnableToGetLatestBlk, err)
 	}
 
 	hashHeadTipSet, err := BuildTipSetKeyHash(headTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToBuildTipSetHash
+		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
 	//Get genesis TipSet
 	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
-		return nil, ErrUnableToGetGenesisBlk
+		return nil, BuildError(ErrUnableToGetGenesisBlk, err)
 	}
 
 	hashGenesisTipSet, err := BuildTipSetKeyHash(genesisTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToBuildTipSetHash
+		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
 	//Get peers data
 	peersFil, err := s.node.NetPeers(ctx)
 	if err != nil {
-		return nil, ErrUnableToGetPeers
+		return nil, BuildError(ErrUnableToGetPeers, err)
 	}
 
 	var peers []*types.Peer
@@ -151,7 +151,7 @@ func (s *NetworkAPIService) NetworkOptions(
 
 	version, err := s.node.Version(ctx)
 	if err != nil {
-		return nil, ErrUnableToGetNodeInfo
+		return nil, BuildError(ErrUnableToGetNodeInfo, err)
 	}
 
 	return &types.NetworkOptionsResponse{

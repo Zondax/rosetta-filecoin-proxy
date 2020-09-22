@@ -39,11 +39,11 @@ func (s *BlockAPIService) Block(
 ) (*types.BlockResponse, *types.Error) {
 
 	if request.BlockIdentifier == nil {
-		return nil, ErrMalformedValue
+		return nil, BuildError(ErrMalformedValue, nil)
 	}
 
 	if request.BlockIdentifier == nil && request.BlockIdentifier.Hash == nil {
-		return nil, ErrInsufficientQueryInputs
+		return nil, BuildError(ErrInsufficientQueryInputs, nil)
 	}
 
 	errNet := ValidateNetworkId(ctx, &s.node, request.NetworkIdentifier)
@@ -53,7 +53,7 @@ func (s *BlockAPIService) Block(
 
 	requestedHeight := *request.BlockIdentifier.Index
 	if requestedHeight < 0 {
-		return nil, ErrMalformedValue
+		return nil, BuildError(ErrMalformedValue, nil)
 	}
 
 	//Check sync status
@@ -62,11 +62,11 @@ func (s *BlockAPIService) Block(
 		return nil, syncErr
 	}
 	if requestedHeight > 0 && !status.IsSynced() {
-		return nil, ErrUnableToGetUnsyncedBlock
+		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil)
 	}
 
 	if request.BlockIdentifier.Index == nil {
-		return nil, ErrInsufficientQueryInputs
+		return nil, BuildError(ErrInsufficientQueryInputs, nil)
 	}
 
 	var tipSet *filTypes.TipSet
@@ -81,7 +81,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	if err != nil {
-		return nil, ErrUnableToGetTipset
+		return nil, BuildError(ErrUnableToGetTipset, err)
 	}
 
 	//If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
@@ -94,10 +94,10 @@ func (s *BlockAPIService) Block(
 	if request.BlockIdentifier.Hash != nil {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
-			return nil, ErrUnableToBuildTipSetHash
+			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr)
 		}
 		if *tipSetKeyHash != *request.BlockIdentifier.Hash {
-			return nil, ErrInvalidHash
+			return nil, BuildError(ErrInvalidHash, nil)
 		}
 	}
 
@@ -105,7 +105,7 @@ func (s *BlockAPIService) Block(
 	var parentTipSet *filTypes.TipSet
 	if requestedHeight > 0 {
 		if tipSet.Parents().IsEmpty() {
-			return nil, ErrUnableToGetParentBlk
+			return nil, BuildError(ErrUnableToGetParentBlk, nil)
 		}
 		impl = func() {
 			parentTipSet, err = s.node.ChainGetTipSet(ctx, tipSet.Parents())
@@ -115,7 +115,7 @@ func (s *BlockAPIService) Block(
 			return nil, ErrLotusCallTimedOut
 		}
 		if err != nil {
-			return nil, ErrUnableToGetParentBlk
+			return nil, BuildError(ErrUnableToGetParentBlk, err)
 		}
 	} else {
 		// According to rosetta docs, if the requested tipset is
@@ -128,14 +128,14 @@ func (s *BlockAPIService) Block(
 	block := tipSet.Blocks()[0] // All blocks share the same parent TipSet
 	messages, err := s.node.ChainGetParentMessages(ctx, block.Cid())
 	if err != nil {
-		return nil, ErrUnableToGetTxns
+		return nil, BuildError(ErrUnableToGetTxns, err)
 	}
 	receipts, err := s.node.ChainGetParentReceipts(ctx, block.Cid())
 	if err != nil {
-		return nil, ErrUnableToGetTxnReceipt
+		return nil, BuildError(ErrUnableToGetTxnReceipt, err)
 	}
 	if len(messages) != len(receipts) {
-		return nil, ErrMsgsAndReceiptsCountMismatch
+		return nil, BuildError(ErrMsgsAndReceiptsCountMismatch, nil)
 	}
 
 	for i := range messages {
@@ -167,7 +167,7 @@ func (s *BlockAPIService) Block(
 		idx := len(transactions) - 1
 
 		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
-			msg.Message.From.String(), msg.Message.Value.String(), opStatus)
+			msg.Message.From.String(), msg.Message.Value.Neg().String(), opStatus)
 		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
 			msg.Message.To.String(), msg.Message.Value.String(), opStatus)
 	}
@@ -182,7 +182,7 @@ func (s *BlockAPIService) Block(
 
 	hashTipSet, err := BuildTipSetKeyHash(tipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToBuildTipSetHash
+		return nil, BuildError(ErrUnableToBuildTipSetHash, nil)
 	}
 	blockId := &types.BlockIdentifier{
 		Index: int64(tipSet.Height()),
@@ -192,7 +192,7 @@ func (s *BlockAPIService) Block(
 	parentBlockId := &types.BlockIdentifier{}
 	hashParentTipSet, err := BuildTipSetKeyHash(parentTipSet.Key())
 	if err != nil {
-		return nil, ErrUnableToBuildTipSetHash
+		return nil, BuildError(ErrUnableToBuildTipSetHash, nil)
 	}
 	parentBlockId.Index = int64(parentTipSet.Height())
 	parentBlockId.Hash = *hashParentTipSet

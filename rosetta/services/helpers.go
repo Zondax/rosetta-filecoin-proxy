@@ -36,11 +36,11 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 	fullAPI := *node
 	validNetwork, err := fullAPI.StateNetworkName(ctx)
 	if err != nil {
-		return ErrUnableToRetrieveNetworkName
+		return BuildError(ErrUnableToRetrieveNetworkName, err)
 	}
 
 	if networkId.Network != string(validNetwork) {
-		return ErrInvalidNetwork
+		return BuildError(ErrInvalidNetwork, nil)
 	}
 
 	return nil

@@ -338,14 +338,16 @@ var (
 	}
 )
 
-func BuildErrorWithDetails(proxyErr *types.Error, lotusErr error) *types.Error {
-	lotusMsg := "-"
+func BuildError(proxyErr *types.Error, lotusErr error) *types.Error {
+	lotusMsg := ""
 	proxyMsg := "Proxy: " + proxyErr.Message
-	if len(lotusErr.Error()) > 0 {
-		details := make(map[string]interface{})
-		details[LotusErrKey] = lotusErr.Error()
-		proxyErr.Details = details
-		lotusMsg = "Lotus: " + lotusErr.Error()
+	if lotusErr != nil {
+		if len(lotusErr.Error()) > 0 {
+			details := make(map[string]interface{})
+			details[LotusErrKey] = lotusErr.Error()
+			proxyErr.Details = details
+			lotusMsg = " | Lotus: " + lotusErr.Error()
+		}
 	}
 
 	// log error with additional details
@@ -354,7 +356,7 @@ func BuildErrorWithDetails(proxyErr *types.Error, lotusErr error) *types.Error {
 		file := strings.Split(fn, "/")
 		Logger.Info("Error on file: ", file[len(file)-1], ":", line)
 	}
-	Logger.Error(proxyMsg, " | ", lotusMsg)
+	Logger.Error(proxyMsg, lotusMsg)
 
 	return proxyErr
 }
