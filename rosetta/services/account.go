@@ -13,15 +13,6 @@ import (
 	"github.com/filecoin-project/specs-actors/actors/builtin/multisig"
 )
 
-const (
-	LockedBalanceStr   = "LockedBalance"
-	VestingScheduleStr = "VestingSchedule"
-
-	LockedFundsKey           = "LockedFunds"
-	VestingStartEpochKey     = "StartEpoch"
-	VestingUnlockDurationKey = "UnlockDuration"
-)
-
 // AccountAPIService implements the server.BlockAPIServicer interface.
 type AccountAPIService struct {
 	network *types.NetworkIdentifier

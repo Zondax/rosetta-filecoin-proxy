@@ -28,6 +28,14 @@ const (
 	OperationStatusFailed = "Fail"
 	///
 
+	///Account
+	LockedBalanceStr         = "LockedBalance"
+	VestingScheduleStr       = "VestingSchedule"
+	LockedFundsKey           = "LockedFunds"
+	VestingStartEpochKey     = "StartEpoch"
+	VestingUnlockDurationKey = "UnlockDuration"
+	///
+
 	///Misc
 	ProxyLoggerName = "rosetta-filecoin-proxy"
 	///
