@@ -166,10 +166,21 @@ func (s *BlockAPIService) Block(
 
 		idx := len(transactions) - 1
 
-		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
-			msg.Message.From.String(), msg.Message.Value.Neg().String(), opStatus)
-		transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
-			msg.Message.To.String(), msg.Message.Value.String(), opStatus)
+		switch opType {
+		case "Send":
+		case "AwardBlockReward":
+		case "ThisEpochReward":
+		case "SwapSigner":
+		case "LockBalance":
+		case "AddBalance":
+		case "WithdrawBalance":
+			{
+				transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
+					msg.Message.From.String(), msg.Message.Value.Neg().String(), opStatus)
+				transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
+					msg.Message.To.String(), msg.Message.Value.String(), opStatus)
+			}
+		}
 	}
 
 	//Add block metadata
