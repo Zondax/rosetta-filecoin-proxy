@@ -10,7 +10,9 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/go-state-types/dline"
+	network2 "github.com/filecoin-project/go-state-types/network"
 	"github.com/filecoin-project/lotus/api"
+	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
@@ -27,6 +29,54 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *bitfield.BitField, key filTypes.TipSetKey) ([]*minerBuiltin.SectorOnChainInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerActiveSectors(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*minerBuiltin.SectorOnChainInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, key filTypes.TipSetKey) (minerBuiltin.MinerInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (minerBuiltin.SectorPreCommitOnChainInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSectorGetInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*minerBuiltin.SectorOnChainInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainDeleteObj(ctx context.Context, c cid.Cid) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) WalletVerify(ctx context.Context, a address.Address, bytes []byte, signature *crypto.Signature) (bool, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerDeadlines(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]api.Deadline, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerPartitions(ctx context.Context, m address.Address, dlIdx uint64, tsk filTypes.TipSetKey) ([]api.Partition, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSectorExpiration(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*minerBuiltin.SectorExpiration, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSectorPartition(ctx context.Context, maddr address.Address, sectorNumber abi.SectorNumber, tok filTypes.TipSetKey) (*minerBuiltin.SectorLocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateNetworkVersion(ctx context.Context, key filTypes.TipSetKey) (network2.Version, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, oldmsgskip bool, tsk filTypes.TipSetKey) (<-chan []byte, error) {
@@ -121,10 +171,6 @@ func (f *FullNodeMock) ClientMinerQueryOffer(ctx context.Context, miner address.
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerDeadlines(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*miner.Deadline, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerFaults(ctx context.Context, a address.Address, key filTypes.TipSetKey) (bitfield.BitField, error) {
 	panic("implement me")
 }
@@ -213,23 +259,7 @@ func (f *FullNodeMock) ClientDataTransferUpdates(ctx context.Context) (<-chan ap
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerActiveSectors(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerPartitions(ctx context.Context, a address.Address, u uint64, key filTypes.TipSetKey) ([]*miner.Partition, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSectorExpiration(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*api.SectorExpiration, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSectorPartition(ctx context.Context, maddr address.Address, sectorNumber abi.SectorNumber, tok filTypes.TipSetKey) (*api.SectorLocation, error) {
 	panic("implement me")
 }
 
@@ -477,10 +507,6 @@ func (f *FullNodeMock) WalletSignMessage(ctx context.Context, a address.Address,
 	panic("implement me")
 }
 
-func (f *FullNodeMock) WalletVerify(ctx context.Context, a address.Address, bytes []byte, signature *crypto.Signature) bool {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) WalletDefaultAddress(ctx context.Context) (address.Address, error) {
 	panic("implement me")
 }
@@ -564,19 +590,7 @@ func (f *FullNodeMock) StateNetworkName(ctx context.Context) (dtypes.NetworkName
 	return args.Get(0).(dtypes.NetworkName), args.Error(1)
 }
 
-func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *bitfield.BitField, b bool, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerProvingSet(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.ChainSectorInfo, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerPower(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*api.MinerPower, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, key filTypes.TipSetKey) (api.MinerInfo, error) {
 	panic("implement me")
 }
 
@@ -585,14 +599,6 @@ func (f *FullNodeMock) StateAllMinerFaults(ctx context.Context, lookback abi.Cha
 }
 
 func (f *FullNodeMock) StateMinerAvailableBalance(ctx context.Context, a address.Address, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (miner.SectorPreCommitOnChainInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSectorGetInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*miner.SectorOnChainInfo, error) {
 	panic("implement me")
 }
 
