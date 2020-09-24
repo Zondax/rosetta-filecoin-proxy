@@ -1,6 +1,15 @@
 package services
 
-import "github.com/coinbase/rosetta-sdk-go/types"
+import (
+	"github.com/coinbase/rosetta-sdk-go/types"
+	logging "github.com/ipfs/go-log"
+	"runtime"
+	"strings"
+)
+
+const LotusErrKey = "lotusErr"
+
+var Logger = logging.Logger(ProxyLoggerName)
 
 var (
 	ErrUnableToGetChainID = &types.Error{
@@ -328,3 +337,26 @@ var (
 		ErrOperationNotSupported,
 	}
 )
+
+func BuildError(proxyErr *types.Error, lotusErr error) *types.Error {
+	lotusMsg := ""
+	proxyMsg := "Proxy: " + proxyErr.Message
+	if lotusErr != nil {
+		if len(lotusErr.Error()) > 0 {
+			details := make(map[string]interface{})
+			details[LotusErrKey] = lotusErr.Error()
+			proxyErr.Details = details
+			lotusMsg = " | Lotus: " + lotusErr.Error()
+		}
+	}
+
+	// log error with additional details
+	_, fn, line, ok := runtime.Caller(1)
+	if ok {
+		file := strings.Split(fn, "/")
+		Logger.Info("Error on file: ", file[len(file)-1], ":", line)
+	}
+	Logger.Error(proxyMsg, lotusMsg)
+
+	return proxyErr
+}

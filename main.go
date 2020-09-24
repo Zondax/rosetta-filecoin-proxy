@@ -17,23 +17,21 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/api/client"
 	logging "github.com/ipfs/go-log"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
+	srv "github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
 
 const (
-	BlockchainName = services.BlockChainName
-	ServerPort     = services.RosettaServerPort
+	BlockchainName = srv.BlockChainName
+	ServerPort     = srv.RosettaServerPort
 )
 
-var log = logging.Logger("rosetta-filecoin-proxy")
-
 func logVersionsInfo() {
-	log.Info("****************************************************")
-	log.Infof("Rosetta SDK version: %s", services.RosettaSDKVersion)
-	log.Infof("Lotus version: %s", services.LotusVersion)
-	log.Infof("Git revision: %s", services.GitRevision)
-	log.Info("****************************************************")
+	srv.Logger.Info("****************************************************")
+	srv.Logger.Infof("Rosetta SDK version: %s", srv.RosettaSDKVersion)
+	srv.Logger.Infof("Lotus version: %s", srv.LotusVersion)
+	srv.Logger.Infof("Git revision: %s", srv.GitRevision)
+	srv.Logger.Info("****************************************************")
 }
 
 func startLogger(level string) {
@@ -60,31 +58,31 @@ func newBlockchainRouter(
 	asserter *rosettaAsserter.Asserter,
 	api api.FullNode,
 ) http.Handler {
-	accountAPIService := services.NewAccountAPIService(network, &api)
+	accountAPIService := srv.NewAccountAPIService(network, &api)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
 	)
 
-	networkAPIService := services.NewNetworkAPIService(network, &api)
+	networkAPIService := srv.NewNetworkAPIService(network, &api)
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
 	)
 
-	blockAPIService := services.NewBlockAPIService(network, &api)
+	blockAPIService := srv.NewBlockAPIService(network, &api)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,
 	)
 
-	mempoolAPIService := services.NewMemPoolAPIService(network, &api)
+	mempoolAPIService := srv.NewMemPoolAPIService(network, &api)
 	mempoolAPIController := server.NewMempoolAPIController(
 		mempoolAPIService,
 		asserter,
 	)
 
-	constructionAPIService := services.NewConstructionAPIService(network, &api)
+	constructionAPIService := srv.NewConstructionAPIService(network, &api)
 	constructionAPIController := server.NewConstructionAPIController(
 		constructionAPIService,
 		asserter,
@@ -104,52 +102,52 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	// The asserter automatically rejects incorrectly formatted
 	// requests.
 	asserter, err := rosettaAsserter.NewServer(
-		services.GetSupportedOpList(),
+		srv.GetSupportedOpList(),
 		false,
 		[]*types.NetworkIdentifier{network},
 	)
 	if err != nil {
-		log.Fatal(err)
+		srv.Logger.Fatal(err)
 	}
 
 	router := newBlockchainRouter(network, asserter, api)
 	loggedRouter := server.LoggerMiddleware(router)
 	corsRouter := server.CorsMiddleware(loggedRouter)
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
 
 	sigCh := make(chan os.Signal, 2)
 
 	go func() {
 		<-sigCh
-		log.Warn("Shutting down rosetta...")
+		srv.Logger.Warn("Shutting down rosetta...")
 
-		err = srv.Shutdown(context.TODO())
+		err = server.Shutdown(context.TODO())
 		if err != nil {
-			log.Error(err)
+			srv.Logger.Error(err)
 		} else {
-			log.Warn("Graceful shutdown of rosetta successful")
+			srv.Logger.Warn("Graceful shutdown of rosetta successful")
 		}
 	}()
 
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
-	log.Infof("Rosetta listening on port %d\n", ServerPort)
-	return srv.ListenAndServe()
+	srv.Logger.Infof("Rosetta listening on port %d\n", ServerPort)
+	return server.ListenAndServe()
 }
 
 func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
 	lotusAPI, clientCloser, err := getFullNodeAPI(addr, token)
 	if err != nil {
-		log.Errorf("Error %s\n", err)
+		srv.Logger.Errorf("Error %s\n", err)
 		return nil, nil, err
 	}
 
 	version, err := lotusAPI.Version(context.Background())
 	if err != nil {
-		log.Warn("Could not get Lotus api version!")
+		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	log.Info("Connected to Lotus version: ", version.String())
+	srv.Logger.Info("Connected to Lotus version: ", version.String())
 
 	return lotusAPI, clientCloser, nil
 }
@@ -167,26 +165,26 @@ func main() {
 	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
-	log.Info("Starting Rosetta Proxy")
-	log.Infof("LOTUS_RPC_URL: %s", addr)
+	srv.Logger.Info("Starting Rosetta Proxy")
+	srv.Logger.Infof("LOTUS_RPC_URL: %s", addr)
 
 	var lotusAPI api.FullNode
 	var clientCloser jsonrpc.ClientCloser
 	var err error
 
-	retryAttempts, _ := strconv.Atoi(services.RetryConnectAttempts)
+	retryAttempts, _ := strconv.Atoi(srv.RetryConnectAttempts)
 
 	for i := 1; i <= retryAttempts; i++ {
 		lotusAPI, clientCloser, err = connectAPI(addr, token)
 		if err == nil {
 			break
 		}
-		log.Errorf("Could not connect to api. Retrying attempt %d", i)
+		srv.Logger.Errorf("Could not connect to api. Retrying attempt %d", i)
 		time.Sleep(5 * time.Second)
 	}
 
 	if err != nil {
-		log.Fatalf("Connect to Lotus api gave up after %d attempts", retryAttempts)
+		srv.Logger.Fatalf("Connect to Lotus api gave up after %d attempts", retryAttempts)
 		return
 	}
 	defer clientCloser()
@@ -196,6 +194,6 @@ func main() {
 	ctx := context.Background()
 	err = startRosettaRPC(ctx, lotusAPI)
 	if err != nil {
-		log.Info("Exit Rosetta rpc")
+		srv.Logger.Info("Exit Rosetta rpc")
 	}
 }

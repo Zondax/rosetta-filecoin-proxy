@@ -79,7 +79,7 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 	syncState, err := fullAPI.SyncState(ctx)
 
 	if err != nil || len(syncState.ActiveSyncs) == 0 {
-		return nil, ErrUnableToGetSyncStatus
+		return nil, BuildError(ErrUnableToGetSyncStatus, err)
 	}
 
 	var (
