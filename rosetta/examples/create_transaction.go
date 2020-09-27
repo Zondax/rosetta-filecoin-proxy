@@ -35,8 +35,8 @@ func main() {
 		ctx = context.Background()
 
 		Network = &types.NetworkIdentifier{
-			Blockchain: "Filecoin",
-			Network:    "testnetnet",
+			Blockchain: services.BlockChainName,
+			Network:    services.NetworkName,
 		}
 	)
 
