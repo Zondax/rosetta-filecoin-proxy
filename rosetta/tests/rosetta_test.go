@@ -21,8 +21,8 @@ var (
 	ctx = context.Background()
 
 	NetworkID = &types.NetworkIdentifier{
-		Blockchain: "Filecoin",
-		Network:    "testnetnet",
+		Blockchain: services.BlockChainName,
+		Network:    services.NetworkName,
 	}
 )
 

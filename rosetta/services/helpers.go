@@ -14,6 +14,8 @@ import (
 	"github.com/multiformats/go-multihash"
 )
 
+const unknownStr = "Unknown"
+
 func BuildTipSetKeyHash(key filTypes.TipSetKey) (*string, error) {
 
 	cidBuilder := cid.V1Builder{Codec: cid.DagCBOR, MhType: multihash.BLAKE2B_MIN + 31}
@@ -61,9 +63,17 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		skipDB    bool
 	)
 
-	const unknownStr = "Unknown"
+	//Shortcut 1 - Method "0" corresponds to "MethodSend"
+	if msg.Method == 0 {
+		return "Send", nil
+	}
 
-	//Shortcut 1 - t1 and t3 address are always account actors
+	//Shortcut 2 - Method "1" corresponds to "MethodConstructor"
+	if msg.Method == 1 {
+		return "Constructor", nil
+	}
+
+	//Shortcut 3 - t1 and t3 address are always account actors
 	if len(msg.To.String()) > 2 {
 		addPrefix := msg.To.String()[0:2]
 		if addPrefix == "t1" || addPrefix == "t3" {
@@ -79,11 +89,6 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		if err != nil {
 			return unknownStr, nil
 		}
-	}
-
-	//Method "0" corresponds to "MethodSend"
-	if msg.Method == 0 {
-		return "Send", nil
 	}
 
 	var method interface{}

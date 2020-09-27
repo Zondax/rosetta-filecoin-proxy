@@ -15,6 +15,7 @@ var (
 const (
 	//Network
 	BlockChainName    = "Filecoin"
+	NetworkName       = "ignition"
 	RosettaServerPort = 8080
 	///
 
