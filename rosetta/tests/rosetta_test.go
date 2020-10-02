@@ -391,3 +391,99 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal("NOT MATCHING")
 	}
 }
+
+func TestGetBalance(t *testing.T) {
+
+	rosettaClient := setupRosettaClient()
+	testAddress := "t023232"
+
+	fmt.Println("Testing on address:", testAddress)
+
+	// Get full balance (locked + spendable)
+	req := &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		AccountIdentifier: &types.AccountIdentifier{
+			Address:    testAddress,
+			SubAccount: nil,
+		},
+	}
+
+	resp, err1, err2 := rosettaClient.AccountAPI.AccountBalance(ctx, req)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
+
+	full := resp.Balances[0].Value
+	fmt.Println("Full balance is:", full)
+
+	// Get locked balance
+	req = &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: testAddress,
+			SubAccount: &types.SubAccountIdentifier{
+				Address: services.LockedBalanceStr,
+			},
+		},
+	}
+
+	resp, err1, err2 = rosettaClient.AccountAPI.AccountBalance(ctx, req)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
+
+	locked := resp.Balances[0].Value
+	fmt.Println("Locked balance is:", locked)
+
+	// Get spendable balance
+	req = &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: testAddress,
+			SubAccount: &types.SubAccountIdentifier{
+				Address: services.SpendableBalanceStr,
+			},
+		},
+	}
+
+	resp, err1, err2 = rosettaClient.AccountAPI.AccountBalance(ctx, req)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil {
+		t.Fatal()
+	}
+
+	spendable := resp.Balances[0].Value
+	fmt.Println("Spendable balance is:", spendable)
+
+	//Check that values complies
+	nfull, _ := strconv.Atoi(full)
+	nlocked, _ := strconv.Atoi(locked)
+	nspendable, _ := strconv.Atoi(spendable)
+
+	if (nlocked + nspendable) != nfull {
+		t.Fatal("Balances mismatch")
+	}
+}

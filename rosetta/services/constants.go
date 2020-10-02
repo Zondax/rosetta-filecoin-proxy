@@ -31,6 +31,7 @@ const (
 
 	///Account
 	LockedBalanceStr         = "LockedBalance"
+	SpendableBalanceStr      = "SpendableBalance"
 	VestingScheduleStr       = "VestingSchedule"
 	LockedFundsKey           = "LockedFunds"
 	VestingStartEpochKey     = "StartEpoch"
