@@ -12,7 +12,7 @@ import (
 )
 
 // TimeOut for RPC Lotus calls
-const LotusCallTimeOut = 4 * time.Second
+const LotusCallTimeOut = 40 * time.Second
 
 // BlockCIDsKey is the name of the key in the Metadata map inside a
 // BlockResponse that specifies blocks' CIDs inside a TipSet.
@@ -123,60 +123,14 @@ func (s *BlockAPIService) Block(
 		parentTipSet = tipSet
 	}
 
-	//Get executed transactions
+	//Build transactions data
 	var transactions []*types.Transaction
-	block := tipSet.Blocks()[0] // All blocks share the same parent TipSet
-	messages, err := s.node.ChainGetParentMessages(ctx, block.Cid())
-	if err != nil {
-		return nil, BuildError(ErrUnableToGetTxns, err)
-	}
-	receipts, err := s.node.ChainGetParentReceipts(ctx, block.Cid())
-	if err != nil {
-		return nil, BuildError(ErrUnableToGetTxnReceipt, err)
-	}
-	if len(messages) != len(receipts) {
-		return nil, BuildError(ErrMsgsAndReceiptsCountMismatch, nil)
-	}
-
-	for i := range messages {
-		var opStatus string
-		msg := messages[i]
-
-		opType, err := GetMethodName(msg.Message)
+	if requestedHeight > 1 {
+		states, err := getLotusStateCompute(ctx, &s.node, parentTipSet)
 		if err != nil {
 			return nil, err
 		}
-
-		if !IsOpSupported(opType) {
-			continue
-		}
-
-		if receipts[i].ExitCode.IsSuccess() {
-			opStatus = OperationStatusOk
-		} else {
-			opStatus = OperationStatusFailed
-		}
-
-		transactions = append(transactions, &types.Transaction{
-			TransactionIdentifier: &types.TransactionIdentifier{
-				Hash: msg.Cid.String(),
-			},
-			Operations: []*types.Operation{},
-		})
-
-		idx := len(transactions) - 1
-
-		switch opType {
-		case "Send", "AwardBlockReward", "ThisEpochReward",
-			"SwapSigner", "LockBalance", "AddBalance",
-			"WithdrawBalance":
-			{
-				transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
-					msg.Message.From.String(), msg.Message.Value.Neg().String(), opStatus)
-				transactions[idx].Operations = appendOp(transactions[idx].Operations, opType,
-					msg.Message.To.String(), msg.Message.Value.String(), opStatus)
-			}
-		}
+		transactions = buildTransactions(states)
 	}
 
 	//Add block metadata
@@ -221,6 +175,77 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
+func buildTransactions(states *api.ComputeStateOutput) []*types.Transaction {
+	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
+
+	var transactions []*types.Transaction
+	for i := range states.Trace {
+		trace := states.Trace[i]
+		var operations []*types.Operation
+
+		// Analyze full trace recursively
+		processTrace(&trace.ExecutionTrace, &operations)
+
+		if len(operations) > 0 {
+			//Add the corresponding "Fee" operation
+			if trace.MsgRct.GasUsed > 0 {
+				fee := abi.NewTokenAmount(trace.MsgRct.GasUsed)
+				opStatus := OperationStatusFailed
+				if trace.MsgRct.ExitCode.IsSuccess() {
+					opStatus = OperationStatusOk
+				}
+				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
+					fee.Neg().String(), opStatus)
+			}
+
+			transactions = append(transactions, &types.Transaction{
+				TransactionIdentifier: &types.TransactionIdentifier{
+					Hash: trace.Msg.Cid().String(),
+				},
+				Operations: operations,
+			})
+		}
+	}
+	return transactions
+}
+
+func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTypes.TipSet) (*api.ComputeStateOutput, *types.Error) {
+	defer TimeTrack(time.Now(), "[Lotus]StateCompute")
+
+	states, err := (*node).StateCompute(ctx, tipSet.Height(), nil, tipSet.Key())
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetTrace, err)
+	}
+	return states, nil
+}
+
+func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+	baseMethod, _ := GetMethodName(trace.Msg)
+	opStatus := OperationStatusFailed
+	if trace.MsgRct.ExitCode.IsSuccess() {
+		opStatus = OperationStatusOk
+	}
+
+	switch baseMethod {
+	case "Send":
+		{
+			*operations = appendOp(*operations, baseMethod, trace.Msg.From.String(),
+				trace.Msg.Value.Neg().String(), opStatus)
+			*operations = appendOp(*operations, baseMethod, trace.Msg.To.String(),
+				trace.Msg.Value.String(), opStatus)
+		}
+	case "SwapSigner", "Propose":
+		{
+			*operations = appendOp(*operations, baseMethod, trace.Msg.From.String(), "0", opStatus)
+		}
+	}
+
+	for i := range trace.Subcalls {
+		subTrace := trace.Subcalls[i]
+		processTrace(&subTrace, operations)
+	}
+}
+
 func appendOp(ops []*types.Operation, opType string, account string, amount string, status string) []*types.Operation {
 	opIndex := int64(len(ops))
 	op := &types.Operation{
@@ -239,7 +264,7 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 	}
 
 	// Add related operation
-	if opIndex >= 1 {
+	if opIndex > 1 {
 		op.RelatedOperations = []*types.OperationIdentifier{
 			{
 				Index: opIndex - 1,
@@ -248,15 +273,6 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 	}
 
 	return append(ops, op)
-}
-
-func IsOpSupported(op string) bool {
-	supported, ok := SupportedOperations[op]
-	if ok && supported {
-		return true
-	}
-
-	return false
 }
 
 // BlockTransaction implements the /block/transaction endpoint.
