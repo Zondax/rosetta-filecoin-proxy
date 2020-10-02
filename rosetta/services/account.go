@@ -110,6 +110,12 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		case LockedBalanceStr:
 			lockedFunds := stateMultisig.AmountLocked(queryTipSet.Height())
 			balanceStr = lockedFunds.String()
+		case SpendableBalanceStr:
+			available, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetBalance, err)
+			}
+			balanceStr = available.String()
 		case VestingScheduleStr:
 			stEpoch := stateMultisig.StartEpoch.String()
 			unlockDuration := stateMultisig.UnlockDuration.String()
@@ -121,16 +127,8 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			return nil, BuildError(ErrMustSpecifySubAccount, nil)
 		}
 	} else {
-		//Get available balance
-		if isMultiSig {
-			balance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetBalance, err)
-			}
-			balanceStr = balance.String()
-		} else {
-			balanceStr = actor.Balance.String()
-		}
+		//Get available balance (spendable + locked)
+		balanceStr = actor.Balance.String()
 	}
 
 	queryTipSetHeight := int64(queryTipSet.Height())
