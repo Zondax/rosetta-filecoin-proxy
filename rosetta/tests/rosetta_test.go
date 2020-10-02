@@ -255,7 +255,7 @@ func TestSendTransaction(t *testing.T) {
 		Metadata: mtx,
 	}
 
-	txBase64, err := r.ConstructPayment(pr)
+	txJSON, err := r.ConstructPayment(pr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,14 +265,14 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sig, err := r.SignTx(txBase64, sk)
+	signedTxJSON, err := r.SignTxJSON(txJSON, sk)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	requestSubmit := &types.ConstructionSubmitRequest{
 		NetworkIdentifier: NetworkID,
-		SignedTransaction: sig,
+		SignedTransaction: signedTxJSON,
 	}
 
 	respSubmit, err1, err2 := rosettaClient.ConstructionAPI.ConstructionSubmit(ctx, requestSubmit)
@@ -288,7 +288,7 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal("Panicking")
 	}
 
-	hash, err := r.Hash(sig)
+	hash, err := r.Hash(signedTxJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -349,7 +349,7 @@ func TestSendTransaction(t *testing.T) {
 		Metadata: mtx,
 	}
 
-	txBase64, err = r.ConstructPayment(pr)
+	txJSON, err = r.ConstructPayment(pr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -359,14 +359,14 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sig, err = r.SignTx(txBase64, sk)
+	signedTxJSON, err = r.SignTxJSON(txJSON, sk)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	requestSubmit = &types.ConstructionSubmitRequest{
 		NetworkIdentifier: NetworkID,
-		SignedTransaction: sig,
+		SignedTransaction: signedTxJSON,
 	}
 
 	respSubmit, err1, err2 = rosettaClient.ConstructionAPI.ConstructionSubmit(ctx, requestSubmit)
@@ -382,7 +382,7 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal("Panicking")
 	}
 
-	hash, err = r.Hash(sig)
+	hash, err = r.Hash(signedTxJSON)
 	if err != nil {
 		t.Fatal(err)
 	}

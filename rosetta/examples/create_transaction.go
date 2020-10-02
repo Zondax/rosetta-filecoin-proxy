@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	//filtypes "github.com/filecoin-project/lotus/chain/types"
 )
 
 const ServerURL = "http://localhost:8080"
@@ -94,7 +93,7 @@ func main() {
 		Metadata: mtx,
 	}
 
-	txBase64, err := r.ConstructPayment(pr)
+	txJSON, err := r.ConstructPayment(pr)
 	if err != nil {
 		panic(err)
 	}
@@ -104,15 +103,15 @@ func main() {
 		panic(err)
 	}
 
-	sig, err := r.SignTx(txBase64, sk)
+	signedTxJSON, err := r.SignTxJSON(txJSON, sk)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(sig)
+	fmt.Println(signedTxJSON)
 	requestSubmit := &types.ConstructionSubmitRequest{
 		NetworkIdentifier: Network,
-		SignedTransaction: sig,
+		SignedTransaction: signedTxJSON,
 	}
 
 	respSubmit, err1, err2 := rosettaClient.ConstructionAPI.ConstructionSubmit(ctx, requestSubmit)
@@ -130,7 +129,7 @@ func main() {
 
 	fmt.Println(respSubmit.TransactionIdentifier.Hash)
 
-	hash, err := r.Hash(sig)
+	hash, err := r.Hash(signedTxJSON)
 	if err != nil {
 		panic(err)
 	}
