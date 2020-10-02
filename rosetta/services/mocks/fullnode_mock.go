@@ -31,6 +31,18 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) SyncValidateTipset(ctx context.Context, tsk filTypes.TipSetKey) (bool, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) WalletValidateAddress(ctx context.Context, s string) (address.Address, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientQueryAsk(ctx context.Context, p peer.ID, miner address.Address) (*storagemarket.StorageAsk, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *bitfield.BitField, key filTypes.TipSetKey) ([]*minerBuiltin.SectorOnChainInfo, error) {
 	panic("implement me")
 }
@@ -544,10 +556,6 @@ func (f *FullNodeMock) ClientHasLocal(ctx context.Context, root cid.Cid) (bool, 
 }
 
 func (f *FullNodeMock) ClientRetrieve(ctx context.Context, order api.RetrievalOrder, ref *api.FileRef) error {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) ClientQueryAsk(ctx context.Context, p peer.ID, miner address.Address) (*storagemarket.SignedStorageAsk, error) {
 	panic("implement me")
 }
 

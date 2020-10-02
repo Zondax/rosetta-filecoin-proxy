@@ -31,8 +31,11 @@ lint:
 	golangci-lint run -E gofmt -E gosec -E goconst -E gocritic
 #   golangci-lint run -E stylecheck -E gosec -E goconst -E godox -E gocritic
 
-test:
-	go test
+test: build
+	go test -race ./rosetta/services
+
+test_integration: build
+	go test -race ./rosetta/tests
 
 gitclean:
 	git clean -xfd
