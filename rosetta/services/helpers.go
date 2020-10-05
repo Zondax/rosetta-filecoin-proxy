@@ -79,19 +79,6 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		skipDB    bool
 	)
 
-	if len(msg.To.String()) > 2 {
-		//Shortcut 3 - addresses starting with "t1" or "t3" address are always account actors
-		addPrefix := msg.To.String()[0:2]
-		if addPrefix == "t1" || addPrefix == "t3" {
-			actorCode = builtin.AccountActorCodeID
-			skipDB = true
-			//TODO Shortcut 4 - addresses starting with "t0" or "t2" address are always miner actors
-		} /*else if addPrefix == "t0" || addPrefix == "t2" {
-			actorCode = builtin.StorageMinerActorCodeID
-			skipDB = true
-		} */
-	}
-
 	// Search for actor in cache
 	if !skipDB {
 		var err error
@@ -148,13 +135,4 @@ func GetSupportedOpList() []string {
 	}
 
 	return operations
-}
-
-func IsOpSupported(op string) bool {
-	supported, ok := SupportedOperations[op]
-	if ok && supported {
-		return true
-	}
-
-	return false
 }
