@@ -160,6 +160,7 @@ func (s *NetworkAPIService) NetworkOptions(
 			NodeVersion:    version.Version,
 		},
 		Allow: &types.Allow{
+			HistoricalBalanceLookup: true,
 			OperationStatuses: []*types.OperationStatus{
 				{
 					Status:     OperationStatusOk,
