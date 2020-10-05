@@ -124,9 +124,9 @@ func (s *BlockAPIService) Block(
 	}
 
 	//Build transactions data
-	var transactions []*types.Transaction
+	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
-		states, err := getLotusStateCompute(ctx, &s.node, parentTipSet)
+		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +165,7 @@ func (s *BlockAPIService) Block(
 		Metadata:              md,
 	}
 	if transactions != nil {
-		respBlock.Transactions = transactions
+		respBlock.Transactions = *transactions
 	}
 
 	resp := &types.BlockResponse{
@@ -175,7 +175,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func buildTransactions(states *api.ComputeStateOutput) []*types.Transaction {
+func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
 
 	var transactions []*types.Transaction
@@ -206,7 +206,7 @@ func buildTransactions(states *api.ComputeStateOutput) []*types.Transaction {
 			})
 		}
 	}
-	return transactions
+	return &transactions
 }
 
 func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTypes.TipSet) (*api.ComputeStateOutput, *types.Error) {
@@ -237,6 +237,11 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	case "SwapSigner", "Propose":
 		{
 			*operations = appendOp(*operations, baseMethod, trace.Msg.From.String(), "0", opStatus)
+		}
+	case "AwardBlockReward", "OnDeferredCronEvent":
+		{
+			*operations = appendOp(*operations, baseMethod, trace.Msg.To.String(),
+				trace.Msg.Value.String(), opStatus)
 		}
 	}
 
