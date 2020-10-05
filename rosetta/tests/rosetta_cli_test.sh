@@ -6,11 +6,13 @@ trap "exit 1" INT
 GRN=$'\e[32;1m'
 OFF=$'\e[0m'
 
-go get github.com/coinbase/rosetta-cli@v0.5.2
+go get github.com/coinbase/rosetta-cli@v0.5.7
+
+rm -rf /tmp/rosetta-cli-test/*
 
 printf "${GRN}### Running rosetta-cli tests${OFF}\n"
 
 #Add all rosetta-cli checks here
-rosetta-cli check:data --configuration-file ./rosetta-config.txt
+rosetta-cli check:data --configuration-file ./rosetta-config.json
 
 printf "${GRN}### Tests finished.${OFF}\n"
