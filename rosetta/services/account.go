@@ -77,13 +77,31 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 	}
 
+	var balanceStr = "0"
+	queryTipSetHeight := int64(queryTipSet.Height())
+	queryTipSetHash, err := BuildTipSetKeyHash(queryTipSet.Key())
+	if err != nil {
+		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
+	}
+
 	actor, err := a.node.StateGetActor(context.Background(), addr, queryTipSet.Key())
 	if err != nil {
-		return nil, BuildError(ErrUnableToGetActor, err)
+		// If actor is not found on chain, return 0 balance
+		return &types.AccountBalanceResponse{
+			BlockIdentifier: &types.BlockIdentifier{
+				Index: queryTipSetHeight,
+				Hash:  *queryTipSetHash,
+			},
+			Balances: []*types.Amount{
+				{
+					Value:    "0",
+					Currency: GetCurrencyData(),
+				},
+			},
+		}, nil
 	}
 
 	md := make(map[string]interface{})
-	var balanceStr = "0"
 	isMultiSig := actor.Code == builtin.MultisigActorCodeID
 
 	if request.AccountIdentifier.SubAccount != nil {
@@ -129,12 +147,6 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	} else {
 		//Get available balance (spendable + locked)
 		balanceStr = actor.Balance.String()
-	}
-
-	queryTipSetHeight := int64(queryTipSet.Height())
-	queryTipSetHash, err := BuildTipSetKeyHash(queryTipSet.Key())
-	if err != nil {
-		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
 	resp := &types.AccountBalanceResponse{
