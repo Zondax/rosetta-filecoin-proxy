@@ -36,7 +36,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockTipSet := buildMockTargetTipSet(mockHeight)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(builtin.MultisigActorCodeID, "1000")
+	mockMsigActor := buildActorMock(builtin.MultisigActorCodeID, "100")
 	mockActorState := buildMultisigActorStateMock(mockMsigActor)
 	///
 
@@ -144,7 +144,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 				},
 				Balances: []*types.Amount{
 					{
-						Value:    "0",
+						Value:    "100",
 						Currency: GetCurrencyData(),
 						Metadata: nil,
 					},

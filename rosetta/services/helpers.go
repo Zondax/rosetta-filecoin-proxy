@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/specs-actors/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
@@ -64,6 +65,10 @@ func GetCurrencyData() *types.Currency {
 
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
+	if msg == nil {
+		return "", BuildError(ErrMalformedValue, nil)
+	}
+
 	//Shortcut 1 - Method "0" corresponds to "MethodSend"
 	if msg.Method == 0 {
 		return "Send", nil
@@ -74,18 +79,13 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	var (
-		actorCode cid.Cid
-		skipDB    bool
-	)
+	var actorCode cid.Cid
 
 	// Search for actor in cache
-	if !skipDB {
-		var err error
-		actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
-		if err != nil {
-			return unknownStr, nil
-		}
+	var err error
+	actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
+	if err != nil {
+		return unknownStr, nil
 	}
 
 	var method interface{}
@@ -126,6 +126,24 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
+}
+
+func GetActorPubKey(add address.Address) (string, *types.Error) {
+	var pubKey string
+	switch add.Protocol() {
+	case address.BLS, address.SECP256K1, address.Actor:
+		pubKey = add.String()
+	default:
+		// Search for actor's pubkey in cache.
+		// If cannot get actor's pubkey, GetActorPubKey will return the same address
+		var err error
+		pubKey, err = tools.ActorsDB.GetActorPubKey(add)
+		if err != nil {
+			return add.String(), nil
+		}
+	}
+
+	return pubKey, nil
 }
 
 func GetSupportedOpList() []string {

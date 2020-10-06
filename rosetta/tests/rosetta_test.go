@@ -395,7 +395,7 @@ func TestSendTransaction(t *testing.T) {
 func TestGetBalance(t *testing.T) {
 
 	rosettaClient := setupRosettaClient()
-	testAddress := "t023232"
+	testAddress := "t020406"
 
 	fmt.Println("Testing on address:", testAddress)
 
