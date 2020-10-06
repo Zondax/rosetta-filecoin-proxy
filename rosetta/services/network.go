@@ -4,13 +4,9 @@ import (
 	"context"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"time"
-
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
-
-const DummyHash = "0000000000000000000000000000000000000000"
 
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
 type NetworkAPIService struct {
@@ -57,7 +53,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	var (
 		headTipSet            *filTypes.TipSet
 		err                   error
-		useDummyHead          = false
+		useGenesisTipSet      = false
 		blockIndex, timeStamp int64
 		blockHashedTipSet     string
 	)
@@ -76,8 +72,8 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 	if !status.IsSynced() {
 		//Cannot retrieve any TipSet while node is syncing
-		//use a dummy TipSet instead
-		useDummyHead = true
+		//use Genesis TipSet instead
+		useGenesisTipSet = true
 	}
 
 	//Get head TipSet
@@ -116,14 +112,14 @@ func (s *NetworkAPIService) NetworkStatus(
 		})
 	}
 
-	if !useDummyHead {
+	if !useGenesisTipSet {
 		blockIndex = int64(headTipSet.Height())
 		timeStamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond
 		blockHashedTipSet = *hashHeadTipSet
 	} else {
 		blockIndex = 0
-		timeStamp = time.Now().Unix() * FactorSecondToMillisecond
-		blockHashedTipSet = DummyHash
+		timeStamp = int64(genesisTipSet.MinTimestamp()) * FactorSecondToMillisecond
+		blockHashedTipSet = *hashGenesisTipSet
 	}
 
 	resp := &types.NetworkStatusResponse{
