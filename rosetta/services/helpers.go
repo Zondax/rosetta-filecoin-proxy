@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/specs-actors/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
@@ -121,6 +122,19 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
+}
+
+func GetActorPubKey(add *address.Address) string {
+	var pubKey string
+	switch add.Protocol() {
+	case address.BLS, address.SECP256K1, address.Actor:
+		pubKey = add.String()
+	default:
+		// Search for actor's pubkey in cache
+		pubKey = tools.ActorsDB.GetActorPubKey(*add)
+	}
+
+	return pubKey
 }
 
 func GetSupportedOpList() []string {

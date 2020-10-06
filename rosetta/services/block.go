@@ -220,7 +220,14 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 }
 
 func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
-	baseMethod, _ := GetMethodName(trace.Msg)
+	baseMethod, err := GetMethodName(trace.Msg)
+	if err != nil {
+		return
+	}
+
+	fromPk := GetActorPubKey(&trace.Msg.From)
+	toPk := GetActorPubKey(&trace.Msg.To)
+
 	opStatus := OperationStatusFailed
 	if trace.MsgRct.ExitCode.IsSuccess() {
 		opStatus = OperationStatusOk
@@ -229,18 +236,18 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	switch baseMethod {
 	case "Send":
 		{
-			*operations = appendOp(*operations, baseMethod, trace.Msg.From.String(),
+			*operations = appendOp(*operations, baseMethod, fromPk,
 				trace.Msg.Value.Neg().String(), opStatus)
-			*operations = appendOp(*operations, baseMethod, trace.Msg.To.String(),
+			*operations = appendOp(*operations, baseMethod, toPk,
 				trace.Msg.Value.String(), opStatus)
 		}
 	case "SwapSigner", "Propose":
 		{
-			*operations = appendOp(*operations, baseMethod, trace.Msg.From.String(), "0", opStatus)
+			*operations = appendOp(*operations, baseMethod, fromPk, "0", opStatus)
 		}
 	case "AwardBlockReward", "OnDeferredCronEvent":
 		{
-			*operations = appendOp(*operations, baseMethod, trace.Msg.To.String(),
+			*operations = appendOp(*operations, baseMethod, toPk,
 				trace.Msg.Value.String(), opStatus)
 		}
 	}
