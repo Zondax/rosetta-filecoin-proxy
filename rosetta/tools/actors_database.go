@@ -17,7 +17,7 @@ type Database interface {
 	GetActorCode(address address.Address) (cid.Cid, error)
 	storeActorCode(address address.Address, actorCode cid.Cid)
 	//Address-ActorPubkey Map
-	GetActorPubKey(address address.Address) string
+	GetActorPubKey(address address.Address) (string, error)
 	storeActorPubKey(address address.Address, pubKey string)
 }
 
@@ -61,27 +61,31 @@ func (m *Cache) retrieveActorFromLotus(add address.Address) (cid.Cid, error) {
 	return actor.Code, nil
 }
 
-func (m *Cache) GetActorPubKey(address address.Address) string {
+func (m *Cache) GetActorPubKey(address address.Address) (string, error) {
 	pubKey, ok := m.pubKeyMap.Get(address.String())
 	if !ok {
-		pubKey = m.retrieveActorPubKeyFromLotus(&address)
+		var err error
+		pubKey, err = m.retrieveActorPubKeyFromLotus(address)
+		if err != nil {
+			return address.String(), err
+		}
 		m.storeActorPubKey(address, pubKey.(string))
 	}
 
-	return pubKey.(string)
+	return pubKey.(string), nil
 }
 
 func (m *Cache) storeActorPubKey(address address.Address, pubKey string) {
 	m.pubKeyMap.Set(address.String(), pubKey)
 }
 
-func (m *Cache) retrieveActorPubKeyFromLotus(add *address.Address) string {
-	key, err := (*m.Node).StateAccountKey(context.Background(), *add, filTypes.EmptyTSK)
+func (m *Cache) retrieveActorPubKeyFromLotus(add address.Address) (string, error) {
+	key, err := (*m.Node).StateAccountKey(context.Background(), add, filTypes.EmptyTSK)
 	if err != nil {
-		return add.String()
+		return add.String(), nil
 	}
 
-	return key.String()
+	return key.String(), nil
 }
 
 /////

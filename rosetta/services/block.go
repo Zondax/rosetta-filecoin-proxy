@@ -225,8 +225,14 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		return
 	}
 
-	fromPk := GetActorPubKey(&trace.Msg.From)
-	toPk := GetActorPubKey(&trace.Msg.To)
+	fromPk, err1 := GetActorPubKey(trace.Msg.From)
+	toPk, err2 := GetActorPubKey(trace.Msg.To)
+
+	if err1 != nil || err2 != nil {
+		Logger.Error("could not retrieve one or both pubkeys for addresses:",
+			trace.Msg.From.String(), trace.Msg.To.String())
+		return
+	}
 
 	opStatus := OperationStatusFailed
 	if trace.MsgRct.ExitCode.IsSuccess() {

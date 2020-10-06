@@ -65,6 +65,10 @@ func GetCurrencyData() *types.Currency {
 
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
+	if msg == nil {
+		return "", BuildError(ErrMalformedValue, nil)
+	}
+
 	//Shortcut 1 - Method "0" corresponds to "MethodSend"
 	if msg.Method == 0 {
 		return "Send", nil
@@ -124,17 +128,22 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	return methodName, nil
 }
 
-func GetActorPubKey(add *address.Address) string {
+func GetActorPubKey(add address.Address) (string, *types.Error) {
 	var pubKey string
 	switch add.Protocol() {
 	case address.BLS, address.SECP256K1, address.Actor:
 		pubKey = add.String()
 	default:
-		// Search for actor's pubkey in cache
-		pubKey = tools.ActorsDB.GetActorPubKey(*add)
+		// Search for actor's pubkey in cache.
+		// If cannot get actor's pubkey, GetActorPubKey will return the same address
+		var err error
+		pubKey, err = tools.ActorsDB.GetActorPubKey(add)
+		if err != nil {
+			return add.String(), nil
+		}
 	}
 
-	return pubKey
+	return pubKey, nil
 }
 
 func GetSupportedOpList() []string {
