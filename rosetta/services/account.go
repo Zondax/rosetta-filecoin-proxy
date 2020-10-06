@@ -126,7 +126,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 		switch request.AccountIdentifier.SubAccount.Address {
 		case LockedBalanceStr:
-			lockedFunds := stateMultisig.AmountLocked(queryTipSet.Height())
+			lockedFunds := stateMultisig.AmountLocked(queryTipSet.Height() - stateMultisig.StartEpoch)
 			balanceStr = lockedFunds.String()
 		case SpendableBalanceStr:
 			available, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
