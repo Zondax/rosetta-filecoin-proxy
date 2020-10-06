@@ -288,6 +288,12 @@ var (
 		Retriable: false,
 	}
 
+	ErrUnableToGetTrace = &types.Error{
+		Code:      47,
+		Message:   "unable to get trace for tipSet",
+		Retriable: true,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -335,6 +341,7 @@ var (
 		ErrUnableToEstimateGasLimit,
 		ErrUnableToEstimateGasFeeCap,
 		ErrOperationNotSupported,
+		ErrUnableToGetTrace,
 	}
 )
 

@@ -103,7 +103,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	// requests.
 	asserter, err := rosettaAsserter.NewServer(
 		srv.GetSupportedOpList(),
-		false,
+		true,
 		[]*types.NetworkIdentifier{network},
 	)
 	if err != nil {

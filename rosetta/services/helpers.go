@@ -6,6 +6,7 @@ import (
 	"github.com/filecoin-project/specs-actors/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
+	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
@@ -15,6 +16,11 @@ import (
 )
 
 const unknownStr = "Unknown"
+
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	Logger.Info(name, " took ", elapsed)
+}
 
 func BuildTipSetKeyHash(key filTypes.TipSetKey) (*string, error) {
 
@@ -58,11 +64,6 @@ func GetCurrencyData() *types.Currency {
 
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
-	var (
-		actorCode cid.Cid
-		skipDB    bool
-	)
-
 	//Shortcut 1 - Method "0" corresponds to "MethodSend"
 	if msg.Method == 0 {
 		return "Send", nil
@@ -73,14 +74,10 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	//Shortcut 3 - t1 and t3 address are always account actors
-	if len(msg.To.String()) > 2 {
-		addPrefix := msg.To.String()[0:2]
-		if addPrefix == "t1" || addPrefix == "t3" {
-			actorCode = builtin.AccountActorCodeID
-			skipDB = true
-		}
-	}
+	var (
+		actorCode cid.Cid
+		skipDB    bool
+	)
 
 	// Search for actor in cache
 	if !skipDB {
@@ -98,7 +95,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	case builtin.CronActorCodeID:
 		method = builtin.MethodsCron
 	case builtin.AccountActorCodeID:
-		method = builtin.MethodsMultisig
+		method = builtin.MethodsAccount
 	case builtin.StoragePowerActorCodeID:
 		method = builtin.MethodsPower
 	case builtin.StorageMinerActorCodeID:
