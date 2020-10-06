@@ -74,18 +74,13 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	var (
-		actorCode cid.Cid
-		skipDB    bool
-	)
+	var actorCode cid.Cid
 
 	// Search for actor in cache
-	if !skipDB {
-		var err error
-		actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
-		if err != nil {
-			return unknownStr, nil
-		}
+	var err error
+	actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
+	if err != nil {
+		return unknownStr, nil
 	}
 
 	var method interface{}
