@@ -126,7 +126,7 @@ func (s *BlockAPIService) Block(
 	//Build transactions data
 	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
-		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
+		states, err := getLotusStateCompute(ctx, &s.node, parentTipSet)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +195,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 					opStatus = OperationStatusOk
 				}
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
-					fee.Neg().String(), opStatus)
+					fee.Neg().String(), opStatus, false)
 			}
 
 			transactions = append(transactions, &types.Transaction{
@@ -243,18 +243,18 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	case "Send":
 		{
 			*operations = appendOp(*operations, baseMethod, fromPk,
-				trace.Msg.Value.Neg().String(), opStatus)
+				trace.Msg.Value.Neg().String(), opStatus, true)
 			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus)
+				trace.Msg.Value.String(), opStatus, true)
 		}
 	case "SwapSigner", "Propose":
 		{
-			*operations = appendOp(*operations, baseMethod, fromPk, "0", opStatus)
+			*operations = appendOp(*operations, baseMethod, fromPk, "0", opStatus, true)
 		}
 	case "AwardBlockReward", "OnDeferredCronEvent":
 		{
 			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus)
+				trace.Msg.Value.String(), opStatus, true)
 		}
 	}
 
@@ -264,7 +264,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	}
 }
 
-func appendOp(ops []*types.Operation, opType string, account string, amount string, status string) []*types.Operation {
+func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool) []*types.Operation {
 	opIndex := int64(len(ops))
 	op := &types.Operation{
 		OperationIdentifier: &types.OperationIdentifier{
@@ -282,7 +282,7 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 	}
 
 	// Add related operation
-	if opIndex > 1 {
+	if relateOp && opIndex > 0 {
 		op.RelatedOperations = []*types.OperationIdentifier{
 			{
 				Index: opIndex - 1,
