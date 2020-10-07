@@ -9,7 +9,6 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"github.com/filecoin-project/specs-actors/actors/builtin"
 	"github.com/filecoin-project/specs-actors/actors/builtin/multisig"
 )
 
@@ -84,7 +83,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
-	actor, err := a.node.StateGetActor(context.Background(), addr, queryTipSet.Key())
+	actor, err := a.node.StateGetActor(ctx, addr, queryTipSet.Key())
 	if err != nil {
 		// If actor is not found on chain, return 0 balance
 		return &types.AccountBalanceResponse{
@@ -102,11 +101,10 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	md := make(map[string]interface{})
-	isMultiSig := actor.Code == builtin.MultisigActorCodeID
 
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is multisig
-		if !isMultiSig {
+		if !actor.IsMultisigActor() {
 			return nil, BuildError(ErrAddNotMSig, nil)
 		}
 
