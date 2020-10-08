@@ -126,7 +126,7 @@ func (s *BlockAPIService) Block(
 	//Build transactions data
 	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
-		states, err := getLotusStateCompute(ctx, &s.node, parentTipSet)
+		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
 		if err != nil {
 			return nil, err
 		}
@@ -212,6 +212,8 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTypes.TipSet) (*api.ComputeStateOutput, *types.Error) {
 	defer TimeTrack(time.Now(), "[Lotus]StateCompute")
 
+	//StateCompute includes the messages at height N-1.
+	//So, we're getting the traces of the messages created at N-1, executed at N
 	states, err := (*node).StateCompute(ctx, tipSet.Height(), nil, tipSet.Key())
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTrace, err)
@@ -247,9 +249,17 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			*operations = appendOp(*operations, baseMethod, toPk,
 				trace.Msg.Value.String(), opStatus, true)
 		}
-	case "SwapSigner", "Propose":
+	case "Propose":
 		{
-			*operations = appendOp(*operations, baseMethod, fromPk, "0", opStatus, true)
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				"0", opStatus, true)
+		}
+	case "SwapSigner":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				"0", opStatus, true)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				"0", opStatus, true)
 		}
 	case "AwardBlockReward", "OnDeferredCronEvent":
 		{
