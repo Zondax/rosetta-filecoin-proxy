@@ -227,44 +227,45 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		return
 	}
 
-	fromPk, err1 := GetActorPubKey(trace.Msg.From)
-	toPk, err2 := GetActorPubKey(trace.Msg.To)
-
-	if err1 != nil || err2 != nil {
-		Logger.Error("could not retrieve one or both pubkeys for addresses:",
-			trace.Msg.From.String(), trace.Msg.To.String())
-		return
-	}
-
-	opStatus := OperationStatusFailed
-	if trace.MsgRct.ExitCode.IsSuccess() {
-		opStatus = OperationStatusOk
-	}
-
-	switch baseMethod {
-	case "Send":
-		{
-			*operations = appendOp(*operations, baseMethod, fromPk,
-				trace.Msg.Value.Neg().String(), opStatus, true)
-			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus, true)
+	if IsOpSupported(baseMethod) {
+		fromPk, err1 := GetActorPubKey(trace.Msg.From)
+		toPk, err2 := GetActorPubKey(trace.Msg.To)
+		if err1 != nil || err2 != nil {
+			Logger.Error("could not retrieve one or both pubkeys for addresses:",
+				trace.Msg.From.String(), trace.Msg.To.String())
+			return
 		}
-	case "Propose":
-		{
-			*operations = appendOp(*operations, baseMethod, fromPk,
-				"0", opStatus, true)
+
+		opStatus := OperationStatusFailed
+		if trace.MsgRct.ExitCode.IsSuccess() {
+			opStatus = OperationStatusOk
 		}
-	case "SwapSigner":
-		{
-			*operations = appendOp(*operations, baseMethod, fromPk,
-				"0", opStatus, true)
-			*operations = appendOp(*operations, baseMethod, toPk,
-				"0", opStatus, true)
-		}
-	case "AwardBlockReward", "OnDeferredCronEvent":
-		{
-			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus, true)
+
+		switch baseMethod {
+		case "Send":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, true)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true)
+			}
+		case "Propose":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					"0", opStatus, true)
+			}
+		case "SwapSigner":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					"0", opStatus, true)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					"0", opStatus, true)
+			}
+		case "AwardBlockReward", "OnDeferredCronEvent":
+			{
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true)
+			}
 		}
 	}
 
