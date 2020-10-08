@@ -351,7 +351,8 @@ func BuildError(proxyErr *types.Error, lotusErr error) *types.Error {
 	if lotusErr != nil {
 		if len(lotusErr.Error()) > 0 {
 			details := make(map[string]interface{})
-			details[LotusErrKey] = lotusErr.Error()
+			// TODO: Temporarily disable error details https://github.com/Zondax/rosetta-filecoin-proxy/issues/79
+			//details[LotusErrKey] = lotusErr.Error()
 			proxyErr.Details = details
 			lotusMsg = " | Lotus: " + lotusErr.Error()
 		}
