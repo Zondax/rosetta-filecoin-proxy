@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"github.com/filecoin-project/go-state-types/abi"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
-	"github.com/filecoin-project/specs-actors/actors/builtin"
+	"github.com/filecoin-project/specs-actors/v2/actors/builtin"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	"reflect"
@@ -31,20 +32,22 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 
 	// Mock needed input arguments
 	var mockHeight int64 = 100
-	var mockVestingEpoch = "139337"
-	var mockVestingUnlockDur = "373248"
+	var mockVestingStartEpoch = abi.ChainEpoch(139337)
+	var mockVestingUnlockDur = abi.ChainEpoch(373248)
+	var mockVestingInitialBalance = abi.NewTokenAmount(1000000)
+	var mockAvailableBalance = abi.NewTokenAmount(100)
 	mockTipSet := buildMockTargetTipSet(mockHeight)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
 	mockMsigActor := buildActorMock(builtin.MultisigActorCodeID, "100")
-	mockActorState := buildMultisigActorStateMock(mockMsigActor)
 	///
 
 	// Output
 	mdVestingSchedule := make(map[string]interface{})
 	vestingMap := map[string]string{}
-	vestingMap[VestingStartEpochKey] = mockVestingEpoch
-	vestingMap[VestingUnlockDurationKey] = mockVestingUnlockDur
+	vestingMap[VestingStartEpochKey] = mockVestingStartEpoch.String()
+	vestingMap[VestingUnlockDurationKey] = mockVestingUnlockDur.String()
+	vestingMap[VestingInitialBalanceKey] = mockVestingInitialBalance.String()
 	mdVestingSchedule[VestingScheduleStr] = vestingMap
 	///
 
@@ -66,9 +69,14 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockMsigActor, nil)
 	nodeMock.On("MsigGetAvailableBalance", mock.Anything, mock.Anything, mock.Anything).
-		Return(mockActorState.Balance, nil)
-	nodeMock.On("StateReadState", mock.Anything, mock.Anything, mock.Anything).
-		Return(mockActorState, nil)
+		Return(mockAvailableBalance, nil)
+	nodeMock.On("MsigGetVestingSchedule", mock.Anything, mock.Anything, mock.Anything).
+		Return(api.MsigVesting{
+			InitialBalance: mockVestingInitialBalance,
+			StartEpoch:     mockVestingStartEpoch,
+			UnlockDuration: mockVestingUnlockDur,
+		},
+			nil)
 	///
 
 	tests := []struct {
@@ -144,7 +152,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 				},
 				Balances: []*types.Amount{
 					{
-						Value:    "100",
+						Value:    "0",
 						Currency: GetCurrencyData(),
 						Metadata: nil,
 					},
@@ -239,17 +247,5 @@ func buildActorMock(actorCode cid.Cid, balanceStr string) *filTypes.Actor {
 		Head:    cid.Cid{},
 		Nonce:   0,
 		Balance: balance,
-	}
-}
-
-func buildMultisigActorStateMock(actor *filTypes.Actor) *api.ActorState {
-	state := make(map[string]interface{})
-	state[LockedFundsKey] = "100"
-	state[VestingStartEpochKey] = 139337
-	state[VestingUnlockDurationKey] = 373248
-	state["InitialBalance"] = actor.Balance
-	return &api.ActorState{
-		Balance: actor.Balance,
-		State:   state,
 	}
 }

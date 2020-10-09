@@ -36,6 +36,7 @@ const (
 	LockedFundsKey           = "LockedFunds"
 	VestingStartEpochKey     = "StartEpoch"
 	VestingUnlockDurationKey = "UnlockDuration"
+	VestingInitialBalanceKey = "InitialBalance"
 	///
 
 	///Misc
