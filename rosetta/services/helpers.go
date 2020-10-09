@@ -154,3 +154,12 @@ func GetSupportedOpList() []string {
 
 	return operations
 }
+
+func IsOpSupported(op string) bool {
+	supported, ok := SupportedOperations[op]
+	if ok && supported {
+		return true
+	}
+
+	return false
+}

@@ -195,7 +195,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 					opStatus = OperationStatusOk
 				}
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
-					fee.Neg().String(), opStatus)
+					fee.Neg().String(), opStatus, false)
 			}
 
 			transactions = append(transactions, &types.Transaction{
@@ -212,6 +212,8 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTypes.TipSet) (*api.ComputeStateOutput, *types.Error) {
 	defer TimeTrack(time.Now(), "[Lotus]StateCompute")
 
+	//StateCompute includes the messages at height N-1.
+	//So, we're getting the traces of the messages created at N-1, executed at N
 	states, err := (*node).StateCompute(ctx, tipSet.Height(), nil, tipSet.Key())
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTrace, err)
@@ -225,36 +227,45 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		return
 	}
 
-	fromPk, err1 := GetActorPubKey(trace.Msg.From)
-	toPk, err2 := GetActorPubKey(trace.Msg.To)
-
-	if err1 != nil || err2 != nil {
-		Logger.Error("could not retrieve one or both pubkeys for addresses:",
-			trace.Msg.From.String(), trace.Msg.To.String())
-		return
-	}
-
-	opStatus := OperationStatusFailed
-	if trace.MsgRct.ExitCode.IsSuccess() {
-		opStatus = OperationStatusOk
-	}
-
-	switch baseMethod {
-	case "Send":
-		{
-			*operations = appendOp(*operations, baseMethod, fromPk,
-				trace.Msg.Value.Neg().String(), opStatus)
-			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus)
+	if IsOpSupported(baseMethod) {
+		fromPk, err1 := GetActorPubKey(trace.Msg.From)
+		toPk, err2 := GetActorPubKey(trace.Msg.To)
+		if err1 != nil || err2 != nil {
+			Logger.Error("could not retrieve one or both pubkeys for addresses:",
+				trace.Msg.From.String(), trace.Msg.To.String())
+			return
 		}
-	case "SwapSigner", "Propose":
-		{
-			*operations = appendOp(*operations, baseMethod, fromPk, "0", opStatus)
+
+		opStatus := OperationStatusFailed
+		if trace.MsgRct.ExitCode.IsSuccess() {
+			opStatus = OperationStatusOk
 		}
-	case "AwardBlockReward", "OnDeferredCronEvent":
-		{
-			*operations = appendOp(*operations, baseMethod, toPk,
-				trace.Msg.Value.String(), opStatus)
+
+		switch baseMethod {
+		case "Send":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, true)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true)
+			}
+		case "Propose":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					"0", opStatus, true)
+			}
+		case "SwapSigner":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					"0", opStatus, true)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					"0", opStatus, true)
+			}
+		case "AwardBlockReward", "OnDeferredCronEvent":
+			{
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true)
+			}
 		}
 	}
 
@@ -264,7 +275,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	}
 }
 
-func appendOp(ops []*types.Operation, opType string, account string, amount string, status string) []*types.Operation {
+func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool) []*types.Operation {
 	opIndex := int64(len(ops))
 	op := &types.Operation{
 		OperationIdentifier: &types.OperationIdentifier{
@@ -282,7 +293,7 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 	}
 
 	// Add related operation
-	if opIndex > 1 {
+	if relateOp && opIndex > 0 {
 		op.RelatedOperations = []*types.OperationIdentifier{
 			{
 				Index: opIndex - 1,
