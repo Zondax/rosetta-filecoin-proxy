@@ -31,6 +31,27 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) MpoolPushUntrusted(ctx context.Context, message *filTypes.SignedMessage) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateVerifierStatus(ctx context.Context, addr address.Address, tsk filTypes.TipSetKey) (*abi.StoragePower, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateVerifiedRegistryRootKey(ctx context.Context, tsk filTypes.TipSetKey) (address.Address, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigGetVestingSchedule(ctx context.Context, a address.Address, key filTypes.TipSetKey) (api.MsigVesting, error) {
+	args := f.Called(ctx, a, key)
+	return args.Get(0).(api.MsigVesting), args.Error(1)
+}
+
+func (f *FullNodeMock) CreateBackup(ctx context.Context, fpath string) error {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) SyncValidateTipset(ctx context.Context, tsk filTypes.TipSetKey) (bool, error) {
 	panic("implement me")
 }

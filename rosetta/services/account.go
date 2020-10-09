@@ -2,14 +2,13 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
+	filBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"github.com/filecoin-project/specs-actors/actors/builtin/multisig"
 )
 
 // AccountAPIService implements the server.BlockAPIServicer interface.
@@ -103,47 +102,41 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	md := make(map[string]interface{})
 
 	if request.AccountIdentifier.SubAccount != nil {
-		// First, check if account is multisig
-		if !actor.IsMultisigActor() {
+		// First, check if account is a multisig
+		if !filBuiltin.IsMultisigActor(actor.Code) {
 			return nil, BuildError(ErrAddNotMSig, nil)
-		}
-
-		actorState, err := a.node.StateReadState(ctx, addr, queryTipSet.Key())
-		if err != nil || actorState == nil {
-			return nil, BuildError(ErrUnableToGetActorState, err)
-		}
-
-		tmpMap, ok := actorState.State.(map[string]interface{})
-		if !ok {
-			return nil, BuildError(ErrMalformedValue, nil)
-		}
-		stateMultisig, err := getMultisigState(tmpMap)
-		if err != nil {
-			return nil, BuildError(ErrMalformedValue, err)
 		}
 
 		switch request.AccountIdentifier.SubAccount.Address {
 		case LockedBalanceStr:
-			lockedFunds := stateMultisig.AmountLocked(queryTipSet.Height() - stateMultisig.StartEpoch)
-			balanceStr = lockedFunds.String()
-		case SpendableBalanceStr:
-			available, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
+			lockedBalance := actor.Balance
+			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
 				return nil, BuildError(ErrUnableToGetBalance, err)
 			}
-			balanceStr = available.String()
+			lockedBalance.Sub(lockedBalance.Int, spendableBalance.Int)
+			balanceStr = lockedBalance.String()
+		case SpendableBalanceStr:
+			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetBalance, err)
+			}
+			balanceStr = spendableBalance.String()
 		case VestingScheduleStr:
-			stEpoch := stateMultisig.StartEpoch.String()
-			unlockDuration := stateMultisig.UnlockDuration.String()
+			vestingSch, err := a.node.MsigGetVestingSchedule(ctx, addr, queryTipSet.Key())
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetVesting, err)
+			}
 			vestingMap := map[string]string{}
-			vestingMap[VestingStartEpochKey] = stEpoch
-			vestingMap[VestingUnlockDurationKey] = unlockDuration
+			vestingMap[VestingStartEpochKey] = vestingSch.StartEpoch.String()
+			vestingMap[VestingUnlockDurationKey] = vestingSch.UnlockDuration.String()
+			vestingMap[VestingInitialBalanceKey] = vestingSch.InitialBalance.String()
 			md[VestingScheduleStr] = vestingMap
 		default:
 			return nil, BuildError(ErrMustSpecifySubAccount, nil)
 		}
 	} else {
-		//Get available balance (spendable + locked)
+		//Get available balance (spendable + locked if multisig)
 		balanceStr = actor.Balance.String()
 	}
 
@@ -165,11 +158,4 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	return resp, nil
-}
-
-func getMultisigState(m map[string]interface{}) (multisig.State, error) {
-	data, _ := json.Marshal(m)
-	var result multisig.State
-	err := json.Unmarshal(data, &result)
-	return result, err
 }

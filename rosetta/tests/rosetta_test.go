@@ -392,11 +392,9 @@ func TestSendTransaction(t *testing.T) {
 	}
 }
 
-func TestGetBalance(t *testing.T) {
-
+func TestGetBalanceOfMultiSig(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 	testAddress := "t020406"
-
 	fmt.Println("Testing on address:", testAddress)
 
 	// Get full balance (locked + spendable)
@@ -422,7 +420,7 @@ func TestGetBalance(t *testing.T) {
 	}
 
 	full := resp.Balances[0].Value
-	fmt.Println("Full balance is:", full)
+	fmt.Println("Total balance is:", full)
 
 	// Get locked balance
 	req = &types.AccountBalanceRequest{
@@ -478,12 +476,29 @@ func TestGetBalance(t *testing.T) {
 	spendable := resp.Balances[0].Value
 	fmt.Println("Spendable balance is:", spendable)
 
-	//Check that values complies
-	nfull, _ := strconv.Atoi(full)
-	nlocked, _ := strconv.Atoi(locked)
-	nspendable, _ := strconv.Atoi(spendable)
-
-	if (nlocked + nspendable) != nfull {
-		t.Fatal("Balances mismatch")
+	// Get vesting schedule
+	req = &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: testAddress,
+			SubAccount: &types.SubAccountIdentifier{
+				Address: services.VestingScheduleStr,
+			},
+		},
 	}
+
+	resp, err1, err2 = rosettaClient.AccountAPI.AccountBalance(ctx, req)
+	if err1 != nil {
+		t.Fatal(err1.Message)
+	}
+
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+
+	if resp == nil || len(resp.Metadata) == 0 {
+		t.Fatal()
+	}
+
+	fmt.Println("Vesting schedule is:", resp.Metadata)
 }
