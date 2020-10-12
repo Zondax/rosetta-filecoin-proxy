@@ -1,35 +1,30 @@
 package services
 
 var (
-	//Versions info to be injected on build time
+	// Versions info to be injected on build time
 	RosettaSDKVersion = "Unknown"
 	LotusVersion      = "Unknown"
 	GitRevision       = "Unknown"
-	///
 
-	//Other configs
+	// Other configs
 	RetryConnectAttempts = "1000000"
-	///
 )
 
 const (
-	//Network
+	// Network
 	BlockChainName    = "Filecoin"
 	NetworkName       = "ignition"
 	RosettaServerPort = 8080
-	///
 
-	//Currency
+	// Currency
 	CurrencySymbol   = "FIL"
 	CurrencyDecimals = 18
-	///
 
-	//Operation status
+	// Operation status
 	OperationStatusOk     = "Ok"
 	OperationStatusFailed = "Fail"
-	///
 
-	///Account
+	// Account
 	LockedBalanceStr         = "LockedBalance"
 	SpendableBalanceStr      = "SpendableBalance"
 	VestingScheduleStr       = "VestingSchedule"
@@ -37,19 +32,17 @@ const (
 	VestingStartEpochKey     = "StartEpoch"
 	VestingUnlockDurationKey = "UnlockDuration"
 	VestingInitialBalanceKey = "InitialBalance"
-	///
 
-	///Misc
+	// Misc
 	ProxyLoggerName = "rosetta-filecoin-proxy"
-	///
 )
 
-//Supported operations
+// Supported operations
 var SupportedOperations = map[string]bool{
-	"Send":                true, //Common
-	"Fee":                 true, //Common
-	"SwapSigner":          true, //MethodsMultisig
-	"Propose":             true, //MethodsMultisig
-	"AwardBlockReward":    true, //MethodsReward
-	"OnDeferredCronEvent": true, //MethodsMiner
+	"Send":                true, // Common
+	"Fee":                 true, // Common
+	"SwapSigner":          true, // MethodsMultisig
+	"Propose":             true, // MethodsMultisig
+	"AwardBlockReward":    true, // MethodsReward
+	"OnDeferredCronEvent": true, // MethodsMiner
 }

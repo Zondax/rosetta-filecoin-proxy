@@ -83,13 +83,13 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	md := make(map[string]interface{})
 
 	if request.Options != nil {
-		//Parse block include epochs - this field is optional
+		// Parse block include epochs - this field is optional
 		blockIncl, ok := request.Options[OptionsBlockInclKey]
 		if ok {
 			blockInclUint = uint64(blockIncl.(float64))
 		}
 
-		//Parse sender address - this field is optional
+		// Parse sender address - this field is optional
 		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
 		if okSender {
 			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
@@ -99,7 +99,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			message.From = addressSenderParsed
 		}
 
-		//Parse receiver address - this field is optional
+		// Parse receiver address - this field is optional
 		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
 		if okReceiver {
 			addressReceiverParsed, err = address.NewFromString(addressReceiverRaw.(string))
@@ -116,14 +116,14 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			}
 			md[NonceKey] = nonce
 
-			//Get available balance
+			// Get available balance
 			actor, errAct := c.node.StateGetActor(context.Background(), addressSenderParsed, filTypes.EmptyTSK)
 			if errAct != nil {
 				return nil, BuildError(ErrUnableToGetActor, errAct)
 			}
 
 			if actor.Code == builtin.MultisigActorCodeID {
-				//Get the unlocked funds of the multisig account
+				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
 					return nil, BuildError(ErrUnableToGetBalance, err)

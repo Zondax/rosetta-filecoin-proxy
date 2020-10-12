@@ -34,7 +34,7 @@ func (m *MemPoolAPIService) Mempool(
 		return nil, errNet
 	}
 
-	//Check sync status
+	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &m.node)
 	if syncErr != nil {
 		return nil, syncErr
@@ -44,7 +44,7 @@ func (m *MemPoolAPIService) Mempool(
 		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil)
 	}
 
-	//Get head TipSet
+	// Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err)
@@ -80,7 +80,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 		return nil, errNet
 	}
 
-	//Check sync status
+	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &m.node)
 	if syncErr != nil {
 		return nil, syncErr
@@ -99,7 +99,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 		return nil, BuildError(ErrMalformedValue, err)
 	}
 
-	//Get head TipSet
+	// Get head TipSet
 	headTipSet, err := m.node.ChainHead(ctx)
 	if err != nil || headTipSet == nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err)
@@ -129,7 +129,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 			return nil, err
 		}
 
-		opStatus := "Pending" //TODO get status from receipt?
+		opStatus := "Pending" // TODO get status from receipt?
 
 		transaction.Operations = appendOp(transaction.Operations, opType,
 			msg.Message.From.String(), msg.Message.Value.String(), opStatus, true)

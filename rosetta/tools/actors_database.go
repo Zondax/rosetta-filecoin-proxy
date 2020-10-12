@@ -13,15 +13,15 @@ var ActorsDB Database
 
 type Database interface {
 	NewImpl(*api.FullNode)
-	//Address-ActorCID Map
+	// Address-ActorCID Map
 	GetActorCode(address address.Address) (cid.Cid, error)
 	storeActorCode(address address.Address, actorCode cid.Cid)
-	//Address-ActorPubkey Map
+	// Address-ActorPubkey Map
 	GetActorPubKey(address address.Address) (string, error)
 	storeActorPubKey(address address.Address, pubKey string)
 }
 
-/// In-memory database ///
+// In-memory database
 type Cache struct {
 	cidMap    cmap.ConcurrentMap
 	pubKeyMap cmap.ConcurrentMap
@@ -87,5 +87,3 @@ func (m *Cache) retrieveActorPubKeyFromLotus(add address.Address) (string, error
 
 	return key.String(), nil
 }
-
-/////

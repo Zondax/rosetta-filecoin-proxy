@@ -71,14 +71,8 @@ func main() {
 		panic(err)
 	}
 
-	gasPremium, err := strconv.ParseInt(respMetadata.Metadata[services.GasPremiumKey].(string), 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	gasFeeCap, err := strconv.ParseInt(respMetadata.Metadata[services.GasFeeCapKey].(string), 10, 64)
-	if err != nil {
-		panic(err)
-	}
+	gasPremium := respMetadata.Metadata[services.GasPremiumKey].(string)
+	gasFeeCap := respMetadata.Metadata[services.GasFeeCapKey].(string)
 
 	mtx := rosettaFilecoinLib.TxMetadata{
 		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
@@ -89,7 +83,7 @@ func main() {
 	pr := &rosettaFilecoinLib.PaymentRequest{
 		From:     "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
 		To:       "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-		Quantity: 100000,
+		Quantity: "100000",
 		Metadata: mtx,
 	}
 

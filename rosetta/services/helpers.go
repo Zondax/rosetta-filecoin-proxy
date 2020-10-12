@@ -69,12 +69,12 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "", BuildError(ErrMalformedValue, nil)
 	}
 
-	//Shortcut 1 - Method "0" corresponds to "MethodSend"
+	// Shortcut 1 - Method "0" corresponds to "MethodSend"
 	if msg.Method == 0 {
 		return "Send", nil
 	}
 
-	//Shortcut 2 - Method "1" corresponds to "MethodConstructor"
+	// Shortcut 2 - Method "1" corresponds to "MethodConstructor"
 	if msg.Method == 1 {
 		return "Constructor", nil
 	}

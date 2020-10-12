@@ -39,7 +39,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, BuildError(ErrInvalidAccountAddress, nil)
 	}
 
-	//Check sync status
+	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &a.node)
 	if syncErr != nil {
 		return nil, syncErr
@@ -136,7 +136,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			return nil, BuildError(ErrMustSpecifySubAccount, nil)
 		}
 	} else {
-		//Get available balance (spendable + locked if multisig)
+		// Get available balance (spendable + locked if multisig)
 		balanceStr = actor.Balance.String()
 	}
 
