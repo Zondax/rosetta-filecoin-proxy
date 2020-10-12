@@ -201,7 +201,7 @@ func TestSendTransaction(t *testing.T) {
 	pkA := "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
 	pkB := "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
 	var options = make(map[string]interface{})
-	var amount uint64 = 1
+	var amount = "1"
 
 	//Send from A to B
 	options[services.OptionsSenderIDKey] = addressA
@@ -233,14 +233,8 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	gasPremium, err := strconv.ParseInt(respMetadata.Metadata[services.GasPremiumKey].(string), 10, 64)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gasFeeCap, err := strconv.ParseInt(respMetadata.Metadata[services.GasFeeCapKey].(string), 10, 64)
-	if err != nil {
-		t.Fatal(err)
-	}
+	gasPremium := respMetadata.Metadata[services.GasPremiumKey].(string)
+	gasFeeCap := respMetadata.Metadata[services.GasFeeCapKey].(string)
 
 	mtx := rosettaFilecoinLib.TxMetadata{
 		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
@@ -327,14 +321,8 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	gasPremium, err = strconv.ParseInt(respMetadata.Metadata[services.GasPremiumKey].(string), 10, 64)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gasFeeCap, err = strconv.ParseInt(respMetadata.Metadata[services.GasFeeCapKey].(string), 10, 64)
-	if err != nil {
-		t.Fatal(err)
-	}
+	gasPremium= respMetadata.Metadata[services.GasPremiumKey].(string)
+	gasFeeCap = respMetadata.Metadata[services.GasFeeCapKey].(string)
 
 	mtx = rosettaFilecoinLib.TxMetadata{
 		Nonce:      uint64(respMetadata.Metadata[services.NonceKey].(float64)),
