@@ -11,7 +11,7 @@ var log = logging.Logger("RPC_Lotus")
 
 type LotusRPCWrapper func()
 
-/// WrapWithTimeout executes lotusFunc but return an error after the `timeout`
+// WrapWithTimeout executes lotusFunc but return an error after the `timeout`
 func WrapWithTimeout(lotusFunc LotusRPCWrapper, timeout time.Duration) error {
 	ch := make(chan bool, 1)
 	defer func() {

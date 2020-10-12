@@ -58,7 +58,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		blockHashedTipSet     string
 	)
 
-	//Check sync status
+	// Check sync status
 
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
@@ -71,12 +71,12 @@ func (s *NetworkAPIService) NetworkStatus(
 		TargetIndex:  status.GetTargetIndex(),
 	}
 	if !status.IsSynced() {
-		//Cannot retrieve any TipSet while node is syncing
-		//use Genesis TipSet instead
+		// Cannot retrieve any TipSet while node is syncing
+		// use Genesis TipSet instead
 		useGenesisTipSet = true
 	}
 
-	//Get head TipSet
+	// Get head TipSet
 	headTipSet, err = s.node.ChainHead(ctx)
 
 	if err != nil || headTipSet == nil {
@@ -88,7 +88,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
-	//Get genesis TipSet
+	// Get genesis TipSet
 	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
 		return nil, BuildError(ErrUnableToGetGenesisBlk, err)
@@ -99,7 +99,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
 	}
 
-	//Get peers data
+	// Get peers data
 	peersFil, err := s.node.NetPeers(ctx)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetPeers, err)

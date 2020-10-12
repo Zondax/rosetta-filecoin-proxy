@@ -56,7 +56,7 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrMalformedValue, nil)
 	}
 
-	//Check sync status
+	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
@@ -84,9 +84,9 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrUnableToGetTipset, err)
 	}
 
-	//If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
-	//Check if the retrieved TipSet is actually the requested one
-	//details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
+	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
+	// Check if the retrieved TipSet is actually the requested one
+	// details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
 	if int64(tipSet.Height()) != requestedHeight {
 		return &types.BlockResponse{}, nil
 	}
@@ -101,7 +101,7 @@ func (s *BlockAPIService) Block(
 		}
 	}
 
-	//Get parent TipSet
+	// Get parent TipSet
 	var parentTipSet *filTypes.TipSet
 	if requestedHeight > 0 {
 		if tipSet.Parents().IsEmpty() {
@@ -123,7 +123,7 @@ func (s *BlockAPIService) Block(
 		parentTipSet = tipSet
 	}
 
-	//Build transactions data
+	// Build transactions data
 	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
 		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
@@ -133,7 +133,7 @@ func (s *BlockAPIService) Block(
 		transactions = buildTransactions(states)
 	}
 
-	//Add block metadata
+	// Add block metadata
 	md := make(map[string]interface{})
 	var blockCIDs []string
 	for _, cid := range tipSet.Cids() {
@@ -187,7 +187,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		processTrace(&trace.ExecutionTrace, &operations)
 
 		if len(operations) > 0 {
-			//Add the corresponding "Fee" operation
+			// Add the corresponding "Fee" operation
 			if trace.MsgRct.GasUsed > 0 {
 				fee := abi.NewTokenAmount(trace.MsgRct.GasUsed)
 				opStatus := OperationStatusFailed
@@ -212,8 +212,8 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTypes.TipSet) (*api.ComputeStateOutput, *types.Error) {
 	defer TimeTrack(time.Now(), "[Lotus]StateCompute")
 
-	//StateCompute includes the messages at height N-1.
-	//So, we're getting the traces of the messages created at N-1, executed at N
+	// StateCompute includes the messages at height N-1.
+	// So, we're getting the traces of the messages created at N-1, executed at N
 	states, err := (*node).StateCompute(ctx, tipSet.Height(), nil, tipSet.Key())
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTrace, err)

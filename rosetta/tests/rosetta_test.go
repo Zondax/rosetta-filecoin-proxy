@@ -203,7 +203,7 @@ func TestSendTransaction(t *testing.T) {
 	var options = make(map[string]interface{})
 	var amount = "1"
 
-	//Send from A to B
+	// Send from A to B
 	options[services.OptionsSenderIDKey] = addressA
 	options[services.OptionsReceiverIDKey] = addressB
 	options[services.OptionsBlockInclKey] = 1
@@ -291,7 +291,7 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal("NOT MATCHING")
 	}
 
-	//Send tokens back to A
+	// Send tokens back to A
 	options[services.OptionsSenderIDKey] = addressB
 	options[services.OptionsReceiverIDKey] = addressA
 	options[services.OptionsBlockInclKey] = 2
@@ -321,7 +321,7 @@ func TestSendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	gasPremium= respMetadata.Metadata[services.GasPremiumKey].(string)
+	gasPremium = respMetadata.Metadata[services.GasPremiumKey].(string)
 	gasFeeCap = respMetadata.Metadata[services.GasFeeCapKey].(string)
 
 	mtx = rosettaFilecoinLib.TxMetadata{
