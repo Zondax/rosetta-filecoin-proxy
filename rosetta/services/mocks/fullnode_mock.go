@@ -31,6 +31,26 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) SyncUnmarkAllBad(ctx context.Context) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateWaitMsgLimited(ctx context.Context, cid cid.Cid, confidence uint64, limit abi.ChainEpoch) (*api.MsgLookup, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigApprove(ctx context.Context, a address.Address, u uint64, a2 address.Address) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address, u uint64, a2 address.Address, a3 address.Address, bigInt filTypes.BigInt, a4 address.Address, u2 uint64, bytes []byte) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigRemoveSigner(ctx context.Context, msig address.Address, proposer address.Address, toRemove address.Address, decrease bool) (cid.Cid, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) MpoolPushUntrusted(ctx context.Context, message *filTypes.SignedMessage) (cid.Cid, error) {
 	panic("implement me")
 }
@@ -697,10 +717,6 @@ func (f *FullNodeMock) MsigGetAvailableBalance(ctx context.Context, a address.Ad
 }
 
 func (f *FullNodeMock) MsigPropose(ctx context.Context, a address.Address, a2 address.Address, bigInt filTypes.BigInt, a3 address.Address, u uint64, bytes []byte) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigApprove(ctx context.Context, a address.Address, u uint64, a2 address.Address, a3 address.Address, bigInt filTypes.BigInt, a4 address.Address, u2 uint64, bytes []byte) (cid.Cid, error) {
 	panic("implement me")
 }
 
