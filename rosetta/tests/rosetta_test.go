@@ -121,6 +121,7 @@ func TestConstructionMetadata(t *testing.T) {
 	fmt.Println("gasLimit", resp.Metadata[services.GasLimitKey])
 	fmt.Println("gasFeeCap", resp.Metadata[services.GasFeeCapKey])
 	fmt.Println("nonce", resp.Metadata[services.NonceKey])
+	fmt.Println("Receivers actor id", resp.Metadata[services.DestinationActorIdKey])
 }
 
 func TestConstructionMetadataForGasPremiumTrack(t *testing.T) {

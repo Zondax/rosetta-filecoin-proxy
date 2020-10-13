@@ -8,9 +8,8 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
+	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"github.com/filecoin-project/specs-actors/actors/builtin"
-	"strconv"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -45,6 +44,10 @@ const GasLimitKey = "gasLimit"
 // GasFeeCapKey is the name of the key in the Metadata map inside a
 // ConstructionMetadataResponse that specifies gas fee cap
 const GasFeeCapKey = "gasFeeCap"
+
+// DestinationActorIdKey is the name of the key in the Metadata map inside a
+// ConstructionMetadataResponse that specifies the receiver's actor id
+const DestinationActorIdKey = "destinationActorId"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
@@ -107,6 +110,13 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrInvalidAccountAddress, err)
 			}
 			message.To = addressReceiverParsed
+
+			// Get receiver's actor code
+			receiverActor, errAct := c.node.StateGetActor(context.Background(), addressReceiverParsed, filTypes.EmptyTSK)
+			if errAct != nil {
+				return nil, BuildError(ErrUnableToGetActor, errAct)
+			}
+			md[DestinationActorIdKey] = receiverActor.Code.String()
 		}
 
 		if okSender {
@@ -122,7 +132,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrUnableToGetActor, errAct)
 			}
 
-			if actor.Code == builtin.MultisigActorCodeID {
+			if builtin.IsMultisigActor(actor.Code) {
 				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
@@ -171,7 +181,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		}
 	}
 
-	md[GasLimitKey] = strconv.FormatInt(message.GasLimit, 10)
+	md[GasLimitKey] = message.GasLimit
 	md[GasPremiumKey] = message.GasPremium.String()
 	md[GasFeeCapKey] = message.GasFeeCap.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network

@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
-	"github.com/filecoin-project/specs-actors/actors/builtin"
+	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
+	methods "github.com/filecoin-project/specs-actors/v2/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -80,7 +82,6 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	}
 
 	var actorCode cid.Cid
-
 	// Search for actor in cache
 	var err error
 	actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
@@ -88,28 +89,31 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return unknownStr, nil
 	}
 
+	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
+	actorName := actorNameArr[len(actorNameArr)-1]
+
 	var method interface{}
-	switch actorCode {
-	case builtin.InitActorCodeID:
-		method = builtin.MethodsInit
-	case builtin.CronActorCodeID:
-		method = builtin.MethodsCron
-	case builtin.AccountActorCodeID:
-		method = builtin.MethodsAccount
-	case builtin.StoragePowerActorCodeID:
-		method = builtin.MethodsPower
-	case builtin.StorageMinerActorCodeID:
-		method = builtin.MethodsMiner
-	case builtin.StorageMarketActorCodeID:
-		method = builtin.MethodsMarket
-	case builtin.PaymentChannelActorCodeID:
-		method = builtin.MethodsPaych
-	case builtin.MultisigActorCodeID:
-		method = builtin.MethodsMultisig
-	case builtin.RewardActorCodeID:
-		method = builtin.MethodsReward
-	case builtin.VerifiedRegistryActorCodeID:
-		method = builtin.MethodsVerifiedRegistry
+	switch actorName {
+	case "init":
+		method = methods.MethodsInit
+	case "cron":
+		method = methods.MethodsCron
+	case "account":
+		method = methods.MethodsAccount
+	case "storagepower":
+		method = methods.MethodsPower
+	case "storageminer":
+		method = methods.MethodsMiner
+	case "storagemarket":
+		method = methods.MethodsMarket
+	case "paymentchannel":
+		method = methods.MethodsPaych
+	case "multisig":
+		method = methods.MethodsMultisig
+	case "reward":
+		method = methods.MethodsReward
+	case "verifiedregistry":
+		method = methods.MethodsVerifiedRegistry
 	default:
 		return unknownStr, nil
 	}
