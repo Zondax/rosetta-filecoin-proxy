@@ -97,7 +97,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		if okSender {
 			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
 			if err != nil {
-				return nil, BuildError(ErrInvalidAccountAddress, err)
+				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
 			message.From = addressSenderParsed
 		}
@@ -107,14 +107,14 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		if okReceiver {
 			addressReceiverParsed, err = address.NewFromString(addressReceiverRaw.(string))
 			if err != nil {
-				return nil, BuildError(ErrInvalidAccountAddress, err)
+				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
 			message.To = addressReceiverParsed
 
 			// Get receiver's actor code
 			receiverActor, errAct := c.node.StateGetActor(context.Background(), addressReceiverParsed, filTypes.EmptyTSK)
 			if errAct != nil {
-				return nil, BuildError(ErrUnableToGetActor, errAct)
+				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 			md[DestinationActorIdKey] = receiverActor.Code.String()
 		}
@@ -122,21 +122,21 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		if okSender {
 			nonce, err = c.node.MpoolGetNonce(ctx, addressSenderParsed)
 			if err != nil {
-				return nil, BuildError(ErrUnableToGetNextNonce, err)
+				return nil, BuildError(ErrUnableToGetNextNonce, err, true)
 			}
 			md[NonceKey] = nonce
 
 			// Get available balance
 			actor, errAct := c.node.StateGetActor(context.Background(), addressSenderParsed, filTypes.EmptyTSK)
 			if errAct != nil {
-				return nil, BuildError(ErrUnableToGetActor, errAct)
+				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 
 			if builtin.IsMultisigActor(actor.Code) {
 				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
-					return nil, BuildError(ErrUnableToGetBalance, err)
+					return nil, BuildError(ErrUnableToGetBalance, err, true)
 				}
 			} else {
 				availableFunds = actor.Balance
@@ -146,20 +146,20 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			message, err = c.node.GasEstimateMessageGas(ctx, message,
 				&api.MessageSendSpec{MaxFee: filTypes.NewInt(build.BlockGasLimit)}, filTypes.TipSetKey{})
 			if err != nil {
-				return nil, BuildError(ErrUnableToEstimateGasLimit, err)
+				return nil, BuildError(ErrUnableToEstimateGasLimit, err, true)
 			}
 
 			// GasEstimateGasPremium
 			gasPremium, gasErr := c.node.GasEstimateGasPremium(ctx, blockInclUint, addressSenderParsed, message.GasLimit, filTypes.TipSetKey{})
 			if gasErr != nil {
-				return nil, BuildError(ErrUnableToEstimateGasPremium, gasErr)
+				return nil, BuildError(ErrUnableToEstimateGasPremium, gasErr, true)
 			}
 			message.GasPremium = gasPremium
 
 			// GasEstimateFeeCap requires gasPremium to be set on message
 			gasFeeCap, gasErr := c.node.GasEstimateFeeCap(ctx, message, int64(blockInclUint), filTypes.TipSetKey{})
 			if gasErr != nil {
-				return nil, BuildError(ErrUnableToEstimateGasFeeCap, gasErr)
+				return nil, BuildError(ErrUnableToEstimateGasFeeCap, gasErr, true)
 			}
 			message.GasFeeCap = gasFeeCap
 
@@ -169,13 +169,13 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			gasLimitBigInt := filTypes.NewInt(uint64(message.GasLimit))
 			gasCost.Mul(gasLimitBigInt.Int, gasFeeCap.Int)
 			if availableFunds.Cmp(gasCost.Int) < 0 {
-				return nil, BuildError(ErrInsufficientBalanceForGas, nil)
+				return nil, BuildError(ErrInsufficientBalanceForGas, nil, true)
 			}
 		} else {
 			// We can only estimate gas premium without a sender address
 			gasPremium, gasErr := c.node.GasEstimateGasPremium(ctx, blockInclUint, address.Address{}, message.GasLimit, filTypes.TipSetKey{})
 			if gasErr != nil {
-				return nil, BuildError(ErrUnableToEstimateGasPremium, gasErr)
+				return nil, BuildError(ErrUnableToEstimateGasPremium, gasErr, true)
 			}
 			message.GasPremium = gasPremium
 		}
@@ -200,7 +200,7 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 ) (*types.TransactionIdentifierResponse, *types.Error) {
 
 	if request.SignedTransaction == "" {
-		return nil, BuildError(ErrMalformedValue, nil)
+		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
 	err := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
@@ -212,18 +212,18 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 
 	bytes, errJson := rawIn.MarshalJSON()
 	if errJson != nil {
-		return nil, BuildError(ErrMalformedValue, nil)
+		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
 	var signedTx filTypes.SignedMessage
 	errUnmarshal := json.Unmarshal(bytes, &signedTx)
 	if errUnmarshal != nil {
-		return nil, BuildError(ErrMalformedValue, nil)
+		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
 	cid, errTx := c.node.MpoolPush(ctx, &signedTx)
 	if errTx != nil {
-		return nil, BuildError(ErrUnableToSubmitTx, errTx)
+		return nil, BuildError(ErrUnableToSubmitTx, errTx, true)
 	}
 
 	resp := &types.TransactionIdentifierResponse{

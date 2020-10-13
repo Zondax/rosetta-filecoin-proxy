@@ -36,7 +36,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	addr, filErr := address.NewFromString(request.AccountIdentifier.Address)
 	if filErr != nil {
-		return nil, BuildError(ErrInvalidAccountAddress, nil)
+		return nil, BuildError(ErrInvalidAccountAddress, nil, true)
 	}
 
 	// Check sync status
@@ -45,33 +45,33 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, syncErr
 	}
 	if !status.IsSynced() {
-		return nil, BuildError(ErrNodeNotSynced, nil)
+		return nil, BuildError(ErrNodeNotSynced, nil, true)
 	}
 
 	var queryTipSet *filTypes.TipSet
 
 	if request.BlockIdentifier != nil {
 		if request.BlockIdentifier.Index == nil {
-			return nil, BuildError(ErrInsufficientQueryInputs, nil)
+			return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 		}
 
 		queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(*request.BlockIdentifier.Index), filTypes.EmptyTSK)
 		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetBlk, filErr)
+			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
 		}
 		if request.BlockIdentifier.Hash != nil {
 			tipSetKeyHash, encErr := BuildTipSetKeyHash(queryTipSet.Key())
 			if encErr != nil {
-				return nil, BuildError(ErrUnableToBuildTipSetHash, encErr)
+				return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)
 			}
 			if *tipSetKeyHash != *request.BlockIdentifier.Hash {
-				return nil, BuildError(ErrInvalidHash, nil)
+				return nil, BuildError(ErrInvalidHash, nil, true)
 			}
 		}
 	} else {
 		queryTipSet, filErr = a.node.ChainHead(ctx)
 		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetLatestBlk, filErr)
+			return nil, BuildError(ErrUnableToGetLatestBlk, filErr, true)
 		}
 	}
 
@@ -79,7 +79,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	queryTipSetHeight := int64(queryTipSet.Height())
 	queryTipSetHash, err := BuildTipSetKeyHash(queryTipSet.Key())
 	if err != nil {
-		return nil, BuildError(ErrUnableToBuildTipSetHash, err)
+		return nil, BuildError(ErrUnableToBuildTipSetHash, err, true)
 	}
 
 	actor, err := a.node.StateGetActor(ctx, addr, queryTipSet.Key())
@@ -104,7 +104,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is a multisig
 		if !filBuiltin.IsMultisigActor(actor.Code) {
-			return nil, BuildError(ErrAddNotMSig, nil)
+			return nil, BuildError(ErrAddNotMSig, nil, true)
 		}
 
 		switch request.AccountIdentifier.SubAccount.Address {
@@ -112,20 +112,20 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			lockedBalance := actor.Balance
 			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
-				return nil, BuildError(ErrUnableToGetBalance, err)
+				return nil, BuildError(ErrUnableToGetBalance, err, true)
 			}
 			lockedBalance.Sub(lockedBalance.Int, spendableBalance.Int)
 			balanceStr = lockedBalance.String()
 		case SpendableBalanceStr:
 			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
-				return nil, BuildError(ErrUnableToGetBalance, err)
+				return nil, BuildError(ErrUnableToGetBalance, err, true)
 			}
 			balanceStr = spendableBalance.String()
 		case VestingScheduleStr:
 			vestingSch, err := a.node.MsigGetVestingSchedule(ctx, addr, queryTipSet.Key())
 			if err != nil {
-				return nil, BuildError(ErrUnableToGetVesting, err)
+				return nil, BuildError(ErrUnableToGetVesting, err, true)
 			}
 			vestingMap := map[string]string{}
 			vestingMap[VestingStartEpochKey] = vestingSch.StartEpoch.String()
@@ -133,7 +133,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			vestingMap[VestingInitialBalanceKey] = vestingSch.InitialBalance.String()
 			md[VestingScheduleStr] = vestingMap
 		default:
-			return nil, BuildError(ErrMustSpecifySubAccount, nil)
+			return nil, BuildError(ErrMustSpecifySubAccount, nil, true)
 		}
 	} else {
 		// Get available balance (spendable + locked if multisig)
