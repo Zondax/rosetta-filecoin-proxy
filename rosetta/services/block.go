@@ -181,6 +181,11 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 	var transactions []*types.Transaction
 	for i := range states.Trace {
 		trace := states.Trace[i]
+
+		if trace.Msg == nil {
+			continue
+		}
+
 		var operations []*types.Operation
 
 		// Analyze full trace recursively
@@ -222,6 +227,11 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 }
 
 func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+
+	if trace.Msg == nil {
+		return
+	}
+
 	baseMethod, err := GetMethodName(trace.Msg)
 	if err != nil {
 		return
