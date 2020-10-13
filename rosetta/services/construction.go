@@ -10,7 +10,6 @@ import (
 	"github.com/filecoin-project/lotus/build"
 	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"strconv"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -182,7 +181,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		}
 	}
 
-	md[GasLimitKey] = strconv.FormatInt(message.GasLimit, 10)
+	md[GasLimitKey] = message.GasLimit
 	md[GasPremiumKey] = message.GasPremium.String()
 	md[GasFeeCapKey] = message.GasFeeCap.String()
 	md[ChainIDKey] = request.NetworkIdentifier.Network
