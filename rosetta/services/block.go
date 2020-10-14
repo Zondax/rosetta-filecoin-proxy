@@ -275,14 +275,13 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
 					fromPk = paramsMap["From"]
 					toPk = paramsMap["To"]
+					*operations = appendOp(*operations, baseMethod, fromPk,
+						"0", opStatus, true)
+					*operations = appendOp(*operations, baseMethod, toPk,
+						"0", opStatus, true)
 				} else {
 					Logger.Error("Could not parse message params for", baseMethod)
 				}
-
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, true)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					"0", opStatus, true)
 			}
 		case "AwardBlockReward", "OnDeferredCronEvent":
 			{
