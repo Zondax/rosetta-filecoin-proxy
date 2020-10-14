@@ -6,6 +6,7 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.5.1
 	github.com/filecoin-project/go-address v0.0.4
 	github.com/filecoin-project/go-bitfield v0.2.1
+	github.com/filecoin-project/go-data-transfer v0.9.0
 	github.com/filecoin-project/go-fil-markets v0.9.0
 	github.com/filecoin-project/go-jsonrpc v0.1.2-0.20201008195726-68c6a2704e49
 	github.com/filecoin-project/go-multistore v0.0.3
