@@ -87,4 +87,8 @@ workflows:
       - build
       - checks
       - integration_testnet
-      - integration_rosetta_cli
+      - integration_rosetta_cli:
+          requires:
+            - build
+            - checks
+            - integration_testnet
