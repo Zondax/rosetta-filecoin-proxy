@@ -47,11 +47,11 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 	fullAPI := *node
 	validNetwork, err := fullAPI.StateNetworkName(ctx)
 	if err != nil {
-		return BuildError(ErrUnableToRetrieveNetworkName, err)
+		return BuildError(ErrUnableToRetrieveNetworkName, err, true)
 	}
 
 	if networkId.Network != string(validNetwork) {
-		return BuildError(ErrInvalidNetwork, nil)
+		return BuildError(ErrInvalidNetwork, nil, true)
 	}
 
 	return nil
@@ -68,7 +68,7 @@ func GetCurrencyData() *types.Currency {
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
 	if msg == nil {
-		return "", BuildError(ErrMalformedValue, nil)
+		return "", BuildError(ErrMalformedValue, nil, true)
 	}
 
 	// Shortcut 1 - Method "0" corresponds to "MethodSend"

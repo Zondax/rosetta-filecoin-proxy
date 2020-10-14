@@ -39,11 +39,11 @@ func (s *BlockAPIService) Block(
 ) (*types.BlockResponse, *types.Error) {
 
 	if request.BlockIdentifier == nil {
-		return nil, BuildError(ErrMalformedValue, nil)
+		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
 	if request.BlockIdentifier == nil && request.BlockIdentifier.Hash == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil)
+		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 	}
 
 	errNet := ValidateNetworkId(ctx, &s.node, request.NetworkIdentifier)
@@ -53,7 +53,7 @@ func (s *BlockAPIService) Block(
 
 	requestedHeight := *request.BlockIdentifier.Index
 	if requestedHeight < 0 {
-		return nil, BuildError(ErrMalformedValue, nil)
+		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
 	// Check sync status
@@ -62,11 +62,11 @@ func (s *BlockAPIService) Block(
 		return nil, syncErr
 	}
 	if requestedHeight > 0 && !status.IsSynced() {
-		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil)
+		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil, true)
 	}
 
 	if request.BlockIdentifier.Index == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil)
+		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 	}
 
 	var tipSet *filTypes.TipSet
@@ -81,7 +81,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	if err != nil {
-		return nil, BuildError(ErrUnableToGetTipset, err)
+		return nil, BuildError(ErrUnableToGetTipset, err, true)
 	}
 
 	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
@@ -94,10 +94,10 @@ func (s *BlockAPIService) Block(
 	if request.BlockIdentifier.Hash != nil {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
-			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr)
+			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)
 		}
 		if *tipSetKeyHash != *request.BlockIdentifier.Hash {
-			return nil, BuildError(ErrInvalidHash, nil)
+			return nil, BuildError(ErrInvalidHash, nil, true)
 		}
 	}
 
@@ -105,7 +105,7 @@ func (s *BlockAPIService) Block(
 	var parentTipSet *filTypes.TipSet
 	if requestedHeight > 0 {
 		if tipSet.Parents().IsEmpty() {
-			return nil, BuildError(ErrUnableToGetParentBlk, nil)
+			return nil, BuildError(ErrUnableToGetParentBlk, nil, true)
 		}
 		impl = func() {
 			parentTipSet, err = s.node.ChainGetTipSet(ctx, tipSet.Parents())
@@ -115,7 +115,7 @@ func (s *BlockAPIService) Block(
 			return nil, ErrLotusCallTimedOut
 		}
 		if err != nil {
-			return nil, BuildError(ErrUnableToGetParentBlk, err)
+			return nil, BuildError(ErrUnableToGetParentBlk, err, true)
 		}
 	} else {
 		// According to rosetta docs, if the requested tipset is
@@ -143,7 +143,7 @@ func (s *BlockAPIService) Block(
 
 	hashTipSet, err := BuildTipSetKeyHash(tipSet.Key())
 	if err != nil {
-		return nil, BuildError(ErrUnableToBuildTipSetHash, nil)
+		return nil, BuildError(ErrUnableToBuildTipSetHash, nil, true)
 	}
 	blockId := &types.BlockIdentifier{
 		Index: int64(tipSet.Height()),
@@ -153,7 +153,7 @@ func (s *BlockAPIService) Block(
 	parentBlockId := &types.BlockIdentifier{}
 	hashParentTipSet, err := BuildTipSetKeyHash(parentTipSet.Key())
 	if err != nil {
-		return nil, BuildError(ErrUnableToBuildTipSetHash, nil)
+		return nil, BuildError(ErrUnableToBuildTipSetHash, nil, true)
 	}
 	parentBlockId.Index = int64(parentTipSet.Height())
 	parentBlockId.Hash = *hashParentTipSet
@@ -221,7 +221,7 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 	// So, we're getting the traces of the messages created at N-1, executed at N
 	states, err := (*node).StateCompute(ctx, tipSet.Height(), nil, tipSet.Key())
 	if err != nil {
-		return nil, BuildError(ErrUnableToGetTrace, err)
+		return nil, BuildError(ErrUnableToGetTrace, err, true)
 	}
 	return states, nil
 }
