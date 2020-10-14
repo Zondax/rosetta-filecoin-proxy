@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
@@ -205,7 +207,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 
 			transactions = append(transactions, &types.Transaction{
 				TransactionIdentifier: &types.TransactionIdentifier{
-					Hash: trace.Msg.Cid().String(),
+					Hash: trace.MsgCid.String(),
 				},
 				Operations: operations,
 			})
@@ -263,13 +265,25 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					"0", opStatus, true)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					"0", opStatus, true)
 			}
 		case "SwapSigner":
 			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, true)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					"0", opStatus, true)
+				params, err := parseParams(trace.Msg)
+				if err == nil {
+					var paramsMap map[string]string
+					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+						fromPk = paramsMap["From"]
+						toPk = paramsMap["To"]
+						*operations = appendOp(*operations, baseMethod, fromPk,
+							"0", opStatus, true)
+						*operations = appendOp(*operations, baseMethod, toPk,
+							"0", opStatus, true)
+					} else {
+						Logger.Error("Could not parse message params for", baseMethod)
+					}
+				}
 			}
 		case "AwardBlockReward", "OnDeferredCronEvent":
 			{
@@ -283,6 +297,27 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		subTrace := trace.Subcalls[i]
 		processTrace(&subTrace, operations)
 	}
+}
+
+func parseParams(msg *filTypes.Message) (string, error) {
+	r := &filLib.RosettaConstructionFilecoin{}
+	msgSerial, err := msg.MarshalJSON()
+	if err != nil {
+		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
+		return "", err
+	}
+
+	actorCode, err := tools.ActorsDB.GetActorCode(msg.To)
+	if err != nil {
+		return "", err
+	}
+	parsedParams, err := r.ParseParamsMultisigTx(string(msgSerial), actorCode)
+	if err != nil {
+		Logger.Error("Could not parse params. ParseParamsMultisigTx returned with error:", err.Error())
+		return "", err
+	}
+
+	return parsedParams, nil
 }
 
 func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool) []*types.Operation {
