@@ -104,7 +104,7 @@ jobs:
           name: "Run rosetta-cli tests"
           command: |
             cd rosetta/tests
-            ./rosetta_cli_test.sh
+            ./rosetta_cli_test2.sh
 
 workflows:
   version: 2
