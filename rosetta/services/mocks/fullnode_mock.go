@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-bitfield"
+	datatransfer "github.com/filecoin-project/go-data-transfer"
 	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-multistore"
@@ -29,6 +30,22 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) WalletNew(ctx context.Context, keyType filTypes.KeyType) (address.Address, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRestartDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateCirculatingSupply(ctx context.Context, key filTypes.TipSetKey) (abi.TokenAmount, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateVMCirculatingSupplyInternal(ctx context.Context, key filTypes.TipSetKey) (api.CirculatingSupply, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) SyncUnmarkAllBad(ctx context.Context) error {
@@ -324,10 +341,6 @@ func (f *FullNodeMock) StateDealProviderCollateralBounds(ctx context.Context, si
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateCirculatingSupply(ctx context.Context, key filTypes.TipSetKey) (api.CirculatingSupply, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) MsigSwapPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, a4 address.Address) (cid.Cid, error) {
 	panic("implement me")
 }
@@ -533,10 +546,6 @@ func (f *FullNodeMock) MinerGetBaseInfo(ctx context.Context, a address.Address, 
 }
 
 func (f *FullNodeMock) MinerCreateBlock(ctx context.Context, template *api.BlockTemplate) (*filTypes.BlockMsg, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) WalletNew(ctx context.Context, sigType crypto.SigType) (address.Address, error) {
 	panic("implement me")
 }
 
