@@ -1,0 +1,38 @@
+{
+ "network": {
+  "blockchain": "Filecoin",
+  "network": "ignition"
+ },
+ "online_url": "http://localhost:8080",
+ "data_directory": "/tmp/rosetta-cli-test",
+ "http_timeout": 120,
+ "max_retries": 10000,
+ "max_online_connections": 120,
+ "max_sync_concurrency": 16,
+ "tip_delay": 300,
+ "log_configuration": false,
+ "construction": null,
+ "data": {
+  "active_reconciliation_concurrency": 16,
+  "inactive_reconciliation_concurrency": 4,
+  "inactive_reconciliation_frequency": 250,
+  "log_blocks": false,
+  "log_transactions": true,
+  "log_balance_changes": true,
+  "log_reconciliations": true,
+  "ignore_reconciliation_error": true,
+  "exempt_accounts": "",
+  "bootstrap_balances": "",
+  "reconciliation_disabled": false,
+  "inactive_discrepency_search_disabled": false,
+  "balance_tracking_disabled": false,
+  "coin_tracking_disabled": false,
+  "status_port": 9090,
+  "pruning_disabled": false,
+  "historical_balance_enabled": true,
+  "start_index": 41281,
+  "end_conditions": {
+   "index": 41291
+  }
+ }
+}
