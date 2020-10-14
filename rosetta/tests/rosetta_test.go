@@ -228,7 +228,7 @@ func TestSendTransaction(t *testing.T) {
 
 	r := &rosettaFilecoinLib.RosettaConstructionFilecoin{}
 
-	gasLimit := respMetadata.Metadata[services.GasLimitKey].(int64)
+	gasLimit := int64(respMetadata.Metadata[services.GasLimitKey].(float64))
 	gasPremium := respMetadata.Metadata[services.GasPremiumKey].(string)
 	gasFeeCap := respMetadata.Metadata[services.GasFeeCapKey].(string)
 
@@ -312,7 +312,7 @@ func TestSendTransaction(t *testing.T) {
 
 	r = &rosettaFilecoinLib.RosettaConstructionFilecoin{}
 
-	gasLimit = respMetadata.Metadata[services.GasLimitKey].(int64)
+	gasLimit = int64(respMetadata.Metadata[services.GasLimitKey].(float64))
 	gasPremium = respMetadata.Metadata[services.GasPremiumKey].(string)
 	gasFeeCap = respMetadata.Metadata[services.GasFeeCapKey].(string)
 
