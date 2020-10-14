@@ -270,17 +270,19 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			}
 		case "SwapSigner":
 			{
-				params := parseParams(trace.Msg)
-				var paramsMap map[string]string
-				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-					fromPk = paramsMap["From"]
-					toPk = paramsMap["To"]
-					*operations = appendOp(*operations, baseMethod, fromPk,
-						"0", opStatus, true)
-					*operations = appendOp(*operations, baseMethod, toPk,
-						"0", opStatus, true)
-				} else {
-					Logger.Error("Could not parse message params for", baseMethod)
+				params, err := parseParams(trace.Msg)
+				if err == nil {
+					var paramsMap map[string]string
+					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+						fromPk = paramsMap["From"]
+						toPk = paramsMap["To"]
+						*operations = appendOp(*operations, baseMethod, fromPk,
+							"0", opStatus, true)
+						*operations = appendOp(*operations, baseMethod, toPk,
+							"0", opStatus, true)
+					} else {
+						Logger.Error("Could not parse message params for", baseMethod)
+					}
 				}
 			}
 		case "AwardBlockReward", "OnDeferredCronEvent":
@@ -297,22 +299,25 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	}
 }
 
-func parseParams(msg *filTypes.Message) string {
-	r := &filLib.RosettaConstructionFilecoin{false}
+func parseParams(msg *filTypes.Message) (string, error) {
+	r := &filLib.RosettaConstructionFilecoin{}
 	msgSerial, err := msg.MarshalJSON()
 	if err != nil {
 		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
-		return ""
+		return "", err
 	}
 
 	actorCode, err := tools.ActorsDB.GetActorCode(msg.To)
+	if err != nil {
+		return "", err
+	}
 	parsedParams, err := r.ParseParamsMultisigTx(string(msgSerial), actorCode)
 	if err != nil {
 		Logger.Error("Could not parse params. ParseParamsMultisigTx returned with error:", err.Error())
-		return ""
+		return "", err
 	}
 
-	return parsedParams
+	return parsedParams, nil
 }
 
 func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool) []*types.Operation {
