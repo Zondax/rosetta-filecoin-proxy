@@ -257,14 +257,14 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		case "Send":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, true)
+					trace.Msg.Value.Neg().String(), opStatus, false)
 				*operations = appendOp(*operations, baseMethod, toPk,
 					trace.Msg.Value.String(), opStatus, true)
 			}
 		case "Propose":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, true)
+					"0", opStatus, false)
 				*operations = appendOp(*operations, baseMethod, toPk,
 					"0", opStatus, true)
 			}
@@ -277,7 +277,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 						fromPk = paramsMap["From"]
 						toPk = paramsMap["To"]
 						*operations = appendOp(*operations, baseMethod, fromPk,
-							"0", opStatus, true)
+							"0", opStatus, false)
 						*operations = appendOp(*operations, baseMethod, toPk,
 							"0", opStatus, true)
 					} else {
@@ -288,7 +288,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		case "AwardBlockReward", "OnDeferredCronEvent":
 			{
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
+					trace.Msg.Value.String(), opStatus, false)
 			}
 		}
 	}
