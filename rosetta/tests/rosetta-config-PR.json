@@ -7,13 +7,15 @@
  "data_directory": "/tmp/rosetta-cli-test",
  "http_timeout": 120,
  "max_retries": 10000,
- "max_online_connections": 120,
- "max_sync_concurrency": 64,
+ "max_online_connections": 240,
+ "max_sync_concurrency": 96,
  "tip_delay": 300,
  "log_configuration": false,
+ "compression_disabled": true,
+ "memory_limit_disabled": true,
  "construction": null,
  "data": {
-  "active_reconciliation_concurrency": 32,
+  "active_reconciliation_concurrency": 64,
   "inactive_reconciliation_concurrency": 4,
   "inactive_reconciliation_frequency": 250,
   "log_blocks": false,
@@ -32,7 +34,7 @@
   "historical_balance_enabled": true,
   "start_index": 41281,
   "end_conditions": {
-   "index": 42281
+   "index": 41381
   }
  }
 }
