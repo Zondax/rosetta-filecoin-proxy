@@ -84,7 +84,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		message                      = &filTypes.Message{
 			GasLimit: 0, GasFeeCap: filTypes.NewInt(0),
 			GasPremium: filTypes.NewInt(0),
-			Value:      abi.NewTokenAmount(1), //Use "1" as default value for better gas estimations
+			Value:      abi.NewTokenAmount(1), // Use "1" as default value for better gas estimations
 		}
 	)
 
