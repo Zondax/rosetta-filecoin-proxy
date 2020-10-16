@@ -192,17 +192,15 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 
 		// Analyze full trace recursively
 		processTrace(&trace.ExecutionTrace, &operations)
-
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
-			if trace.MsgRct.GasUsed > 0 {
-				fee := abi.NewTokenAmount(trace.MsgRct.GasUsed)
+			if !trace.GasCost.TotalCost.Nil() {
 				opStatus := OperationStatusFailed
 				if trace.MsgRct.ExitCode.IsSuccess() {
 					opStatus = OperationStatusOk
 				}
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
-					fee.Neg().String(), opStatus, false)
+					trace.GasCost.TotalCost.Neg().String(), opStatus, false)
 			}
 
 			transactions = append(transactions, &types.Transaction{
