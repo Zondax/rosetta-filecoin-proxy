@@ -2,11 +2,9 @@ package tests
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"net/http"
 	"reflect"
@@ -195,6 +193,7 @@ func TestMempool(t *testing.T) {
 	}
 }
 
+/*
 func TestSendTransaction(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 	addressA := "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
@@ -483,3 +482,4 @@ func TestGetBalanceOfMultiSig(t *testing.T) {
 
 	fmt.Println("Vesting schedule is:", resp.Metadata)
 }
+*/
