@@ -3,6 +3,7 @@ REVISION := $(shell git rev-parse --short HEAD)
 ROSETTASDKVER := $(shell go list -m all | grep github.com/coinbase/rosetta-sdk-go | awk '{print $$2}')
 LOTUSVER := $(shell go list -m all | grep github.com/filecoin-project/lotus | awk '{print $$2}')
 RETRYNUM := 10
+ROSETTAPORT_CI := 8081
 APPNAME := rosetta-filecoin-proxy
 
 build: 	build_ffi
@@ -11,7 +12,8 @@ build: 	build_ffi
 
 build_CI: 	build_ffi
 	go build -ldflags "-X $(PACKAGE).GitRevision=$(REVISION) -X $(PACKAGE).RosettaSDKVersion=$(ROSETTASDKVER) \
-	-X $(PACKAGE).LotusVersion=$(LOTUSVER) -X $(PACKAGE).RetryConnectAttempts=$(RETRYNUM)" -o $(APPNAME)
+	-X $(PACKAGE).LotusVersion=$(LOTUSVER) -X $(PACKAGE).RetryConnectAttempts=$(RETRYNUM) \
+	-X $(PACKAGE).RosettaServerPort=$(ROSETTAPORT_CI)"  -o $(APPNAME)
 
 clean:
 	go clean
