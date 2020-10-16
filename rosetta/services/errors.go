@@ -294,6 +294,12 @@ var (
 		Retriable: true,
 	}
 
+	ErrUnableToGetGasCost = &types.Error{
+		Code:      48,
+		Message:   "unable to get total gas cost for message",
+		Retriable: true,
+	}
+
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -342,6 +348,7 @@ var (
 		ErrUnableToEstimateGasFeeCap,
 		ErrOperationNotSupported,
 		ErrUnableToGetTrace,
+		ErrUnableToGetGasCost,
 	}
 )
 

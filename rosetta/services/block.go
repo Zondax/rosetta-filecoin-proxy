@@ -132,7 +132,7 @@ func (s *BlockAPIService) Block(
 		if err != nil {
 			return nil, err
 		}
-		transactions = buildTransactions(states)
+		transactions = buildTransactions(states, &s.node)
 	}
 
 	// Add block metadata
@@ -177,7 +177,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
+func buildTransactions(states *api.ComputeStateOutput, node *api.FullNode) *[]*types.Transaction {
 	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
 
 	var transactions []*types.Transaction
@@ -195,14 +195,20 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
-			if trace.MsgRct.GasUsed > 0 {
-				fee := abi.NewTokenAmount(trace.MsgRct.GasUsed)
+			gasCost := abi.NewTokenAmount(0)
+			msgGasCost, err := (*node).StateMsgGasCost(context.Background(), trace.MsgCid, filTypes.EmptyTSK)
+			if err != nil {
+				BuildError(ErrUnableToGetGasCost, err, false)
+			} else {
+				gasCost = msgGasCost.TotalCost
+			}
+			if gasCost.Int64() > 0 {
 				opStatus := OperationStatusFailed
 				if trace.MsgRct.ExitCode.IsSuccess() {
 					opStatus = OperationStatusOk
 				}
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
-					fee.Neg().String(), opStatus, false)
+					gasCost.Neg().String(), opStatus, false)
 			}
 
 			transactions = append(transactions, &types.Transaction{
