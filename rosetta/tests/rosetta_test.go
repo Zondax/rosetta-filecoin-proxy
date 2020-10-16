@@ -97,6 +97,7 @@ func TestConstructionMetadata(t *testing.T) {
 	options[services.OptionsSenderIDKey] = "t1itpqzzcx6yf52oc35dgsoxfqkoxpy6kdmygbaja"
 	options[services.OptionsReceiverIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
 	options[services.OptionsBlockInclKey] = 1
+	options[services.OptionsValueKey] = "5"
 
 	request := &types.ConstructionMetadataRequest{
 		NetworkIdentifier: NetworkID,

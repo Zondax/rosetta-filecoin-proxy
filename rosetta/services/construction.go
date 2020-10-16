@@ -6,10 +6,12 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
 	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"strconv"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -49,6 +51,10 @@ const GasFeeCapKey = "gasFeeCap"
 // ConstructionMetadataResponse that specifies the receiver's actor id
 const DestinationActorIdKey = "destinationActorId"
 
+// OptionsValueKey is the name of the key in the Options map inside a
+// ConstructionMetadataRequest that specifies the tokens quantity to be sent
+const OptionsValueKey = "value"
+
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
 	network *types.NetworkIdentifier
@@ -71,11 +77,15 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 	var (
 		addressSenderParsed   address.Address
 		addressReceiverParsed address.Address
-		message               = &filTypes.Message{GasLimit: 0, GasFeeCap: filTypes.NewInt(0), GasPremium: filTypes.NewInt(0)}
 		availableFunds        filTypes.BigInt
 		err                   error
 		nonce                 uint64
 		blockInclUint         uint64 = 1
+		message                      = &filTypes.Message{
+			GasLimit: 0, GasFeeCap: filTypes.NewInt(0),
+			GasPremium: filTypes.NewInt(0),
+			Value:      abi.NewTokenAmount(1), //Use "1" as default value for better gas estimations
+		}
 	)
 
 	errNet := ValidateNetworkId(ctx, &c.node, request.NetworkIdentifier)
@@ -117,6 +127,16 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 			md[DestinationActorIdKey] = receiverActor.Code.String()
+		}
+
+		// Parse value to send - this field is optional
+		valueRaw, okValue := request.Options[OptionsValueKey]
+		if okValue {
+			value, err := strconv.Atoi(valueRaw.(string))
+			if err != nil {
+				return nil, BuildError(ErrMalformedValue, err, false)
+			}
+			message.Value = abi.NewTokenAmount(int64(value))
 		}
 
 		if okSender {
