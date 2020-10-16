@@ -3,17 +3,17 @@
   "blockchain": "Filecoin",
   "network": "mainnet"
  },
- "online_url": "http://localhost:8080",
+ "online_url": "http://localhost:8081",
  "data_directory": "/tmp/rosetta-cli-test",
  "http_timeout": 120,
  "max_retries": 10000,
  "max_online_connections": 120,
- "max_sync_concurrency": 16,
+ "max_sync_concurrency": 64,
  "tip_delay": 300,
  "log_configuration": false,
  "construction": null,
  "data": {
-  "active_reconciliation_concurrency": 16,
+  "active_reconciliation_concurrency": 32,
   "inactive_reconciliation_concurrency": 4,
   "inactive_reconciliation_frequency": 250,
   "log_blocks": false,
@@ -32,7 +32,7 @@
   "historical_balance_enabled": true,
   "start_index": 120000,
   "end_conditions": {
-   "index": 120010
+   "index": 120050
   }
  }
 }

@@ -13,6 +13,6 @@ rm -rf /tmp/rosetta-cli-test/*
 printf "${GRN}### Running rosetta-cli tests${OFF}\n"
 
 #Add all rosetta-cli checks here
-rosetta-cli check:data --configuration-file ./rosetta-config2.json
+rosetta-cli check:data --configuration-file ./rosetta-config-PR.json
 
 printf "${GRN}### Tests finished.${OFF}\n"
