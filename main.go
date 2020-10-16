@@ -21,9 +21,9 @@ import (
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
 
-const (
+var (
 	BlockchainName = srv.BlockChainName
-	ServerPort     = srv.RosettaServerPort
+	ServerPort, _  = strconv.Atoi(srv.RosettaServerPort)
 )
 
 func logVersionsInfo() {

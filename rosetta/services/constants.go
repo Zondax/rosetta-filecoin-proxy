@@ -6,15 +6,17 @@ var (
 	LotusVersion      = "Unknown"
 	GitRevision       = "Unknown"
 
+	// ServerPort to be injected on build time
+	RosettaServerPort = "8080"
+
 	// Other configs
 	RetryConnectAttempts = "1000000"
 )
 
 const (
 	// Network
-	BlockChainName    = "Filecoin"
-	NetworkName       = "mainnet"
-	RosettaServerPort = 8080
+	BlockChainName = "Filecoin"
+	NetworkName    = "mainnet"
 
 	// Currency
 	CurrencySymbol   = "FIL"
