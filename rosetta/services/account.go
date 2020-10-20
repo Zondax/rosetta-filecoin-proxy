@@ -9,6 +9,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	filBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"strconv"
 )
 
 // AccountAPIService implements the server.BlockAPIServicer interface.
@@ -140,6 +141,9 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		balanceStr = actor.Balance.String()
 	}
 
+	// Fill nonce
+	md[NonceKey] = strconv.FormatUint(actor.Nonce, 10)
+
 	resp := &types.AccountBalanceResponse{
 		BlockIdentifier: &types.BlockIdentifier{
 			Index: queryTipSetHeight,
@@ -151,10 +155,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 				Currency: GetCurrencyData(),
 			},
 		},
-	}
-
-	if len(md) > 0 {
-		resp.Metadata = md
+		Metadata: md,
 	}
 
 	return resp, nil

@@ -32,6 +32,10 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) StateListMessages(ctx context.Context, match *api.MessageMatch, tsk filTypes.TipSetKey, toht abi.ChainEpoch) ([]cid.Cid, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) WalletNew(ctx context.Context, keyType filTypes.KeyType) (address.Address, error) {
 	panic("implement me")
 }
@@ -637,10 +641,6 @@ func (f *FullNodeMock) StateGetActor(ctx context.Context, actor address.Address,
 func (f *FullNodeMock) StateReadState(ctx context.Context, actor address.Address, tsk filTypes.TipSetKey) (*api.ActorState, error) {
 	args := f.Called(ctx, actor, tsk)
 	return args.Get(0).(*api.ActorState), args.Error(1)
-}
-
-func (f *FullNodeMock) StateListMessages(ctx context.Context, match *filTypes.Message, tsk filTypes.TipSetKey, toht abi.ChainEpoch) ([]cid.Cid, error) {
-	panic("implement me")
 }
 
 func (f *FullNodeMock) StateNetworkName(ctx context.Context) (dtypes.NetworkName, error) {
