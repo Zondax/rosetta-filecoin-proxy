@@ -10,10 +10,10 @@ require (
 	github.com/filecoin-project/go-fil-markets v0.9.1
 	github.com/filecoin-project/go-jsonrpc v0.1.2-0.20201008195726-68c6a2704e49
 	github.com/filecoin-project/go-multistore v0.0.3
-	github.com/filecoin-project/go-state-types v0.0.0-20201003010437-c33112184a2b
-	github.com/filecoin-project/lotus v0.10.3-pre1
+	github.com/filecoin-project/go-state-types v0.0.0-20201013222834-41ea465f274f
+	github.com/filecoin-project/lotus v1.1.0-pre1
 	github.com/filecoin-project/specs-actors v0.9.12
-	github.com/filecoin-project/specs-actors/v2 v2.1.0
+	github.com/filecoin-project/specs-actors/v2 v2.2.0
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipfs/go-log v1.0.4
 	github.com/libp2p/go-libp2p-core v0.6.1
