@@ -49,6 +49,13 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	vestingMap[VestingUnlockDurationKey] = mockVestingUnlockDur.String()
 	vestingMap[VestingInitialBalanceKey] = mockVestingInitialBalance.String()
 	mdVestingSchedule[VestingScheduleStr] = vestingMap
+	mdVestingSchedule[NonceKey] = "0"
+
+	mdLockedBalanceOfMultiSig := make(map[string]interface{})
+	mdLockedBalanceOfMultiSig[NonceKey] = "0"
+
+	mdAvailableBalanceOfMultiSig := make(map[string]interface{})
+	mdAvailableBalanceOfMultiSig[NonceKey] = "0"
 	///
 
 	// Mock functions
@@ -118,7 +125,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 				},
 				},
 				Coins:    nil,
-				Metadata: nil,
+				Metadata: mdAvailableBalanceOfMultiSig,
 			},
 			want1: nil,
 		},
@@ -158,7 +165,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 					},
 				},
 				Coins:    nil,
-				Metadata: nil,
+				Metadata: mdLockedBalanceOfMultiSig,
 			},
 			want1: nil,
 		},
