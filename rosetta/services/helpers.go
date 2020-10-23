@@ -133,18 +133,45 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 }
 
 func GetActorPubKey(add address.Address) (string, *types.Error) {
-	var pubKey string
+	var (
+		pubKey string
+		err    error
+	)
+
+	actorCode, err := tools.ActorsDB.GetActorCode(add)
+	if err != nil {
+		Logger.Error("could not get actor code from address. Err:", err.Error())
+		return add.String(), nil
+	}
+
+	isMultiSig := builtin2.IsMultisigActor(actorCode)
+
+	// Search for actor's pubkey in cache.
+	// If cannot get actor's pubkey, GetActorPubKey will return the same address
 	switch add.Protocol() {
 	case address.BLS, address.SECP256K1, address.Actor:
-		pubKey = add.String()
-	default:
-		// Search for actor's pubkey in cache.
-		// If cannot get actor's pubkey, GetActorPubKey will return the same address
-		var err error
-		pubKey, err = tools.ActorsDB.GetActorPubKey(add)
-		if err != nil {
-			return add.String(), nil
+		if isMultiSig {
+			// Use "short" address for msig actors since can be mixed on the blockchain
+			// and we need them to be normalized to any of the two formats
+			pubKey, err = tools.ActorsDB.GetActorPubKey(add, true)
+			if err != nil {
+				pubKey = add.String()
+			}
+		} else {
+			pubKey = add.String()
 		}
+	case address.ID:
+		if isMultiSig {
+			pubKey = add.String()
+		} else {
+			pubKey, err = tools.ActorsDB.GetActorPubKey(add, false)
+			if err != nil {
+				pubKey = add.String()
+			}
+		}
+	default:
+		//Unknown address type
+		pubKey = add.String()
 	}
 
 	return pubKey, nil
