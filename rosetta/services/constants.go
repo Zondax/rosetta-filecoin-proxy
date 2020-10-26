@@ -43,8 +43,13 @@ const (
 var SupportedOperations = map[string]bool{
 	"Send":                true, // Common
 	"Fee":                 true, // Common
+	"Exec":                true, // MethodsInit
 	"SwapSigner":          true, // MethodsMultisig
 	"Propose":             true, // MethodsMultisig
 	"AwardBlockReward":    true, // MethodsReward
 	"OnDeferredCronEvent": true, // MethodsMiner
+	"PreCommitSector":     true, // MethodsMiner
+	"ProveCommitSector":   true, // MethodsMiner
+	"SubmitWindowedPoSt":  true, // MethodsMiner
+	"ApplyRewards":        true, // MethodsMiner
 }

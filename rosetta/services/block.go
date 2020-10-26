@@ -250,7 +250,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		}
 
 		switch baseMethod {
-		case "Send":
+		case "Send", "Exec":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false)
@@ -281,10 +281,13 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 					}
 				}
 			}
-		case "AwardBlockReward", "OnDeferredCronEvent":
+		case "AwardBlockReward", "ApplyRewards", "OnDeferredCronEvent",
+			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt":
 			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, false)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, false)
+					trace.Msg.Value.String(), opStatus, true)
 			}
 		}
 	}
