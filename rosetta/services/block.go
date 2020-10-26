@@ -195,10 +195,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
-				opStatus := OperationStatusFailed
-				if trace.MsgRct.ExitCode.IsSuccess() {
-					opStatus = OperationStatusOk
-				}
+				opStatus := OperationStatusOk
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
 					trace.GasCost.TotalCost.Neg().String(), opStatus, false)
 			}
