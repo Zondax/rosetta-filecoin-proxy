@@ -234,7 +234,8 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 
 	baseMethod, err := GetMethodName(trace.Msg)
 	if err != nil {
-		return
+		Logger.Error("could not get method name. Error:", err.Message, err.Details)
+		baseMethod = unknownStr
 	}
 
 	if IsOpSupported(baseMethod) {
