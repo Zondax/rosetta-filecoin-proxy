@@ -11,7 +11,7 @@ on:
 jobs:
   rosetta_cli:
     runs-on: self-hosted
-    
+    timeout-minutes: 5760
     steps:
       - uses: actions/checkout@v2.3.3
       - uses: actions/setup-go@v2.1.3
