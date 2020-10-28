@@ -250,7 +250,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		}
 
 		switch baseMethod {
-		case "Send", "Exec":
+		case "Send", "Exec", "AddBalance":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false)

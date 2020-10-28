@@ -52,4 +52,5 @@ var SupportedOperations = map[string]bool{
 	"ProveCommitSector":   true, // MethodsMiner
 	"SubmitWindowedPoSt":  true, // MethodsMiner
 	"ApplyRewards":        true, // MethodsMiner
+	"AddBalance":          true, // MethodsMarket
 }
