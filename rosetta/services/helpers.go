@@ -180,7 +180,7 @@ func getPubKeyForMsig(add address.Address) (string, *types.Error) {
 	case address.ID:
 		pubKey = add.String()
 	default:
-		//Unknown address type
+		// Unknown address type
 		pubKey = add.String()
 	}
 
@@ -205,7 +205,7 @@ func getPubKeyForStorageMiner(add address.Address) (string, *types.Error) {
 	case address.ID:
 		pubKey = add.String()
 	default:
-		//Unknown address type
+		// Unknown address type
 		pubKey = add.String()
 	}
 
