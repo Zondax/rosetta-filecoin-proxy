@@ -32,6 +32,22 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) MpoolBatchPush(ctx context.Context, messages []*filTypes.SignedMessage) ([]cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MpoolBatchPushUntrusted(ctx context.Context, messages []*filTypes.SignedMessage) ([]cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MpoolBatchPushMessage(ctx context.Context, messages []*filTypes.Message, spec *api.MessageSendSpec) ([]*filTypes.SignedMessage, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientGetDealStatus(ctx context.Context, statusCode uint64) (string, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) StateListMessages(ctx context.Context, match *api.MessageMatch, tsk filTypes.TipSetKey, toht abi.ChainEpoch) ([]cid.Cid, error) {
 	panic("implement me")
 }
