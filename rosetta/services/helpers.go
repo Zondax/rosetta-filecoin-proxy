@@ -133,18 +133,80 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 }
 
 func GetActorPubKey(add address.Address) (string, *types.Error) {
-	var pubKey string
+
+	actorCode, err := tools.ActorsDB.GetActorCode(add)
+	if err != nil {
+		Logger.Error("could not get actor code from address. Err:", err.Error())
+		return add.String(), nil
+	}
+
+	// Search for actor's pubkey in cache.
+	// If cannot get actor's pubkey, GetActorPubKey will return the same address
+
+	// Handler for msig
+	if builtin2.IsMultisigActor(actorCode) {
+		return getPubKeyForMsig(add)
+	}
+
+	// Handler for storage miner
+	if builtin2.IsStorageMinerActor(actorCode) {
+		return getPubKeyForStorageMiner(add)
+	}
+
+	// For other types, try to return address in "robust" format
+	pubKey, err := tools.ActorsDB.GetActorPubKey(add, false)
+	if err != nil {
+		pubKey = add.String()
+	}
+
+	return pubKey, nil
+}
+
+func getPubKeyForMsig(add address.Address) (string, *types.Error) {
+
+	var (
+		pubKey string
+		err    error
+	)
+
 	switch add.Protocol() {
 	case address.BLS, address.SECP256K1, address.Actor:
+		// Use "short" address for msig actors since can be mixed on the blockchain
+		// and we need them to be normalized to any of the two formats
+		pubKey, err = tools.ActorsDB.GetActorPubKey(add, true)
+		if err != nil {
+			pubKey = add.String()
+		}
+	case address.ID:
 		pubKey = add.String()
 	default:
-		// Search for actor's pubkey in cache.
-		// If cannot get actor's pubkey, GetActorPubKey will return the same address
-		var err error
-		pubKey, err = tools.ActorsDB.GetActorPubKey(add)
+		// Unknown address type
+		pubKey = add.String()
+	}
+
+	return pubKey, nil
+}
+
+func getPubKeyForStorageMiner(add address.Address) (string, *types.Error) {
+
+	var (
+		pubKey string
+		err    error
+	)
+
+	switch add.Protocol() {
+	case address.BLS, address.SECP256K1, address.Actor:
+		// Use "short" address for storage miners actors since can be mixed on the blockchain
+		// and we need them to be normalized to any of the two formats
+		pubKey, err = tools.ActorsDB.GetActorPubKey(add, true)
 		if err != nil {
-			return add.String(), nil
+			pubKey = add.String()
 		}
+	case address.ID:
+		pubKey = add.String()
+	default:
+		// Unknown address type
+		pubKey = add.String()
 	}
 
 	return pubKey, nil

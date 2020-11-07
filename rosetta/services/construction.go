@@ -11,7 +11,6 @@ import (
 	"github.com/filecoin-project/lotus/build"
 	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"strconv"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -132,11 +131,11 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		// Parse value to send - this field is optional
 		valueRaw, okValue := request.Options[OptionsValueKey]
 		if okValue {
-			value, err := strconv.Atoi(valueRaw.(string))
+			value, err := filTypes.BigFromString(valueRaw.(string))
 			if err != nil {
 				return nil, BuildError(ErrMalformedValue, err, false)
 			}
-			message.Value = abi.NewTokenAmount(int64(value))
+			message.Value = value
 		}
 
 		if okSender {

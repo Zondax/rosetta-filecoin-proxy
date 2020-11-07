@@ -17,7 +17,7 @@ type Database interface {
 	GetActorCode(address address.Address) (cid.Cid, error)
 	storeActorCode(address address.Address, actorCode cid.Cid)
 	// Address-ActorPubkey Map
-	GetActorPubKey(address address.Address) (string, error)
+	GetActorPubKey(address address.Address, reverse bool) (string, error)
 	storeActorPubKey(address address.Address, pubKey string)
 }
 
@@ -61,11 +61,11 @@ func (m *Cache) retrieveActorFromLotus(add address.Address) (cid.Cid, error) {
 	return actor.Code, nil
 }
 
-func (m *Cache) GetActorPubKey(address address.Address) (string, error) {
+func (m *Cache) GetActorPubKey(address address.Address, reverse bool) (string, error) {
 	pubKey, ok := m.pubKeyMap.Get(address.String())
 	if !ok {
 		var err error
-		pubKey, err = m.retrieveActorPubKeyFromLotus(address)
+		pubKey, err = m.retrieveActorPubKeyFromLotus(address, reverse)
 		if err != nil {
 			return address.String(), err
 		}
@@ -79,11 +79,17 @@ func (m *Cache) storeActorPubKey(address address.Address, pubKey string) {
 	m.pubKeyMap.Set(address.String(), pubKey)
 }
 
-func (m *Cache) retrieveActorPubKeyFromLotus(add address.Address) (string, error) {
-	key, err := (*m.Node).StateAccountKey(context.Background(), add, filTypes.EmptyTSK)
+func (m *Cache) retrieveActorPubKeyFromLotus(add address.Address, reverse bool) (string, error) {
+	var key address.Address
+	var err error
+	if reverse {
+		key, err = (*m.Node).StateLookupID(context.Background(), add, filTypes.EmptyTSK)
+	} else {
+		key, err = (*m.Node).StateAccountKey(context.Background(), add, filTypes.EmptyTSK)
+	}
+
 	if err != nil {
 		return add.String(), nil
 	}
-
 	return key.String(), nil
 }

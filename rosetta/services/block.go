@@ -195,10 +195,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
-				opStatus := OperationStatusFailed
-				if trace.MsgRct.ExitCode.IsSuccess() {
-					opStatus = OperationStatusOk
-				}
+				opStatus := OperationStatusOk
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
 					trace.GasCost.TotalCost.Neg().String(), opStatus, false)
 			}
@@ -234,7 +231,8 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 
 	baseMethod, err := GetMethodName(trace.Msg)
 	if err != nil {
-		return
+		Logger.Error("could not get method name. Error:", err.Message, err.Details)
+		baseMethod = unknownStr
 	}
 
 	if IsOpSupported(baseMethod) {
@@ -252,7 +250,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		}
 
 		switch baseMethod {
-		case "Send":
+		case "Send", "Exec", "AddBalance":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false)
@@ -283,10 +281,13 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 					}
 				}
 			}
-		case "AwardBlockReward", "OnDeferredCronEvent":
+		case "AwardBlockReward", "ApplyRewards", "OnDeferredCronEvent",
+			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt":
 			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, false)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, false)
+					trace.Msg.Value.String(), opStatus, true)
 			}
 		}
 	}
