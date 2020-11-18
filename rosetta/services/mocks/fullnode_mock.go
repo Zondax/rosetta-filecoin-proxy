@@ -20,6 +20,7 @@ import (
 	"github.com/filecoin-project/specs-actors/actors/builtin/miner"
 	"github.com/filecoin-project/specs-actors/actors/builtin/paych"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
+	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -30,6 +31,34 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) Session(ctx context.Context) (uuid.UUID, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientDealPieceCID(ctx context.Context, root cid.Cid) (api.DataCIDSize, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientCancelDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateDecodeParams(ctx context.Context, toAddr address.Address, method abi.MethodNum, params []byte, tsk filTypes.TipSetKey) (interface{}, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerSectorAllocated(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (bool, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MarketReserveFunds(ctx context.Context, wallet address.Address, addr address.Address, amt filTypes.BigInt) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MarketReleaseFunds(ctx context.Context, addr address.Address, amt filTypes.BigInt) error {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) MpoolBatchPush(ctx context.Context, messages []*filTypes.SignedMessage) ([]cid.Cid, error) {

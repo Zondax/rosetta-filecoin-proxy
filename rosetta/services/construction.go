@@ -123,9 +123,11 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			// Get receiver's actor code
 			receiverActor, errAct := c.node.StateGetActor(context.Background(), addressReceiverParsed, filTypes.EmptyTSK)
 			if errAct != nil {
-				return nil, BuildError(ErrUnableToGetActor, errAct, true)
+				// Actor not found on chain, set an empty field
+				md[DestinationActorIdKey] = ""
+			} else {
+				md[DestinationActorIdKey] = receiverActor.Code.String()
 			}
-			md[DestinationActorIdKey] = receiverActor.Code.String()
 		}
 
 		// Parse value to send - this field is optional
