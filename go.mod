@@ -11,7 +11,7 @@ require (
 	github.com/filecoin-project/go-jsonrpc v0.1.2-0.20201008195726-68c6a2704e49
 	github.com/filecoin-project/go-multistore v0.0.3
 	github.com/filecoin-project/go-state-types v0.0.0-20201102161440-c8033295a1fc
-	github.com/filecoin-project/lotus v1.2.0
+	github.com/filecoin-project/lotus v1.2.1
 	github.com/filecoin-project/specs-actors v0.9.13
 	github.com/filecoin-project/specs-actors/v2 v2.3.2
 	github.com/google/uuid v1.1.2
