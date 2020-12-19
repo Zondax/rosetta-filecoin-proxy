@@ -20,7 +20,7 @@ jobs:
 
   checks:
     docker:
-      - image: golang:1.14
+      - image: golang:1.15
     steps:
       - checkout
       - ffi_deps
@@ -31,7 +31,7 @@ jobs:
 
   integration_testnet:
     docker:
-      - image: golang:1.14
+      - image: golang:1.15
     steps:
       - checkout
       - ffi_deps
