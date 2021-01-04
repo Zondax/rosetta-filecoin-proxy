@@ -1560,6 +1560,8 @@ github.com/zondax/hid v0.9.0/go.mod h1:l5wttcP0jwtdLjqjMMWFVEE7d1zO0jvSPA9OPZxWp
 github.com/zondax/ledger-go v0.12.1/go.mod h1:KatxXrVDzgWwbssUWsF5+cOJHXPvzQ09YSlzGNuhOEo=
 github.com/zondax/rosetta-filecoin-lib v1.201.0 h1:wcpbnr3D9bxykDRkn2Z1ZThvVwlary6Amdsa95Jf89I=
 github.com/zondax/rosetta-filecoin-lib v1.201.0/go.mod h1:Y0eJdwFc7+xhCufKsg0pfVPviL3lhSB38css5rCxFHQ=
+github.com/zondax/rosetta-filecoin-lib v1.400.0 h1:et8DCU80bPVxHSncns2Hf+EN6j5O+wNIo3DV9EwNwjA=
+github.com/zondax/rosetta-filecoin-lib v1.400.0/go.mod h1:W4ODKFAxjQ3nS3bCAQOiCrk+YXY/kLZMznE+fyzw/Ok=
 go.dedis.ch/fixbuf v1.0.3/go.mod h1:yzJMt34Wa5xD37V5RTdmp38cz3QhMagdGoem9anUalw=
 go.dedis.ch/kyber/v3 v3.0.4/go.mod h1:OzvaEnPvKlyrWyp3kGXlFdp7ap1VC6RkZDTaPikqhsQ=
 go.dedis.ch/kyber/v3 v3.0.9/go.mod h1:rhNjUUg6ahf8HEg5HUvVBYoWY4boAafX8tYxX+PS+qg=
