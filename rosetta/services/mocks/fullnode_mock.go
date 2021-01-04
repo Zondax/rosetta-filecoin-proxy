@@ -33,6 +33,22 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) NetBlockAdd(ctx context.Context, acl api.NetBlockList) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBlockRemove(ctx context.Context, acl api.NetBlockList) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetBlockList(ctx context.Context) (api.NetBlockList, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MarketWithdraw(ctx context.Context, wallet, addr address.Address, amt filTypes.BigInt) (cid.Cid, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) Session(ctx context.Context) (uuid.UUID, error) {
 	panic("implement me")
 }

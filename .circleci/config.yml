@@ -3,14 +3,14 @@ version: 2.1
 commands:
   ffi_deps:
     steps:
-      - run: apt update && apt install -yy mesa-opencl-icd jq
+      - run: apt update && apt install -yy mesa-opencl-icd jq hwloc libhwloc-dev
       - run: ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
       - run: git submodule update --init --recursive
 
 jobs:
   build:
     docker:
-      - image: golang:1.14
+      - image: golang:1.15
     working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
@@ -20,7 +20,7 @@ jobs:
 
   checks:
     docker:
-      - image: golang:1.14
+      - image: golang:1.15
     steps:
       - checkout
       - ffi_deps
@@ -31,7 +31,7 @@ jobs:
 
   integration_testnet:
     docker:
-      - image: golang:1.14
+      - image: golang:1.15
     steps:
       - checkout
       - ffi_deps
