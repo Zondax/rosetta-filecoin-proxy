@@ -273,7 +273,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 						fromPk = paramsMap["From"]
 						toPk = paramsMap["To"]
 						*operations = appendOp(*operations, baseMethod, fromPk,
-							"0", opStatus, false)
+							"0", opStatus, true)
 						*operations = appendOp(*operations, baseMethod, toPk,
 							"0", opStatus, true)
 					} else {
