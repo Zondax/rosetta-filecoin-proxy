@@ -33,6 +33,18 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) StateSearchMsgLimited(ctx context.Context, msg cid.Cid, limit abi.ChainEpoch) (*api.MsgLookup, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MarketAddBalance(ctx context.Context, wallet, addr address.Address, amt filTypes.BigInt) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MarketGetReserved(ctx context.Context, addr address.Address) (filTypes.BigInt, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) NetBlockAdd(ctx context.Context, acl api.NetBlockList) error {
 	panic("implement me")
 }
