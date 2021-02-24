@@ -33,6 +33,10 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) MsigGetPending(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.MsigTransaction, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) StateSearchMsgLimited(ctx context.Context, msg cid.Cid, limit abi.ChainEpoch) (*api.MsgLookup, error) {
 	panic("implement me")
 }
