@@ -106,6 +106,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 		true,
 		[]*types.NetworkIdentifier{network},
 		nil,
+		false,
 	)
 	if err != nil {
 		srv.Logger.Fatal(err)

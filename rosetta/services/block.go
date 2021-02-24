@@ -326,7 +326,7 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 			Index: opIndex,
 		},
 		Type:   opType,
-		Status: status,
+		Status: &status,
 		Account: &types.AccountIdentifier{
 			Address: account,
 		},

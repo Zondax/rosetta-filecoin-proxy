@@ -3,7 +3,7 @@ module github.com/zondax/rosetta-filecoin-proxy
 go 1.15
 
 require (
-	github.com/coinbase/rosetta-sdk-go v0.5.10
+	github.com/coinbase/rosetta-sdk-go v0.6.8
 	github.com/filecoin-project/go-address v0.0.5
 	github.com/filecoin-project/go-bitfield v0.2.4
 	github.com/filecoin-project/go-data-transfer v1.2.7
