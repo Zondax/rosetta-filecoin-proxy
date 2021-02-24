@@ -845,3 +845,7 @@ func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, v
 func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
 	panic("implement me")
 }
+
+func (f *FullNodeMock) MsigGetPending(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.MsigTransaction, error) {
+	panic("implement me")
+}
