@@ -164,4 +164,3 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 func (a AccountAPIService) AccountCoins(ctx context.Context, request *types.AccountCoinsRequest) (*types.AccountCoinsResponse, *types.Error) {
 	return nil, ErrNotImplemented
 }
-
