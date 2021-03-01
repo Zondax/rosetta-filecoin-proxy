@@ -56,7 +56,11 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 		}
 
-		queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(*request.BlockIdentifier.Index), filTypes.EmptyTSK)
+		// From lotus v1.5 and on, StateGetActor computes the state at parent's tipset.
+		// To get the state on the requested height, we need to query the block at (height + 1).
+		queryHeight := (*request.BlockIdentifier.Index) + 1
+
+		queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(queryHeight), filTypes.EmptyTSK)
 		if filErr != nil {
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
 		}
