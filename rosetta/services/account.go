@@ -79,7 +79,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	var balanceStr = "0"
-	queryTipSetHeight := int64(originalQueryTipSet.Height()) // To return in response
+	queryTipSetHeight := int64(originalQueryTipSet.Height())              // To return in response
 	queryTipSetHash, err := BuildTipSetKeyHash(originalQueryTipSet.Key()) // To return in response
 	if err != nil {
 		return nil, BuildError(ErrUnableToBuildTipSetHash, err, true)
