@@ -61,14 +61,17 @@ func (s *NetworkAPIService) NetworkStatus(
 	// Check sync status
 
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
+	currentIndex := status.GetMaxHeight()
+	targetIndex := status.GetTargetIndex()
+
 	if syncErr != nil {
 		return nil, syncErr
 	}
 	stage := status.globalSyncState.String()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
-		CurrentIndex: status.GetMaxHeight(),
-		TargetIndex:  status.GetTargetIndex(),
+		CurrentIndex: &currentIndex,
+		TargetIndex:  targetIndex,
 	}
 	if !status.IsSynced() {
 		// Cannot retrieve any TipSet while node is syncing

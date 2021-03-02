@@ -86,7 +86,7 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 		status = SyncStatus{
 			globalSyncState: api.StageIdle,
 		}
-		syncComplete = false
+		syncComplete = true
 		earliestStat = api.StageIdle
 	)
 
@@ -99,8 +99,9 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 		case api.StageSyncErrored:
 			return nil, ErrSyncErrored
 		case api.StageSyncComplete:
-			syncComplete = true
+			break
 		default:
+			syncComplete = false
 			if w.Stage > earliestStat {
 				earliestStat = w.Stage
 			}
