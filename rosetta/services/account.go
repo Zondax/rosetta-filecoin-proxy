@@ -51,6 +51,12 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	var fixedQueryTipSet *filTypes.TipSet
 	var originalQueryTipSet *filTypes.TipSet
+	var headTipSet *filTypes.TipSet
+
+	headTipSet, filErr = a.node.ChainHead(ctx)
+	if filErr != nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, filErr, true)
+	}
 
 	if request.BlockIdentifier != nil {
 		if request.BlockIdentifier.Index == nil {
@@ -60,7 +66,14 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		originalQueryHeight := *request.BlockIdentifier.Index
 		// From lotus v1.5 and on, StateGetActor computes the state at parent's tipset.
 		// To get the state on the requested height, we need to query the block at (height + 1).
-		fixedQueryHeight := (*request.BlockIdentifier.Index) + 1
+
+		// First, check that we're not querying the head tipSet, if not, query the +1 tipSet
+		var fixedQueryHeight int64
+		if (*request.BlockIdentifier.Index) == int64(headTipSet.Height()) {
+			fixedQueryHeight = *request.BlockIdentifier.Index
+		} else {
+			fixedQueryHeight = (*request.BlockIdentifier.Index) + 1
+		}
 
 		fixedQueryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(fixedQueryHeight), filTypes.EmptyTSK)
 		if filErr != nil {
@@ -71,11 +84,8 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
 		}
 	} else {
-		originalQueryTipSet, filErr = a.node.ChainHead(ctx)
+		originalQueryTipSet = headTipSet
 		fixedQueryTipSet = originalQueryTipSet
-		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetLatestBlk, filErr, true)
-		}
 	}
 
 	var balanceStr = "0"
