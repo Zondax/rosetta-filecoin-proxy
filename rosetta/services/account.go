@@ -49,9 +49,18 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, BuildError(ErrNodeNotSynced, nil, true)
 	}
 
-	var fixedQueryTipSet *filTypes.TipSet
-	var originalQueryTipSet *filTypes.TipSet
-	var headTipSet *filTypes.TipSet
+	useHeadTipSet := false
+
+	var queryTipSet *filTypes.TipSet    // TipSet to use on StateGetActor
+	var responseTipSet *filTypes.TipSet // TipSet to get queryTipSetHeight and queryTipSetHash values for response
+	var headTipSet *filTypes.TipSet     // Chain's head TipSet
+
+	var fixedQueryHeight int64
+	var originalQueryHeight int64
+
+	// To return in response
+	var queryTipSetHeight int64
+	var queryTipSetHash *string
 
 	headTipSet, filErr = a.node.ChainHead(ctx)
 	if filErr != nil {
@@ -63,39 +72,46 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 			return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 		}
 
-		originalQueryHeight := *request.BlockIdentifier.Index
-		// From lotus v1.5 and on, StateGetActor computes the state at parent's tipset.
+		originalQueryHeight = *request.BlockIdentifier.Index
+		// From lotus v1.5 and on, StateGetActor computes the state at parent's tipSet.
 		// To get the state on the requested height, we need to query the block at (height + 1).
 
-		// First, check that we're not querying the head tipSet, if not, query the +1 tipSet
-		var fixedQueryHeight int64
-		if (*request.BlockIdentifier.Index) == int64(headTipSet.Height()) {
-			fixedQueryHeight = *request.BlockIdentifier.Index
+		// First, check if we're querying the head tipSet, if not, query the +1 tipSet
+		if originalQueryHeight == int64(headTipSet.Height()) {
+			useHeadTipSet = true
 		} else {
-			fixedQueryHeight = (*request.BlockIdentifier.Index) + 1
-		}
-
-		fixedQueryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(fixedQueryHeight), filTypes.EmptyTSK)
-		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
-		}
-		originalQueryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(originalQueryHeight), filTypes.EmptyTSK)
-		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
+			fixedQueryHeight = originalQueryHeight + 1
 		}
 	} else {
-		originalQueryTipSet = headTipSet
-		fixedQueryTipSet = originalQueryTipSet
+		// If BlockIdentifier is not set, query chain's head tipSet
+		useHeadTipSet = true
+	}
+
+	if useHeadTipSet {
+		queryTipSet = headTipSet
+		responseTipSet, filErr = a.node.ChainGetTipSet(ctx, headTipSet.Parents())
+		if filErr != nil {
+			return nil, BuildError(ErrUnableToGetParentBlk, filErr, true)
+		}
+	} else {
+		queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(fixedQueryHeight), filTypes.EmptyTSK)
+		if filErr != nil {
+			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
+		}
+		responseTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(originalQueryHeight), filTypes.EmptyTSK)
+		if filErr != nil {
+			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
+		}
 	}
 
 	var balanceStr = "0"
-	queryTipSetHeight := int64(originalQueryTipSet.Height())              // To return in response
-	queryTipSetHash, err := BuildTipSetKeyHash(originalQueryTipSet.Key()) // To return in response
-	if err != nil {
-		return nil, BuildError(ErrUnableToBuildTipSetHash, err, true)
+	queryTipSetHeight = int64(responseTipSet.Height())
+	queryTipSetHash, filErr = BuildTipSetKeyHash(responseTipSet.Key())
+	if filErr != nil {
+		return nil, BuildError(ErrUnableToBuildTipSetHash, filErr, true)
 	}
 
-	actor, err := a.node.StateGetActor(ctx, addr, fixedQueryTipSet.Key())
+	actor, err := a.node.StateGetActor(ctx, addr, queryTipSet.Key())
 	if err != nil {
 		// If actor is not found on chain, return 0 balance
 		return &types.AccountBalanceResponse{
@@ -123,20 +139,20 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		switch request.AccountIdentifier.SubAccount.Address {
 		case LockedBalanceStr:
 			lockedBalance := actor.Balance
-			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, fixedQueryTipSet.Key())
+			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
 				return nil, BuildError(ErrUnableToGetBalance, err, true)
 			}
 			lockedBalance.Sub(lockedBalance.Int, spendableBalance.Int)
 			balanceStr = lockedBalance.String()
 		case SpendableBalanceStr:
-			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, fixedQueryTipSet.Key())
+			spendableBalance, err := a.node.MsigGetAvailableBalance(ctx, addr, queryTipSet.Key())
 			if err != nil {
 				return nil, BuildError(ErrUnableToGetBalance, err, true)
 			}
 			balanceStr = spendableBalance.String()
 		case VestingScheduleStr:
-			vestingSch, err := a.node.MsigGetVestingSchedule(ctx, addr, fixedQueryTipSet.Key())
+			vestingSch, err := a.node.MsigGetVestingSchedule(ctx, addr, queryTipSet.Key())
 			if err != nil {
 				return nil, BuildError(ErrUnableToGetVesting, err, true)
 			}
