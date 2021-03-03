@@ -37,6 +37,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	var mockVestingInitialBalance = abi.NewTokenAmount(1000000)
 	var mockAvailableBalance = abi.NewTokenAmount(100)
 	mockTipSet := buildMockTargetTipSet(mockHeight)
+	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
 	mockMsigActor := buildActorMock(builtin.MultisigActorCodeID, "100")
@@ -84,6 +85,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 			UnlockDuration: mockVestingUnlockDur,
 		},
 			nil)
+	nodeMock.On("ChainHead", mock.Anything).
+		Return(mockHeadTipSet, nil)
 	///
 
 	tests := []struct {

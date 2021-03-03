@@ -511,7 +511,8 @@ func (f *FullNodeMock) ChainNotify(ctx context.Context) (<-chan []*api.HeadChang
 }
 
 func (f *FullNodeMock) ChainHead(ctx context.Context) (*filTypes.TipSet, error) {
-	panic("implement me")
+	args := f.Called(ctx)
+	return args.Get(0).(*filTypes.TipSet), args.Error(1)
 }
 
 func (f *FullNodeMock) ChainGetRandomness(ctx context.Context, tsk filTypes.TipSetKey, personalization crypto.DomainSeparationTag, randEpoch abi.ChainEpoch, entropy []byte) (abi.Randomness, error) {
