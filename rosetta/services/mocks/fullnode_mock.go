@@ -33,6 +33,14 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) NetPeerInfo(ctx context.Context, id peer.ID) (*api.ExtendedPeerInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) Version(ctx context.Context) (api.APIVersion, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) MsigGetPending(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.MsigTransaction, error) {
 	panic("implement me")
 }
@@ -483,10 +491,6 @@ func (f *FullNodeMock) NetPubsubScores(ctx context.Context) ([]api.PubsubScore, 
 }
 
 func (f *FullNodeMock) ID(ctx context.Context) (peer.ID, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) Version(ctx context.Context) (api.Version, error) {
 	panic("implement me")
 }
 
