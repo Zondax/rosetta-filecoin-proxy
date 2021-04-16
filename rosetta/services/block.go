@@ -18,7 +18,7 @@ import (
 )
 
 // TimeOut for RPC Lotus calls
-const LotusCallTimeOut = 40 * time.Second
+const LotusCallTimeOut = 120 * time.Second
 
 // BlockCIDsKey is the name of the key in the Metadata map inside a
 // BlockResponse that specifies blocks' CIDs inside a TipSet.
