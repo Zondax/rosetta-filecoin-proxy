@@ -357,11 +357,13 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 					}
 					return string(jsonResponse), nil
 				}
+			default:
+				return "", nil
 			}
 		}
+	default:
+		return "", nil
 	}
-
-	return "", nil
 }
 
 func parseMsigParams(msg *filTypes.Message) (string, error) {
