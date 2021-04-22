@@ -5,6 +5,7 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-bitfield"
 	datatransfer "github.com/filecoin-project/go-data-transfer"
+	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-multistore"
@@ -13,6 +14,7 @@ import (
 	"github.com/filecoin-project/go-state-types/dline"
 	network2 "github.com/filecoin-project/go-state-types/network"
 	"github.com/filecoin-project/lotus/api"
+	apitypes "github.com/filecoin-project/lotus/api/types"
 	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
@@ -31,6 +33,22 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) NetPeerInfo(ctx context.Context, id peer.ID) (*api.ExtendedPeerInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) Discover(ctx context.Context) (apitypes.OpenRPCDocument, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) Version(ctx context.Context) (api.APIVersion, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientCancelRetrievalDeal(ctx context.Context, dealid retrievalmarket.DealID) error {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) MsigGetPending(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*api.MsigTransaction, error) {
@@ -483,10 +501,6 @@ func (f *FullNodeMock) NetPubsubScores(ctx context.Context) ([]api.PubsubScore, 
 }
 
 func (f *FullNodeMock) ID(ctx context.Context) (peer.ID, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) Version(ctx context.Context) (api.Version, error) {
 	panic("implement me")
 }
 
