@@ -59,14 +59,14 @@ func (s *NetworkAPIService) NetworkStatus(
 	)
 
 	// Check sync status
-
 	status, syncErr := CheckSyncStatus(ctx, &s.node)
-	currentIndex := status.GetMaxHeight()
-	targetIndex := status.GetTargetIndex()
-
 	if syncErr != nil {
 		return nil, syncErr
 	}
+
+	currentIndex := status.GetMaxHeight()
+	targetIndex := status.GetTargetIndex()
+
 	stage := status.globalSyncState.String()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
