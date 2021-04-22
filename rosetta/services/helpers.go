@@ -65,6 +65,23 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
+func GetActorNameFromCid(actorCode cid.Cid) string {
+	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
+	actorName := actorNameArr[len(actorNameArr)-1]
+	return actorName
+}
+
+func GetActorNameFromAddress(address address.Address) string {
+	var actorCode cid.Cid
+	// Search for actor in cache
+	var err error
+	actorCode, err = tools.ActorsDB.GetActorCode(address)
+	if err != nil {
+		return unknownStr
+	}
+	return GetActorNameFromCid(actorCode)
+}
+
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 
 	if msg == nil {
@@ -81,16 +98,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	var actorCode cid.Cid
-	// Search for actor in cache
-	var err error
-	actorCode, err = tools.ActorsDB.GetActorCode(msg.To)
-	if err != nil {
-		return unknownStr, nil
-	}
-
-	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
-	actorName := actorNameArr[len(actorNameArr)-1]
+	actorName := GetActorNameFromAddress(msg.To)
 
 	var method interface{}
 	switch actorName {
