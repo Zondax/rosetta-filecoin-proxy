@@ -43,8 +43,12 @@ func TestCheckSyncStatus(t *testing.T) {
 				ctx:  context.Background(),
 				node: setupMockForScenario(ScnSyncError),
 			},
-			want:  nil,
-			want1: ErrSyncErrored,
+			want: &SyncStatus{
+				currentHeight:   []int64{0},
+				targetIndex:     []int64{100},
+				globalSyncState: api.StageSyncErrored,
+			},
+			want1: nil,
 		},
 		{
 			name: "SyncCompleted",
@@ -91,8 +95,12 @@ func TestCheckSyncStatus(t *testing.T) {
 				ctx:  context.Background(),
 				node: setupMockForScenario(ScnWorkerWithError),
 			},
-			want:  nil,
-			want1: ErrSyncErrored,
+			want: &SyncStatus{
+				currentHeight:   []int64{0, 0},
+				targetIndex:     []int64{100, 200},
+				globalSyncState: api.StageSyncErrored,
+			},
+			want1: nil,
 		},
 	}
 

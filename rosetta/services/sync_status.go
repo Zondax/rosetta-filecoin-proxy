@@ -96,8 +96,6 @@ func CheckSyncStatus(ctx context.Context, node *api.FullNode) (*SyncStatus, *typ
 		}
 
 		switch w.Stage {
-		case api.StageSyncErrored:
-			return nil, ErrSyncErrored
 		case api.StageSyncComplete:
 			break
 		default:

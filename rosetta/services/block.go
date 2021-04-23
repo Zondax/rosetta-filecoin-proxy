@@ -1,20 +1,24 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	initActor "github.com/filecoin-project/specs-actors/v4/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
 
-// TimeOut for RPC Lotus calls
-const LotusCallTimeOut = 40 * time.Second
+// LotusCallTimeOut TimeOut for RPC Lotus calls
+const LotusCallTimeOut = 60 * 4 * time.Second
 
 // BlockCIDsKey is the name of the key in the Metadata map inside a
 // BlockResponse that specifies blocks' CIDs inside a TipSet.
@@ -250,12 +254,37 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		}
 
 		switch baseMethod {
-		case "Send", "Exec", "AddBalance":
+		case "Send", "AddBalance":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false)
 				*operations = appendOp(*operations, baseMethod, toPk,
 					trace.Msg.Value.String(), opStatus, true)
+			}
+		case "Exec":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, false)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true)
+
+				// Check if this Exec op created and funded a msig account
+				params, err := parseExecParams(trace.Msg, trace.MsgRct)
+				if err == nil {
+					var paramsMap map[string]string
+					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+						if fundedAddress, ok := paramsMap["IDAddress"]; ok {
+							fromPk = toPk        // init actor
+							toPk = fundedAddress // new msig address
+							*operations = appendOp(*operations, "Send", fromPk,
+								trace.Msg.Value.Neg().String(), opStatus, false)
+							*operations = appendOp(*operations, "Send", toPk,
+								trace.Msg.Value.String(), opStatus, true)
+						}
+					} else {
+						Logger.Error("Could not parse message params for", baseMethod)
+					}
+				}
 			}
 		case "Propose":
 			{
@@ -266,7 +295,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			}
 		case "SwapSigner":
 			{
-				params, err := parseParams(trace.Msg)
+				params, err := parseMsigParams(trace.Msg)
 				if err == nil {
 					var paramsMap map[string]string
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -298,7 +327,46 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 	}
 }
 
-func parseParams(msg *filTypes.Message) (string, error) {
+func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
+
+	actorName := GetActorNameFromAddress(msg.To)
+
+	switch actorName {
+	case "init":
+		{
+			reader := bytes.NewReader(msg.Params)
+			var params initActor.ExecParams
+			err := params.UnmarshalCBOR(reader)
+			if err != nil {
+				return "", err
+			}
+			execActorName := GetActorNameFromCid(params.CodeCID)
+			switch execActorName {
+			case "multisig":
+				{
+					// Multisig account creation
+					reader = bytes.NewReader(receipt.Return)
+					var execReturn initActor.ExecReturn
+					err = execReturn.UnmarshalCBOR(reader)
+					if err != nil {
+						return "", err
+					}
+					jsonResponse, err := json.Marshal(execReturn)
+					if err != nil {
+						return "", err
+					}
+					return string(jsonResponse), nil
+				}
+			default:
+				return "", nil
+			}
+		}
+	default:
+		return "", nil
+	}
+}
+
+func parseMsigParams(msg *filTypes.Message) (string, error) {
 	r := &filLib.RosettaConstructionFilecoin{}
 	msgSerial, err := msg.MarshalJSON()
 	if err != nil {
@@ -310,6 +378,11 @@ func parseParams(msg *filTypes.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if !builtin.IsMultisigActor(actorCode) {
+		return "", fmt.Errorf("this id doesn't correspond to a multisig actor")
+	}
+
 	parsedParams, err := r.ParseParamsMultisigTx(string(msgSerial), actorCode)
 	if err != nil {
 		Logger.Error("Could not parse params. ParseParamsMultisigTx returned with error:", err.Error())
