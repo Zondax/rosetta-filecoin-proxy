@@ -14,7 +14,7 @@ require (
 	github.com/filecoin-project/lotus v1.7.0-rc1
 	github.com/filecoin-project/specs-actors v0.9.13
 	github.com/filecoin-project/specs-actors/v2 v2.3.5-0.20210114162132-5b58b773f4fb
-	github.com/filecoin-project/specs-actors/v3 v3.1.0
+	github.com/filecoin-project/specs-actors/v4 v4.0.0-20210416122111-a0f750e10747
 	github.com/google/uuid v1.2.0
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipfs/go-log v1.0.4
@@ -22,7 +22,7 @@ require (
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.7.0
-	github.com/zondax/rosetta-filecoin-lib v1.500.1
+	github.com/zondax/rosetta-filecoin-lib v1.700.0
 	gotest.tools v2.2.0+incompatible
 )
 
