@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
 	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
-	methods "github.com/filecoin-project/specs-actors/v2/actors/builtin"
+	methods "github.com/filecoin-project/specs-actors/v4/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
 	"strings"

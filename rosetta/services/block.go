@@ -11,14 +11,14 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	initActor "github.com/filecoin-project/specs-actors/v3/actors/builtin/init"
+	initActor "github.com/filecoin-project/specs-actors/v4/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"time"
 )
 
 // LotusCallTimeOut TimeOut for RPC Lotus calls
-const LotusCallTimeOut = 120 * time.Second
+const LotusCallTimeOut = 60 * 4 * time.Second
 
 // BlockCIDsKey is the name of the key in the Metadata map inside a
 // BlockResponse that specifies blocks' CIDs inside a TipSet.
