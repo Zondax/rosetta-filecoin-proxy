@@ -11,10 +11,10 @@ require (
 	github.com/filecoin-project/go-jsonrpc v0.1.4-0.20210217175800-45ea43ac2bec
 	github.com/filecoin-project/go-multistore v0.0.3
 	github.com/filecoin-project/go-state-types v0.1.0
-	github.com/filecoin-project/lotus v1.7.0-rc1
+	github.com/filecoin-project/lotus v1.8.0
 	github.com/filecoin-project/specs-actors v0.9.13
 	github.com/filecoin-project/specs-actors/v2 v2.3.5-0.20210114162132-5b58b773f4fb
-	github.com/filecoin-project/specs-actors/v4 v4.0.0-20210416122111-a0f750e10747
+	github.com/filecoin-project/specs-actors/v4 v4.0.0
 	github.com/google/uuid v1.2.0
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipfs/go-log v1.0.4
