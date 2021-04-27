@@ -14,7 +14,6 @@ import (
 	"github.com/filecoin-project/go-state-types/dline"
 	network2 "github.com/filecoin-project/go-state-types/network"
 	"github.com/filecoin-project/lotus/api"
-	apitypes "github.com/filecoin-project/lotus/api/types"
 	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
@@ -36,10 +35,6 @@ type FullNodeMock struct {
 }
 
 func (f *FullNodeMock) NetPeerInfo(ctx context.Context, id peer.ID) (*api.ExtendedPeerInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) Discover(ctx context.Context) (apitypes.OpenRPCDocument, error) {
 	panic("implement me")
 }
 
