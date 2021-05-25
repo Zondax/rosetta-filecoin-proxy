@@ -116,7 +116,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	if s.response == nil {
-		// We should only enter this codepath only once
+		// We should only enter this codepath once
 		// Initialize the very first response
 		s.response = &types.NetworkStatusResponse{
 			CurrentBlockIdentifier: &types.BlockIdentifier{
@@ -132,7 +132,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	if !useGenesisTipSet {
-		// Update block height, hash and time stamp
+		// Update block height, hash and timestamp
 		s.response.CurrentBlockIdentifier = &types.BlockIdentifier{
 			Index: int64(headTipSet.Height()),
 			Hash:  *hashHeadTipSet,
