@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
@@ -10,8 +11,9 @@ import (
 
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
 type NetworkAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	response *types.NetworkStatusResponse
+	network  *types.NetworkIdentifier
+	node     api.FullNode
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
@@ -51,11 +53,9 @@ func (s *NetworkAPIService) NetworkStatus(
 ) (*types.NetworkStatusResponse, *types.Error) {
 
 	var (
-		headTipSet            *filTypes.TipSet
-		err                   error
-		useGenesisTipSet      = false
-		blockIndex, timeStamp int64
-		blockHashedTipSet     string
+		headTipSet       *filTypes.TipSet
+		err              error
+		useGenesisTipSet = false
 	)
 
 	// Check sync status
@@ -115,31 +115,37 @@ func (s *NetworkAPIService) NetworkStatus(
 		})
 	}
 
+	if s.response == nil {
+		// We should only enter this codepath once
+		// Initialize the very first response
+		s.response = &types.NetworkStatusResponse{
+			CurrentBlockIdentifier: &types.BlockIdentifier{
+				Index: 0,
+				Hash:  *hashGenesisTipSet,
+			},
+			CurrentBlockTimestamp: int64(genesisTipSet.MinTimestamp()) * FactorSecondToMillisecond, // [ms]
+			GenesisBlockIdentifier: &types.BlockIdentifier{
+				Index: int64(genesisTipSet.Height()),
+				Hash:  *hashGenesisTipSet,
+			},
+		}
+	}
+
 	if !useGenesisTipSet {
-		blockIndex = int64(headTipSet.Height())
-		timeStamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond
-		blockHashedTipSet = *hashHeadTipSet
-	} else {
-		blockIndex = 0
-		timeStamp = int64(genesisTipSet.MinTimestamp()) * FactorSecondToMillisecond
-		blockHashedTipSet = *hashGenesisTipSet
+		// Update block height, hash and timestamp
+		s.response.CurrentBlockIdentifier = &types.BlockIdentifier{
+			Index: int64(headTipSet.Height()),
+			Hash:  *hashHeadTipSet,
+		}
+
+		s.response.CurrentBlockTimestamp = int64(headTipSet.MinTimestamp()) * FactorSecondToMillisecond // [ms]
 	}
 
-	resp := &types.NetworkStatusResponse{
-		CurrentBlockIdentifier: &types.BlockIdentifier{
-			Index: blockIndex,
-			Hash:  blockHashedTipSet,
-		},
-		CurrentBlockTimestamp: timeStamp, // [ms]
-		GenesisBlockIdentifier: &types.BlockIdentifier{
-			Index: int64(genesisTipSet.Height()),
-			Hash:  *hashGenesisTipSet,
-		},
-		Peers:      peers,
-		SyncStatus: syncStatus,
-	}
+	// Always update Peers and SyncStatus
+	s.response.Peers = peers
+	s.response.SyncStatus = syncStatus
 
-	return resp, nil
+	return s.response, nil
 }
 
 // NetworkOptions implements the /network/options endpoint.
