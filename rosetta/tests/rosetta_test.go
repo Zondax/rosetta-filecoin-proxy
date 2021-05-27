@@ -28,7 +28,7 @@ func setupRosettaClient() *client.APIClient {
 		ServerURL,
 		"rosetta-test",
 		&http.Client{
-			Timeout: 120 * time.Second,
+			Timeout: 60 * 5 * time.Second,
 		},
 	)
 
@@ -59,31 +59,33 @@ func TestNetworkList(t *testing.T) {
 	}
 }
 
-func TestGetGenesisBlock(t *testing.T) {
-
+func TestGetBlock(t *testing.T) {
 	rosettaClient := setupRosettaClient()
-
-	var requestHeight int64 = 0
+	var requestHeight int64 = 790000
 	var request = types.BlockRequest{
 		NetworkIdentifier: NetworkID,
 		BlockIdentifier: &types.PartialBlockIdentifier{
 			Index: &requestHeight,
 		},
 	}
-
-	blockResponse, _, err := rosettaClient.BlockAPI.Block(ctx, &request)
+	blockResponseA, _, err := rosettaClient.BlockAPI.Block(ctx, &request)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if blockResponse.Block.ParentBlockIdentifier == nil {
+	if blockResponseA.Block.ParentBlockIdentifier == nil {
 		t.Error("Block parent is null")
 	}
-
-	if !reflect.DeepEqual(blockResponse.Block.BlockIdentifier,
-		blockResponse.Block.ParentBlockIdentifier) {
-
-		t.Fatalf("Invalid parent for genesis block")
+	requestHeight++
+	blockResponseB, _, err := rosettaClient.BlockAPI.Block(ctx, &request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if blockResponseB.Block.ParentBlockIdentifier == nil {
+		t.Error("Block parent is null")
+	}
+	if !reflect.DeepEqual(blockResponseA.Block.BlockIdentifier.Hash,
+		blockResponseB.Block.ParentBlockIdentifier.Hash) {
+		t.Fatalf("Invalid parent for block")
 	}
 }
 
