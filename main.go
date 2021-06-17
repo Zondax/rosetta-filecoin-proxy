@@ -48,7 +48,7 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, jsonrpc.ClientClos
 		headers.Add("Authorization", "Bearer "+token)
 	}
 
-	return client.NewFullNodeRPC(context.Background(), addr, headers)
+	return client.NewFullNodeRPCV1(context.Background(), addr, headers)
 }
 
 // newBlockchainRouter creates a Mux http.Handler from a collection
