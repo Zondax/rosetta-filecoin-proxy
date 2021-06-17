@@ -45,6 +45,8 @@ var SupportedOperations = map[string]bool{
 	"Fee":                 true, // Common
 	"Exec":                true, // MethodsInit
 	"SwapSigner":          true, // MethodsMultisig
+	"AddSigner":           true, // MethodsMultisig
+	"RemoveSigner":        true, // MethodsMultisig
 	"Propose":             true, // MethodsMultisig
 	"AwardBlockReward":    true, // MethodsReward
 	"OnDeferredCronEvent": true, // MethodsMiner

@@ -195,7 +195,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		var operations []*types.Operation
 
 		// Analyze full trace recursively
-		processTrace(&trace.ExecutionTrace, &operations)
+		ProcessTrace(&trace.ExecutionTrace, &operations)
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
@@ -227,7 +227,7 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 	return states, nil
 }
 
-func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
 
 	if trace.Msg == nil {
 		return
@@ -293,18 +293,30 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				*operations = appendOp(*operations, baseMethod, toPk,
 					"0", opStatus, true)
 			}
-		case "SwapSigner":
+		case "SwapSigner", "AddSigner", "RemoveSigner":
 			{
 				params, err := parseMsigParams(trace.Msg)
 				if err == nil {
 					var paramsMap map[string]string
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-						fromPk = paramsMap["From"]
-						toPk = paramsMap["To"]
-						*operations = appendOp(*operations, baseMethod, fromPk,
-							"0", opStatus, false)
-						*operations = appendOp(*operations, baseMethod, toPk,
-							"0", opStatus, true)
+						switch baseMethod {
+						case "SwapSigner":
+							{
+								fromPk = paramsMap["From"]
+								toPk = paramsMap["To"]
+								*operations = appendOp(*operations, baseMethod, fromPk,
+									"0", opStatus, false)
+								*operations = appendOp(*operations, baseMethod, toPk,
+									"0", opStatus, true)
+							}
+						case "AddSigner", "RemoveSigner":
+							{
+								signer := paramsMap["Signer"]
+								*operations = appendOp(*operations, baseMethod, signer,
+									"0", opStatus, false)
+							}
+						}
+
 					} else {
 						Logger.Error("Could not parse message params for", baseMethod)
 					}
@@ -323,7 +335,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 
 	for i := range trace.Subcalls {
 		subTrace := trace.Subcalls[i]
-		processTrace(&subTrace, operations)
+		ProcessTrace(&subTrace, operations)
 	}
 }
 
