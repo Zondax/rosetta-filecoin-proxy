@@ -201,7 +201,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 			if !trace.GasCost.TotalCost.Nil() {
 				opStatus := OperationStatusOk
 				operations = appendOp(operations, "Fee", trace.Msg.From.String(),
-					trace.GasCost.TotalCost.Neg().String(), opStatus, false)
+					trace.GasCost.TotalCost.Neg().String(), opStatus, false, nil)
 			}
 
 			transactions = append(transactions, &types.Transaction{
@@ -257,16 +257,16 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 		case "Send", "AddBalance":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
+					trace.Msg.Value.Neg().String(), opStatus, false, nil)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
+					trace.Msg.Value.String(), opStatus, true, nil)
 			}
 		case "Exec":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
+					trace.Msg.Value.Neg().String(), opStatus, false, nil)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
+					trace.Msg.Value.String(), opStatus, true, nil)
 
 				// Check if this Exec op created and funded a msig account
 				params, err := parseExecParams(trace.Msg, trace.MsgRct)
@@ -277,9 +277,9 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 							fromPk = toPk        // init actor
 							toPk = fundedAddress // new msig address
 							*operations = appendOp(*operations, "Send", fromPk,
-								trace.Msg.Value.Neg().String(), opStatus, false)
+								trace.Msg.Value.Neg().String(), opStatus, false, nil)
 							*operations = appendOp(*operations, "Send", toPk,
-								trace.Msg.Value.String(), opStatus, true)
+								trace.Msg.Value.String(), opStatus, true, nil)
 						}
 					} else {
 						Logger.Error("Could not parse message params for", baseMethod)
@@ -288,10 +288,15 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			}
 		case "Propose":
 			{
+				params, err := parseProposeParams(trace.Msg)
+				if err != nil {
+					Logger.Error("Could not parse message params for", baseMethod)
+				}
+
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, false)
+					"0", opStatus, false, &params)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					"0", opStatus, true)
+					"0", opStatus, true, &params)
 			}
 		case "SwapSigner", "AddSigner", "RemoveSigner":
 			{
@@ -313,9 +318,9 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 									break
 								}
 								*operations = appendOp(*operations, baseMethod, fromPk,
-									"0", opStatus, false)
+									"0", opStatus, false, nil)
 								*operations = appendOp(*operations, baseMethod, toPk,
-									"0", opStatus, true)
+									"0", opStatus, true, nil)
 							}
 						case "AddSigner", "RemoveSigner":
 							{
@@ -325,7 +330,7 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 									break
 								}
 								*operations = appendOp(*operations, baseMethod, signer,
-									"0", opStatus, false)
+									"0", opStatus, false, nil)
 							}
 						}
 
@@ -338,9 +343,9 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
+					trace.Msg.Value.Neg().String(), opStatus, false, nil)
 				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
+					trace.Msg.Value.String(), opStatus, true, nil)
 			}
 		}
 	}
@@ -390,6 +395,39 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 	}
 }
 
+func parseProposeParams(msg *filTypes.Message) (map[string]interface{}, error) {
+	r := &filLib.RosettaConstructionFilecoin{}
+	var params map[string]interface{}
+	msgSerial, err := msg.MarshalJSON()
+	if err != nil {
+		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
+		return params, err
+	}
+
+	actorCode, err := tools.ActorsDB.GetActorCode(msg.To)
+	if err != nil {
+		return params, err
+	}
+
+	if !builtin.IsMultisigActor(actorCode) {
+		return params, fmt.Errorf("this id doesn't correspond to a multisig actor")
+	}
+
+	innerMethod, parsedParams, err := r.ParseProposeTxParams(string(msgSerial), actorCode)
+	if err != nil {
+		Logger.Error("Could not parse params. ParseProposeTxParams returned with error:", err.Error())
+		return params, err
+	}
+
+	err = json.Unmarshal([]byte(parsedParams), &params);
+	if err != nil {
+		return params, err
+	}
+
+	params["Method"] = innerMethod
+	return params, nil
+}
+
 func parseMsigParams(msg *filTypes.Message) (string, error) {
 	r := &filLib.RosettaConstructionFilecoin{}
 	msgSerial, err := msg.MarshalJSON()
@@ -416,7 +454,7 @@ func parseMsigParams(msg *filTypes.Message) (string, error) {
 	return parsedParams, nil
 }
 
-func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool) []*types.Operation {
+func appendOp(ops []*types.Operation, opType string, account string, amount string, status string, relateOp bool, metadata *map[string]interface{}) []*types.Operation {
 	opIndex := int64(len(ops))
 	op := &types.Operation{
 		OperationIdentifier: &types.OperationIdentifier{
@@ -431,6 +469,11 @@ func appendOp(ops []*types.Operation, opType string, account string, amount stri
 			Value:    amount,
 			Currency: GetCurrencyData(),
 		},
+	}
+
+	// Add metadata
+	if metadata != nil {
+		op.Metadata = *metadata
 	}
 
 	// Add related operation

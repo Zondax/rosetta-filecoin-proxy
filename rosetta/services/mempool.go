@@ -132,9 +132,9 @@ func (m MemPoolAPIService) MempoolTransaction(
 		opStatus := "Pending" // TODO get status from receipt?
 
 		transaction.Operations = appendOp(transaction.Operations, opType,
-			msg.Message.From.String(), msg.Message.Value.String(), opStatus, true)
+			msg.Message.From.String(), msg.Message.Value.String(), opStatus, true, nil)
 		transaction.Operations = appendOp(transaction.Operations, opType,
-			msg.Message.To.String(), msg.Message.Value.String(), opStatus, true)
+			msg.Message.To.String(), msg.Message.Value.String(), opStatus, true, nil)
 
 		break
 	}
