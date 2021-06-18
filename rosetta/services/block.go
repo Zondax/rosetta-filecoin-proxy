@@ -297,13 +297,21 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			{
 				params, err := parseMsigParams(trace.Msg)
 				if err == nil {
-					var paramsMap map[string]string
+					var paramsMap map[string]interface{}
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
 						switch baseMethod {
 						case "SwapSigner":
 							{
-								fromPk = paramsMap["From"]
-								toPk = paramsMap["To"]
+								fromPk, ok := paramsMap["From"].(string)
+								if !ok {
+									Logger.Error("Could not parse 'From' parameter from method:", baseMethod)
+									break
+								}
+								toPk, ok = paramsMap["To"].(string)
+								if !ok {
+									Logger.Error("Could not parse 'To' parameter from method:", baseMethod)
+									break
+								}
 								*operations = appendOp(*operations, baseMethod, fromPk,
 									"0", opStatus, false)
 								*operations = appendOp(*operations, baseMethod, toPk,
@@ -311,7 +319,11 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 							}
 						case "AddSigner", "RemoveSigner":
 							{
-								signer := paramsMap["Signer"]
+								signer, ok := paramsMap["Signer"].(string)
+								if !ok {
+									Logger.Error("Could not parse 'Signer' parameter from method:", baseMethod)
+									break
+								}
 								*operations = appendOp(*operations, baseMethod, signer,
 									"0", opStatus, false)
 							}
