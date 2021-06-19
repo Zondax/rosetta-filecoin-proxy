@@ -291,6 +291,7 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				params, err := parseProposeParams(trace.Msg)
 				if err != nil {
 					Logger.Error("Could not parse message params for", baseMethod)
+					break
 				}
 
 				*operations = appendOp(*operations, baseMethod, fromPk,
