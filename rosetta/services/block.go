@@ -348,6 +348,13 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				*operations = appendOp(*operations, baseMethod, toPk,
 					trace.Msg.Value.String(), opStatus, true, nil)
 			}
+		case "Accept", "Cancel":
+			{
+				*operations = appendOp(*operations, baseMethod, fromPk,
+					trace.Msg.Value.Neg().String(), opStatus, false, nil)
+				*operations = appendOp(*operations, baseMethod, toPk,
+					trace.Msg.Value.String(), opStatus, true, nil)
+			}
 		}
 	}
 
@@ -420,7 +427,7 @@ func parseProposeParams(msg *filTypes.Message) (map[string]interface{}, error) {
 		return params, err
 	}
 
-	err = json.Unmarshal([]byte(parsedParams), &params);
+	err = json.Unmarshal([]byte(parsedParams), &params)
 	if err != nil {
 		return params, err
 	}
