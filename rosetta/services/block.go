@@ -308,30 +308,17 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 						switch baseMethod {
 						case "SwapSigner":
 							{
-								fromPk, ok := paramsMap["From"].(string)
-								if !ok {
-									Logger.Error("Could not parse 'From' parameter from method:", baseMethod)
-									break
-								}
-								toPk, ok = paramsMap["To"].(string)
-								if !ok {
-									Logger.Error("Could not parse 'To' parameter from method:", baseMethod)
-									break
-								}
 								*operations = appendOp(*operations, baseMethod, fromPk,
-									"0", opStatus, false, nil)
+									"0", opStatus, false, &paramsMap)
 								*operations = appendOp(*operations, baseMethod, toPk,
-									"0", opStatus, true, nil)
+									"0", opStatus, true, &paramsMap)
 							}
 						case "AddSigner", "RemoveSigner":
 							{
-								signer, ok := paramsMap["Signer"].(string)
-								if !ok {
-									Logger.Error("Could not parse 'Signer' parameter from method:", baseMethod)
-									break
-								}
-								*operations = appendOp(*operations, baseMethod, signer,
-									"0", opStatus, false, nil)
+								*operations = appendOp(*operations, baseMethod, fromPk,
+									"0", opStatus, false, &paramsMap)
+								*operations = appendOp(*operations, baseMethod, toPk,
+									"0", opStatus, true, &paramsMap)
 							}
 						}
 
@@ -348,7 +335,7 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				*operations = appendOp(*operations, baseMethod, toPk,
 					trace.Msg.Value.String(), opStatus, true, nil)
 			}
-		case "Accept", "Cancel":
+		case "Approve", "Cancel":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false, nil)
