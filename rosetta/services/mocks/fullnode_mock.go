@@ -14,6 +14,7 @@ import (
 	"github.com/filecoin-project/go-state-types/dline"
 	network2 "github.com/filecoin-project/go-state-types/network"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/types"
 	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
@@ -32,6 +33,18 @@ import (
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) Discover(ctx context.Context) (apitypes.OpenRPCDocument, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSearchMsg(ctx context.Context, from filTypes.TipSetKey, msg cid.Cid, limit abi.ChainEpoch, allowReplaced bool) (*api.MsgLookup, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateWaitMsg(ctx context.Context, cid cid.Cid, confidence uint64, limit abi.ChainEpoch, allowReplaced bool) (*api.MsgLookup, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) NetPeerInfo(ctx context.Context, id peer.ID) (*api.ExtendedPeerInfo, error) {
@@ -748,14 +761,6 @@ func (f *FullNodeMock) StateMinerAvailableBalance(ctx context.Context, a address
 }
 
 func (f *FullNodeMock) StatePledgeCollateral(ctx context.Context, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateWaitMsg(ctx context.Context, cid cid.Cid, confidence uint64) (*api.MsgLookup, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSearchMsg(ctx context.Context, c cid.Cid) (*api.MsgLookup, error) {
 	panic("implement me")
 }
 
