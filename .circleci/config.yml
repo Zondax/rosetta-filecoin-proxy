@@ -43,8 +43,8 @@ jobs:
           name: "Launch proxy"
           background: true
           command: |
-            export LOTUS_RPC_URL=${LOTUS_RPC_URL_TESTNET}
-            export LOTUS_RPC_TOKEN=${LOTUS_RPC_TOKEN_TESTNET}
+            export LOTUS_RPC_URL=${LOTUS_URL}
+            export LOTUS_RPC_TOKEN=${LOTUS_JWT}
             ./rosetta-filecoin-proxy
       - run:
           name: "Give time for the proxy to start"
