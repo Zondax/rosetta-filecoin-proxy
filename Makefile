@@ -6,7 +6,15 @@ RETRYNUM := 10
 ROSETTAPORT_CI := 8081
 APPNAME := rosetta-filecoin-proxy
 
-build: 	build_ffi
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+export LIBRARY_PATH=$(shell brew --prefix hwloc)/lib
+export LDFLAGS="-L$(LIBRARY_PATH)"
+export LD_LIBRARY_PATH=$(LIBRARY_PATH)
+endif
+
+.PHONY: build
+build: build_ffi
 	go build -ldflags "-X $(PACKAGE).GitRevision=$(REVISION) -X $(PACKAGE).RosettaSDKVersion=$(ROSETTASDKVER) \
  	-X $(PACKAGE).LotusVersion=$(LOTUSVER)" -o $(APPNAME)
 
