@@ -19,7 +19,7 @@ clean:
 	go clean
 
 build_ffi:
-	make -C extern/filecoin-ffi
+	RUSTFLAGS="-C target-cpu=native -g" FFI_BUILD_FROM_SOURCE=1 make -C extern/filecoin-ffi
 
 install_lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin
