@@ -11,6 +11,8 @@ ifeq ($(UNAME), Darwin)
 export LIBRARY_PATH=$(shell brew --prefix hwloc)/lib
 export LDFLAGS="-L$(LIBRARY_PATH)"
 export LD_LIBRARY_PATH=$(LIBRARY_PATH)
+export RUSTFLAGS="-C target-cpu=native -g"
+export FFI_BUILD_FROM_SOURCE=1
 endif
 
 .PHONY: build
@@ -27,7 +29,7 @@ clean:
 	go clean
 
 build_ffi:
-	RUSTFLAGS="-C target-cpu=native -g" FFI_BUILD_FROM_SOURCE=1 make -C extern/filecoin-ffi
+	make -C extern/filecoin-ffi
 
 install_lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin
