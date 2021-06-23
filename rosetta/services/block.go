@@ -271,15 +271,16 @@ func ProcessTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				// Check if this Exec op created and funded a msig account
 				params, err := parseExecParams(trace.Msg, trace.MsgRct)
 				if err == nil {
-					var paramsMap map[string]string
+					var paramsMap map[string]interface{}
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
 						if fundedAddress, ok := paramsMap["IDAddress"]; ok {
+							paramsMap["Method"] = "Send"
 							fromPk = toPk        // init actor
-							toPk = fundedAddress // new msig address
-							*operations = appendOp(*operations, "Send", fromPk,
-								trace.Msg.Value.Neg().String(), opStatus, false, nil)
-							*operations = appendOp(*operations, "Send", toPk,
-								trace.Msg.Value.String(), opStatus, true, nil)
+							toPk = fundedAddress.(string) // new msig address
+							*operations = appendOp(*operations, "Exec", fromPk,
+								trace.Msg.Value.Neg().String(), opStatus, false, &paramsMap)
+							*operations = appendOp(*operations, "Exec", toPk,
+								trace.Msg.Value.String(), opStatus, true, &paramsMap)
 						}
 					} else {
 						Logger.Error("Could not parse message params for", baseMethod)
