@@ -168,7 +168,6 @@ func main() {
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
 	srv.Logger.Info("Starting Rosetta Proxy")
-	srv.Logger.Infof("LOTUS_RPC_URL: %s", addr)
 
 	var lotusAPI api.FullNode
 	var clientCloser jsonrpc.ClientCloser
