@@ -18,10 +18,11 @@ jobs:
         with:
           go-version: '^1.15.6' # The Go version to download (if necessary) and use.
       - run: git submodule update --init --recursive
+      - run: apt update && apt install -yy build-essential
       - run: make build_CI
-      - run: |
-            export LOTUS_RPC_URL=ws://localhost:1234/rpc/v0
-            ./rosetta-filecoin-proxy&
+      - run: ./rosetta-filecoin-proxy&
+        env:
+          LOTUS_RPC_URL: ${{ secrets.LOTUS_RPC_URL }}
       - run: ./rosetta_cli_test_PR.sh
         working-directory: ./rosetta/tests        
 
