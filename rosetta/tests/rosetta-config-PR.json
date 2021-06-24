@@ -16,8 +16,8 @@
  "data": {
   "reconciler_active_backlog": 1000000,
   "initial_balance_fetch_disabled": false,
-  "active_reconciliation_concurrency": 256,
-  "inactive_reconciliation_concurrency": 256,
+  "active_reconciliation_concurrency": 64,
+  "inactive_reconciliation_concurrency": 64,
   "inactive_reconciliation_frequency": 1,
   "log_blocks": true,
   "log_transactions": true,
