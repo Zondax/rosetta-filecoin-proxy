@@ -55,7 +55,7 @@ func TestNetworkList(t *testing.T) {
 	}
 
 	if resp.NetworkIdentifiers[0].Network != NetworkID.Network {
-		t.Error()
+		t.Errorf("Networks don't match %s != %s", resp.NetworkIdentifiers[0].Network, NetworkID.Network)
 	}
 }
 

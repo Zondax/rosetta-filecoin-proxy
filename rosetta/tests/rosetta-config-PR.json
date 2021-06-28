@@ -16,9 +16,9 @@
  "data": {
   "reconciler_active_backlog": 1000000,
   "initial_balance_fetch_disabled": false,
-  "active_reconciliation_concurrency": 128,
-  "inactive_reconciliation_concurrency": 32,
-  "inactive_reconciliation_frequency": 10,
+  "active_reconciliation_concurrency": 64,
+  "inactive_reconciliation_concurrency": 64,
+  "inactive_reconciliation_frequency": 1,
   "log_blocks": true,
   "log_transactions": true,
   "log_balance_changes": true,
@@ -33,9 +33,9 @@
   "status_port": 9090,
   "pruning_disabled": false,
   "historical_balance_enabled": true,
-  "start_index": 650000,
+  "start_index": 874573,
   "end_conditions": {
-   "index": 650500
+   "index": 875073
   }
  }
 }
