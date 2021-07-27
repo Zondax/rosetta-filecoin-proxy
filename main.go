@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/Masterminds/semver"
 	rosettaAsserter "github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -150,6 +153,19 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 	}
 
 	srv.Logger.Info("Connected to Lotus version: ", version.String())
+
+	c, _ := semver.NewConstraint(">= 1.5")
+
+	semverString := strings.Split(version.String(), "+")[0]
+	v, err := semver.NewVersion(semverString)
+	if err != nil {
+		srv.Logger.Warn("Not a standard semver version. Unable to verify if this Lotus version is compatible with proxy.")
+		return nil, nil, errors.New("Not standard semver version sent by Lotus.")
+	}
+
+	if !c.Check(v) {
+		srv.Logger.Fatal("Lotus version should be 1.5 or higher.")
+	}
 
 	return lotusAPI, clientCloser, nil
 }
