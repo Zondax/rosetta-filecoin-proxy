@@ -1,6 +1,20 @@
 package services
 
+import "os"
+
+func getEnvNetwork() string {
+	if value, ok := os.LookupEnv("NETWORK"); ok {
+		if value == "mainnet" || value == "testnet" {
+			return value
+		}
+	}
+	return "mainnet"
+}
+
 var (
+	// Network "mainnet" or "testnet"
+	NetworkName = getEnvNetwork()
+
 	// Versions info to be injected on build time
 	RosettaSDKVersion = "Unknown"
 	LotusVersion      = "Unknown"
@@ -16,7 +30,6 @@ var (
 const (
 	// Network
 	BlockChainName = "Filecoin"
-	NetworkName    = "mainnet"
 
 	// Currency
 	CurrencySymbol   = "FIL"
