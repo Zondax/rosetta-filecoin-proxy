@@ -1,13 +1,17 @@
 package services
 
-import "os"
+import (
+	"os"
+)
 
 func getEnvNetwork() string {
-	if value, ok := os.LookupEnv("NETWORK"); ok {
+	value, ok := os.LookupEnv("NETWORK")
+	if ok {
 		if value == "mainnet" || value == "testnet" {
 			return value
 		}
 	}
+	Logger.Info("unrecognized network '", value, "'. Defaulting to mainnet")
 	return "mainnet"
 }
 
