@@ -1,24 +1,6 @@
 package services
 
-import (
-	"os"
-)
-
-func getEnvNetwork() string {
-	value, ok := os.LookupEnv("NETWORK")
-	if ok {
-		if value == "mainnet" || value == "testnet" {
-			return value
-		}
-	}
-	Logger.Info("unrecognized network '", value, "'. Defaulting to mainnet")
-	return "mainnet"
-}
-
 var (
-	// Network "mainnet" or "testnet"
-	NetworkName = getEnvNetwork()
-
 	// Versions info to be injected on build time
 	RosettaSDKVersion = "Unknown"
 	LotusVersion      = "Unknown"
