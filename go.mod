@@ -3,7 +3,6 @@ module github.com/zondax/rosetta-filecoin-proxy
 go 1.16
 
 require (
-	cloud.google.com/go/logging v1.4.2
 	github.com/coinbase/rosetta-sdk-go v0.6.10
 	github.com/filecoin-project/go-address v0.0.5
 	github.com/filecoin-project/go-bitfield v0.2.4
@@ -22,7 +21,6 @@ require (
 	github.com/libp2p/go-libp2p-core v0.8.5
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/prometheus/common v0.10.0
 	github.com/stretchr/testify v1.7.0
 	github.com/zondax/rosetta-filecoin-lib v1.1000.1
 	gotest.tools v2.2.0+incompatible
