@@ -15,7 +15,7 @@ require (
 	github.com/filecoin-project/lotus v1.12.0-rc1
 	github.com/filecoin-project/specs-actors v0.9.14
 	github.com/filecoin-project/specs-actors/v2 v2.3.5
-	github.com/filecoin-project/specs-actors/v4 v4.0.1
+	github.com/filecoin-project/specs-actors/v6 v6.0.0-20211007184712-855f60561dfc
 	github.com/google/uuid v1.2.0
 	github.com/ipfs/go-cid v0.1.0
 	github.com/ipfs/go-log v1.0.5
