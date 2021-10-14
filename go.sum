@@ -332,8 +332,8 @@ github.com/filecoin-project/go-statestore v0.1.0/go.mod h1:LFc9hD+fRxPqiHiaqUEZO
 github.com/filecoin-project/go-statestore v0.1.1 h1:ufMFq00VqnT2CAuDpcGnwLnCX1I/c3OROw/kXVNSTZk=
 github.com/filecoin-project/go-statestore v0.1.1/go.mod h1:LFc9hD+fRxPqiHiaqUEZOinUJB4WARkRfNl10O7kTnI=
 github.com/filecoin-project/go-storedcounter v0.0.0-20200421200003-1c99c62e8a5b/go.mod h1:Q0GQOBtKf1oE10eSXSlhN45kDBdGvEcVOqMiffqX+N8=
-github.com/filecoin-project/lotus v1.12.0-rc1 h1:tHtajqmCzytu8eh5Tbt7d4xRGF5hfCKRrOfYmVt3ptU=
-github.com/filecoin-project/lotus v1.12.0-rc1/go.mod h1:9Sz/jvgoqcbjnlEs80fl5WSwc0RLNbaOvvrnuuqjke8=
+github.com/filecoin-project/lotus v1.12.0 h1:ayqeGQCsHN3ApK02VZQslEFbjvP1H2d1CXBnJKHUZWA=
+github.com/filecoin-project/lotus v1.12.0/go.mod h1:zr8dXJPXFDf3E5tB9RMOpDe4MD8wD9ghsUns9xkXAhY=
 github.com/filecoin-project/specs-actors v0.9.4/go.mod h1:BStZQzx5x7TmCkLv0Bpa07U6cPKol6fd3w9KjMPZ6Z4=
 github.com/filecoin-project/specs-actors v0.9.12/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
 github.com/filecoin-project/specs-actors v0.9.13/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
@@ -352,9 +352,8 @@ github.com/filecoin-project/specs-actors/v4 v4.0.1/go.mod h1:TkHXf/l7Wyw4ZejyXIP
 github.com/filecoin-project/specs-actors/v5 v5.0.0-20210512015452-4fe3889fff57/go.mod h1:283yBMMUSDB2abcjP/hhrwTkhb9h3sfM6KGrep/ZlBI=
 github.com/filecoin-project/specs-actors/v5 v5.0.4 h1:OY7BdxJWlUfUFXWV/kpNBYGXNPasDIedf42T3sGx08s=
 github.com/filecoin-project/specs-actors/v5 v5.0.4/go.mod h1:5BAKRAMsOOlD8+qCw4UvT/lTLInCJ3JwOWZbX8Ipwq4=
-github.com/filecoin-project/specs-actors/v6 v6.0.0-20211001193936-c3afe7fa3c5c/go.mod h1:V1AYfi5GkHXipx1mnVivoICZh3wtwPxDVuds+fbfQtk=
-github.com/filecoin-project/specs-actors/v6 v6.0.0-20211007184712-855f60561dfc h1:1oeH5dJHNC8VdyYGfu1pr2/L86825hPiVMaV477msho=
-github.com/filecoin-project/specs-actors/v6 v6.0.0-20211007184712-855f60561dfc/go.mod h1:V1AYfi5GkHXipx1mnVivoICZh3wtwPxDVuds+fbfQtk=
+github.com/filecoin-project/specs-actors/v6 v6.0.0 h1:i+16MFE8GScWWUF0kG7x2RZ5Hqpz0CeyBHTpnijCJ6I=
+github.com/filecoin-project/specs-actors/v6 v6.0.0/go.mod h1:V1AYfi5GkHXipx1mnVivoICZh3wtwPxDVuds+fbfQtk=
 github.com/filecoin-project/specs-storage v0.1.1-0.20201105051918-5188d9774506 h1:Ur/l2+6qN+lQiqjozWWc5p9UDaAMDZKTlDS98oRnlIw=
 github.com/filecoin-project/specs-storage v0.1.1-0.20201105051918-5188d9774506/go.mod h1:nJRRM7Aa9XVvygr3W9k6xGF46RWzr2zxF/iGoAIfA/g=
 github.com/filecoin-project/test-vectors/schema v0.0.5/go.mod h1:iQ9QXLpYWL3m7warwvK1JC/pTri8mnfEmKygNDqqY6E=
@@ -1745,8 +1744,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/zondax/hid v0.9.0/go.mod h1:l5wttcP0jwtdLjqjMMWFVEE7d1zO0jvSPA9OPZxWpEM=
 github.com/zondax/ledger-go v0.12.1/go.mod h1:KatxXrVDzgWwbssUWsF5+cOJHXPvzQ09YSlzGNuhOEo=
-github.com/zondax/rosetta-filecoin-lib v1.1200.0 h1:mt0xHxlJVnYVi0VxEacaLrQT1bthqJV/C/KvHpHlszg=
-github.com/zondax/rosetta-filecoin-lib v1.1200.0/go.mod h1:5VBTLRKQueD7FV9qrWwJwzw2RUcBisiqAmLVz+aJdHY=
+github.com/zondax/rosetta-filecoin-lib v1.1200.1 h1:fprCl0nBeMCRaGlLZ85yLAhEPrkZXOg09WztfdwHA40=
+github.com/zondax/rosetta-filecoin-lib v1.1200.1/go.mod h1:FBwf5gSZQyFLyTiyYdp7sYKMmwxlf+Vhm3YtG2cLamk=
 go.dedis.ch/fixbuf v1.0.3/go.mod h1:yzJMt34Wa5xD37V5RTdmp38cz3QhMagdGoem9anUalw=
 go.dedis.ch/kyber/v3 v3.0.4/go.mod h1:OzvaEnPvKlyrWyp3kGXlFdp7ap1VC6RkZDTaPikqhsQ=
 go.dedis.ch/kyber/v3 v3.0.9/go.mod h1:rhNjUUg6ahf8HEg5HUvVBYoWY4boAafX8tYxX+PS+qg=
