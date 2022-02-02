@@ -127,7 +127,7 @@ func (f *FullNodeMock) MsigPropose(ctx context.Context, a address.Address, a2 ad
 	panic("implement me")
 }
 
-func (f *FullNodeMock) MsigCancel(ctx context.Context, a address.Address, u uint64, a2 address.Address, bigInt filTypes.BigInt, a3 address.Address, u2 uint64, bytes []byte) (*api.MessagePrototype, error) {
+func (f *FullNodeMock) MsigCancel(context.Context, address.Address, uint64, address.Address) (*api.MessagePrototype, error) {
 	panic("implement me")
 }
 
@@ -777,7 +777,7 @@ func (f *FullNodeMock) ClientHasLocal(ctx context.Context, root cid.Cid) (bool, 
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ClientRetrieve(ctx context.Context, order api.RetrievalOrder, ref *api.FileRef) error {
+func (f *FullNodeMock) ClientRetrieve(ctx context.Context, params api.RetrievalOrder) (*api.RestrievalRes, error) {
 	panic("implement me")
 }
 
@@ -926,5 +926,17 @@ func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, v
 }
 
 func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRetrieveWait(ctx context.Context, deal retrievalmarket.DealID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientExport(ctx context.Context, exportRef api.ExportRef, fileRef api.FileRef) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigCancelTxnHash(context.Context, address.Address, uint64, address.Address, filTypes.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error) {
 	panic("implement me")
 }
