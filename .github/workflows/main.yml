@@ -23,7 +23,24 @@ jobs:
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
-            LOTUS_RPC_URL: ${{ secrets.LOTUS_RPC_URL }}
+          LOTUS_RPC_URL: ${{ secrets.LOTUS_RPC_URL }}
       - run: ./rosetta_cli_test_PR.sh
-        working-directory: ./rosetta/tests        
+        working-directory: ./rosetta/tests
+  rosetta_cli_butterfly:
+    runs-on: self-hosted
+    timeout-minutes: 5760
+    steps:
+      - uses: actions/checkout@v2.3.3
+      - uses: actions/setup-go@v2.1.3
+        with:
+          go-version: '^1.15.6' # The Go version to download (if necessary) and use.
+      - run: git submodule update --init --recursive
+      - run: sudo apt update && sudo apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
+      - run: make build_CI
+      - name: Run proxy in background
+        run: ./rosetta-filecoin-proxy&
+        env:
+          LOTUS_RPC_URL: ${{ secrets.LOTUS_BUTTERFLY_RPC_URL }}
+      - run: ./rosetta_cli_test_PR.sh
+        working-directory: ./rosetta/tests
 
