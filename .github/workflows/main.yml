@@ -17,7 +17,11 @@ jobs:
       matrix:
         include:
           - network: mainnet
+            url: ${{ secrets.LOTUS_RPC_URL }}
           - network: butterfly
+            url: ${{ secrets.LOTUS_BUTTERFLY_RPC_URL }}
+          - network: calibration
+            url: ${{ secrets.LOTUS_CALIBRATION_RPC_URL }}
 
     runs-on: self-hosted
     timeout-minutes: 5760
@@ -32,7 +36,7 @@ jobs:
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
-          LOTUS_RPC_URL: ${{ secrets.LOTUS_BUTTERFLY_RPC_URL }}
+          LOTUS_RPC_URL: ${{ matrix.url }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
 
