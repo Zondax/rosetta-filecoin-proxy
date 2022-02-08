@@ -27,7 +27,6 @@
   "exempt_accounts": "",
   "bootstrap_balances": "",
   "reconciliation_disabled": false,
-  "inactive_discrepency_search_disabled": false,
   "balance_tracking_disabled": false,
   "coin_tracking_disabled": false,
   "status_port": 9090,

@@ -10,7 +10,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
@@ -20,7 +20,7 @@ jobs:
 
   checks:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     steps:
       - checkout
       - ffi_deps
@@ -31,7 +31,7 @@ jobs:
 
   integration_testnet:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     steps:
       - checkout
       - ffi_deps
