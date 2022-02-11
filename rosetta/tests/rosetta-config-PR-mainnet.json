@@ -32,9 +32,9 @@
     "status_port": 9090,
     "pruning_disabled": false,
     "historical_balance_enabled": true,
-    "start_index": 874573,
+    "start_index": 1522000,
     "end_conditions": {
-      "index":  1522740 
+      "index":  1522750 
     }
   }
 }
