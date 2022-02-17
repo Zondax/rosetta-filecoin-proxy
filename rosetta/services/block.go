@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
@@ -14,7 +16,6 @@ import (
 	initActor "github.com/filecoin-project/specs-actors/v7/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
-	"time"
 )
 
 // LotusCallTimeOut TimeOut for RPC Lotus calls
@@ -204,14 +205,17 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 					trace.GasCost.TotalCost.Neg().String(), opStatus, false)
 			}
 
-			transactions = append(transactions, &types.Transaction{
+			tx := types.Transaction{
 				TransactionIdentifier: &types.TransactionIdentifier{
 					Hash: trace.MsgCid.String(),
 				},
 				Operations: operations,
-			})
+			}
+
+			transactions = append(transactions, &tx)
 		}
 	}
+
 	return &transactions
 }
 
@@ -311,7 +315,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 				}
 			}
 		case "AwardBlockReward", "ApplyRewards", "OnDeferredCronEvent",
-			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt":
+			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt", "RepayDebt":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					trace.Msg.Value.Neg().String(), opStatus, false)

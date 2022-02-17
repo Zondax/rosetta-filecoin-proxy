@@ -52,4 +52,5 @@ var SupportedOperations = map[string]bool{
 	"SubmitWindowedPoSt":  true, // MethodsMiner
 	"ApplyRewards":        true, // MethodsMiner
 	"AddBalance":          true, // MethodsMarket
+	"RepayDebt":           true, // MethodsMiner
 }
