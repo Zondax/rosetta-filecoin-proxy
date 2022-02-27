@@ -6,8 +6,8 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.7.2
 	github.com/filecoin-project/go-address v0.0.6
 	github.com/filecoin-project/go-bitfield v0.2.4
-	github.com/filecoin-project/go-data-transfer v1.14.0
-	github.com/filecoin-project/go-fil-markets v1.19.0
+	github.com/filecoin-project/go-data-transfer v1.11.4
+	github.com/filecoin-project/go-fil-markets v1.13.4
 	github.com/filecoin-project/go-jsonrpc v0.1.5
 	github.com/filecoin-project/go-state-types v0.1.3
 	github.com/filecoin-project/lotus v1.14.2
@@ -46,7 +46,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/elastic/go-sysinfo v1.7.0 // indirect
 	github.com/elastic/go-windows v1.0.0 // indirect
-	github.com/filecoin-project/dagstore v0.4.4 // indirect
+	github.com/filecoin-project/dagstore v0.4.3 // indirect
 	github.com/filecoin-project/filecoin-ffi v0.30.4-0.20200910194244-f640612a1a1f // indirect
 	github.com/filecoin-project/go-amt-ipld/v2 v2.1.1-0.20201006184820-924ee87a1349 // indirect
 	github.com/filecoin-project/go-amt-ipld/v3 v3.1.0 // indirect
@@ -60,7 +60,7 @@ require (
 	github.com/filecoin-project/go-hamt-ipld/v3 v3.1.0 // indirect
 	github.com/filecoin-project/go-padreader v0.0.1 // indirect
 	github.com/filecoin-project/go-statemachine v1.0.1 // indirect
-	github.com/filecoin-project/go-statestore v0.2.0 // indirect
+	github.com/filecoin-project/go-statestore v0.1.1 // indirect
 	github.com/filecoin-project/specs-actors/v3 v3.1.1 // indirect
 	github.com/filecoin-project/specs-actors/v4 v4.0.1 // indirect
 	github.com/filecoin-project/specs-actors/v5 v5.0.4 // indirect
@@ -86,12 +86,12 @@ require (
 	github.com/icza/backscanner v0.0.0-20210726202459-ac2ffc679f94 // indirect
 	github.com/ipfs/bbloom v0.0.4 // indirect
 	github.com/ipfs/go-block-format v0.0.3 // indirect
-	github.com/ipfs/go-blockservice v0.2.1 // indirect
-	github.com/ipfs/go-datastore v0.5.1 // indirect
-	github.com/ipfs/go-graphsync v0.12.0 // indirect
-	github.com/ipfs/go-ipfs-blockstore v1.1.2 // indirect
+	github.com/ipfs/go-blockservice v0.1.7 // indirect
+	github.com/ipfs/go-datastore v0.4.6 // indirect
+	github.com/ipfs/go-graphsync v0.10.9 // indirect
+	github.com/ipfs/go-ipfs-blockstore v1.0.4 // indirect
 	github.com/ipfs/go-ipfs-cmds v0.3.0 // indirect
-	github.com/ipfs/go-ipfs-ds-help v1.1.0 // indirect
+	github.com/ipfs/go-ipfs-ds-help v1.0.0 // indirect
 	github.com/ipfs/go-ipfs-exchange-interface v0.1.0 // indirect
 	github.com/ipfs/go-ipfs-files v0.0.9 // indirect
 	github.com/ipfs/go-ipfs-http-client v0.0.6 // indirect
@@ -100,10 +100,10 @@ require (
 	github.com/ipfs/go-ipld-format v0.2.0 // indirect
 	github.com/ipfs/go-ipld-legacy v0.1.1 // indirect
 	github.com/ipfs/go-log/v2 v2.5.0 // indirect
-	github.com/ipfs/go-merkledag v0.5.1 // indirect
+	github.com/ipfs/go-merkledag v0.4.1 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/ipfs/go-path v0.0.7 // indirect
-	github.com/ipfs/go-unixfs v0.3.1 // indirect
+	github.com/ipfs/go-unixfs v0.2.6 // indirect
 	github.com/ipfs/go-verifcid v0.0.1 // indirect
 	github.com/ipfs/interface-go-ipfs-core v0.4.0 // indirect
 	github.com/ipld/go-codec-dagpb v1.3.0 // indirect
@@ -118,9 +118,9 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
 	github.com/libp2p/go-flow-metrics v0.0.3 // indirect
-	github.com/libp2p/go-libp2p-discovery v0.6.0 // indirect
-	github.com/libp2p/go-libp2p-peerstore v0.6.0 // indirect
-	github.com/libp2p/go-libp2p-pubsub v0.6.1 // indirect
+	github.com/libp2p/go-libp2p-discovery v0.5.1 // indirect
+	github.com/libp2p/go-libp2p-peerstore v0.3.0 // indirect
+	github.com/libp2p/go-libp2p-pubsub v0.5.6 // indirect
 	github.com/libp2p/go-msgio v0.1.0 // indirect
 	github.com/libp2p/go-openssl v0.0.7 // indirect
 	github.com/magefile/mage v1.11.0 // indirect
