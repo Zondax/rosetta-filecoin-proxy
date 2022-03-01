@@ -940,15 +940,3 @@ func (f *FullNodeMock) ClientExport(ctx context.Context, exportRef api.ExportRef
 func (f *FullNodeMock) MsigCancelTxnHash(context.Context, address.Address, uint64, address.Address, filTypes.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error) {
 	panic("implement me")
 }
-
-func (f *FullNodeMock) NetStat(ctx context.Context, scope string) (api.NetStat, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) NetLimit(ctx context.Context, scope string) (api.NetLimit, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) NetSetLimit(ctx context.Context, scope string, limit api.NetLimit) error {
-	panic("implement me")
-}
