@@ -197,6 +197,6 @@ func main() {
 	ctx := context.Background()
 	err = startRosettaRPC(ctx, lotusAPI)
 	if err != nil {
-		srv.Logger.Info("Exit Rosetta rpc")
+		srv.Logger.Infof("Exit Rosetta rpc: %s", err.Error())
 	}
 }
