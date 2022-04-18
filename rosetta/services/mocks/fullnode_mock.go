@@ -44,42 +44,34 @@ func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address
 }
 
 func (f *FullNodeMock) NetProtectAdd(ctx context.Context, acl []peer.ID) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetProtectRemove(ctx context.Context, acl []peer.ID) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetProtectList(ctx context.Context) ([]peer.ID, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetStat(ctx context.Context, scope string) (api.NetStat, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetLimit(ctx context.Context, scope string) (api.NetLimit, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetSetLimit(ctx context.Context, scope string, limit api.NetLimit) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychGet(ctx context.Context, from, to address.Address, amt filTypes.BigInt, opts api.PaychGetOpts) (*api.ChannelInfo, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychFund(ctx context.Context, from, to address.Address, amt filTypes.BigInt) (*api.ChannelInfo, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
