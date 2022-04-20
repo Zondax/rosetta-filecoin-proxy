@@ -43,6 +43,38 @@ func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address
 	panic("implement me")
 }
 
+func (f *FullNodeMock) NetProtectAdd(ctx context.Context, acl []peer.ID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetProtectRemove(ctx context.Context, acl []peer.ID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetProtectList(ctx context.Context) ([]peer.ID, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetStat(ctx context.Context, scope string) (api.NetStat, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetLimit(ctx context.Context, scope string) (api.NetLimit, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetSetLimit(ctx context.Context, scope string, limit api.NetLimit) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychGet(ctx context.Context, from, to address.Address, amt filTypes.BigInt, opts api.PaychGetOpts) (*api.ChannelInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychFund(ctx context.Context, from, to address.Address, amt filTypes.BigInt) (*api.ChannelInfo, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) MsigAddPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, b bool) (*api.MessagePrototype, error) {
 	panic("implement me")
 }
@@ -886,10 +918,6 @@ func (f *FullNodeMock) MsigGetAvailableBalance(ctx context.Context, a address.Ad
 }
 
 func (f *FullNodeMock) MarketEnsureAvailable(ctx context.Context, a address.Address, a2 address.Address, bigInt filTypes.BigInt) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychGet(ctx context.Context, from, to address.Address, ensureFunds filTypes.BigInt) (*api.ChannelInfo, error) {
 	panic("implement me")
 }
 
