@@ -13,7 +13,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	initActor "github.com/filecoin-project/specs-actors/v7/actors/builtin/init"
+	initActor "github.com/filecoin-project/specs-actors/v8/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
