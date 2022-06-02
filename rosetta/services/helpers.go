@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"github.com/filecoin-project/go-address"
 	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
-	methods "github.com/filecoin-project/specs-actors/v7/actors/builtin"
+	methods "github.com/filecoin-project/specs-actors/v8/actors/builtin"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -66,8 +66,11 @@ func GetCurrencyData() *types.Currency {
 }
 
 func GetActorNameFromCid(actorCode cid.Cid) string {
-	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
-	actorName := actorNameArr[len(actorNameArr)-1]
+	actorName, ok := BuiltinActorsKeys[actorCode.String()]
+	if !ok {
+		fmt.Println("Warning: actor code CID unknown: ", actorCode.String())
+		return "unknown"
+	}
 	return actorName
 }
 
