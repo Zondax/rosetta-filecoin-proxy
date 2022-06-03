@@ -40,67 +40,55 @@ type FullNodeMock struct {
 }
 
 func (f *FullNodeMock) StateGetBeaconEntry(ctx context.Context, epoch abi.ChainEpoch) (*filTypes.BeaconEntry, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) NetPing(ctx context.Context, id peer.ID) (time.Duration, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) ClientQueryAsk(ctx context.Context, p peer.ID, miner address.Address) (*api.StorageAsk, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, key filTypes.TipSetKey) (api.MinerInfo, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateMinerInitialPledgeCollateral(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (miner.SectorPreCommitOnChainInfo, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateMarketDeals(ctx context.Context, key filTypes.TipSetKey) (map[string]*api.MarketDeal, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychVoucherCheckValid(ctx context.Context, a address.Address, voucher *paych.SignedVoucher) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychVoucherCheckSpendable(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (bool, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bigInt filTypes.BigInt) (filTypes.BigInt, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (f *FullNodeMock) PaychVoucherSubmit(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (cid.Cid, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
