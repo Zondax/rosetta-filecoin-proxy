@@ -5,13 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
-	"github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	initActor "github.com/filecoin-project/specs-actors/v8/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
@@ -344,7 +344,7 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 			if err != nil {
 				return "", err
 			}
-			execActorName := GetActorNameFromCid(params.CodeCID)
+			execActorName := actors.GetActorNameFromCid(params.CodeCID)
 			switch execActorName {
 			case "multisig":
 				{
@@ -383,7 +383,7 @@ func parseMsigParams(msg *filTypes.Message) (string, error) {
 		return "", err
 	}
 
-	if !builtin.IsMultisigActor(actorCode) {
+	if !actors.IsMultisigActor(actorCode) {
 		return "", fmt.Errorf("this id doesn't correspond to a multisig actor")
 	}
 
