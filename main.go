@@ -110,6 +110,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 		[]*types.NetworkIdentifier{network},
 		nil,
 		false,
+		"",
 	)
 	if err != nil {
 		srv.Logger.Fatal(err)
@@ -212,6 +213,6 @@ func main() {
 	ctx := context.Background()
 	err = startRosettaRPC(ctx, lotusAPI)
 	if err != nil {
-		srv.Logger.Info("Exit Rosetta rpc")
+		srv.Logger.Infof("Exit Rosetta rpc: %s", err.Error())
 	}
 }

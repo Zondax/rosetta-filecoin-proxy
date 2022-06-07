@@ -1,0 +1,40 @@
+{
+    "network": {
+      "blockchain": "Filecoin",
+      "network": "calibrationnet"
+    },
+    "online_url": "http://localhost:8081",
+    "http_timeout": 120,
+    "max_retries": 100000,
+    "max_online_connections": 32,
+    "max_sync_concurrency": 16,
+    "tip_delay": 300,
+    "log_configuration": false,
+    "compression_disabled": true,
+    "memory_limit_disabled": true,
+    "construction": null,
+    "data": {
+      "reconciler_active_backlog": 1000000,
+      "initial_balance_fetch_disabled": false,
+      "active_reconciliation_concurrency": 64,
+      "inactive_reconciliation_concurrency": 64,
+      "inactive_reconciliation_frequency": 1,
+      "log_blocks": true,
+      "log_transactions": true,
+      "log_balance_changes": true,
+      "log_reconciliations": true,
+      "ignore_reconciliation_error": true,
+      "exempt_accounts": "",
+      "bootstrap_balances": "",
+      "reconciliation_disabled": false,
+      "balance_tracking_disabled": false,
+      "coin_tracking_disabled": false,
+      "status_port": 9090,
+      "pruning_disabled": false,
+      "historical_balance_enabled": true,
+      "start_index": 680000,
+      "end_conditions": {
+        "index": 681482
+      }
+    }
+  }

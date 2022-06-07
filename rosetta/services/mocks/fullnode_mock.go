@@ -2,13 +2,13 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-bitfield"
 	datatransfer "github.com/filecoin-project/go-data-transfer"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
-	"github.com/filecoin-project/go-multistore"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/go-state-types/dline"
@@ -17,8 +17,10 @@ import (
 	"github.com/filecoin-project/lotus/api/types"
 	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/journal/alerting"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	"github.com/filecoin-project/lotus/node/repo/imports"
 	"github.com/filecoin-project/specs-actors/actors/builtin/miner"
 	"github.com/filecoin-project/specs-actors/actors/builtin/paych"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
@@ -31,8 +33,150 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type MessagePrototype struct{}
+
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address, u uint64, a2 address.Address, a3 address.Address, bigInt filTypes.BigInt, a4 address.Address, u2 uint64, bytes []byte) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetProtectAdd(ctx context.Context, acl []peer.ID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetProtectRemove(ctx context.Context, acl []peer.ID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetProtectList(ctx context.Context) ([]peer.ID, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetStat(ctx context.Context, scope string) (api.NetStat, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetLimit(ctx context.Context, scope string) (api.NetLimit, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetSetLimit(ctx context.Context, scope string, limit api.NetLimit) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychGet(ctx context.Context, from, to address.Address, amt filTypes.BigInt, opts api.PaychGetOpts) (*api.ChannelInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychFund(ctx context.Context, from, to address.Address, amt filTypes.BigInt) (*api.ChannelInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, b bool) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, b bool) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigAddCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, b bool) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigRemoveSigner(ctx context.Context, msig address.Address, proposer address.Address, toRemove address.Address, decrease bool) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) LogAlerts(ctx context.Context) ([]alerting.Alert, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainGetMessagesInTipset(ctx context.Context, tsk filTypes.TipSetKey) ([]api.Message, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainGetTipSetAfterHeight(ctx context.Context, epoch abi.ChainEpoch, key filTypes.TipSetKey) (*filTypes.TipSet, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainCheckBlockstore(ctx context.Context) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainBlockstoreInfo(ctx context.Context) (map[string]interface{}, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MpoolCheckMessages(ctx context.Context, prototypes []*api.MessagePrototype) ([][]api.MessageCheckStatus, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MpoolCheckPendingMessages(ctx context.Context, a address.Address) ([][]api.MessageCheckStatus, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MpoolCheckReplaceMessages(ctx context.Context, messages []*filTypes.Message) ([][]api.MessageCheckStatus, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRemoveImport(ctx context.Context, importID imports.ID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientStatelessDeal(ctx context.Context, params *api.StartDealParams) (*cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientListRetrievals(ctx context.Context) ([]api.RetrievalInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientGetRetrievalUpdates(ctx context.Context) (<-chan api.RetrievalInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateEncodeParams(ctx context.Context, toActCode cid.Cid, method abi.MethodNum, params json.RawMessage) ([]byte, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetRandomnessFromTickets(ctx context.Context, personalization crypto.DomainSeparationTag, randEpoch abi.ChainEpoch, entropy []byte, tsk filTypes.TipSetKey) (abi.Randomness, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetRandomnessFromBeacon(ctx context.Context, personalization crypto.DomainSeparationTag, randEpoch abi.ChainEpoch, entropy []byte, tsk filTypes.TipSetKey) (abi.Randomness, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigCreate(ctx context.Context, u uint64, addresses []address.Address, epoch abi.ChainEpoch, bigInt filTypes.BigInt, a address.Address, bigInt2 filTypes.BigInt) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigPropose(ctx context.Context, a address.Address, a2 address.Address, bigInt filTypes.BigInt, a3 address.Address, u uint64, bytes []byte) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigCancel(context.Context, address.Address, uint64, address.Address) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigSwapPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, a4 address.Address) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigSwapApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, a5 address.Address) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigSwapCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address) (*api.MessagePrototype, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NodeStatus(ctx context.Context, inclChainStatus bool) (api.NodeStatus, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) Discover(ctx context.Context) (apitypes.OpenRPCDocument, error) {
@@ -163,15 +307,7 @@ func (f *FullNodeMock) StateWaitMsgLimited(ctx context.Context, cid cid.Cid, con
 	panic("implement me")
 }
 
-func (f *FullNodeMock) MsigApprove(ctx context.Context, a address.Address, u uint64, a2 address.Address) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address, u uint64, a2 address.Address, a3 address.Address, bigInt filTypes.BigInt, a4 address.Address, u2 uint64, bytes []byte) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigRemoveSigner(ctx context.Context, msig address.Address, proposer address.Address, toRemove address.Address, decrease bool) (cid.Cid, error) {
+func (f *FullNodeMock) MsigApprove(context.Context, address.Address, uint64, address.Address) (*api.MessagePrototype, error) {
 	panic("implement me")
 }
 
@@ -288,18 +424,6 @@ func (f *FullNodeMock) MsigGetVested(ctx context.Context, a address.Address, key
 	panic("implement me")
 }
 
-func (f *FullNodeMock) MsigAddPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, b bool) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigAddApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, b bool) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigAddCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, b bool) (cid.Cid, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) NetAgentVersion(ctx context.Context, p peer.ID) (string, error) {
 	panic("implement me")
 }
@@ -360,14 +484,6 @@ func (f *FullNodeMock) StateMinerInitialPledgeCollateral(ctx context.Context, a 
 	panic("implement me")
 }
 
-func (f *FullNodeMock) MsigCreate(ctx context.Context, u uint64, addresses []address.Address, epoch abi.ChainEpoch, bigInt filTypes.BigInt, a address.Address, bigInt2 filTypes.BigInt) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigCancel(ctx context.Context, a address.Address, u uint64, a2 address.Address, bigInt filTypes.BigInt, a3 address.Address, u2 uint64, bytes []byte) (cid.Cid, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) NetAutoNatStatus(ctx context.Context) (api.NatInfo, error) {
 	panic("implement me")
 }
@@ -416,10 +532,6 @@ func (f *FullNodeMock) MpoolSetConfig(ctx context.Context, config *filTypes.Mpoo
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ClientRemoveImport(ctx context.Context, importID multistore.StoreID) error {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) ClientRetrieveWithEvents(ctx context.Context, order api.RetrievalOrder, ref *api.FileRef) (<-chan marketevents.RetrievalEvent, error) {
 	panic("implement me")
 }
@@ -445,18 +557,6 @@ func (f *FullNodeMock) StateVerifiedClientStatus(ctx context.Context, addr addre
 }
 
 func (f *FullNodeMock) StateDealProviderCollateralBounds(ctx context.Context, size abi.PaddedPieceSize, b bool, key filTypes.TipSetKey) (api.DealCollateralBounds, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigSwapPropose(ctx context.Context, a address.Address, a2 address.Address, a3 address.Address, a4 address.Address) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigSwapApprove(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address, a5 address.Address) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) MsigSwapCancel(ctx context.Context, a address.Address, a2 address.Address, u uint64, a3 address.Address, a4 address.Address) (cid.Cid, error) {
 	panic("implement me")
 }
 
@@ -709,7 +809,7 @@ func (f *FullNodeMock) ClientHasLocal(ctx context.Context, root cid.Cid) (bool, 
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ClientRetrieve(ctx context.Context, order api.RetrievalOrder, ref *api.FileRef) error {
+func (f *FullNodeMock) ClientRetrieve(ctx context.Context, params api.RetrievalOrder) (*api.RestrievalRes, error) {
 	panic("implement me")
 }
 
@@ -817,15 +917,7 @@ func (f *FullNodeMock) MsigGetAvailableBalance(ctx context.Context, a address.Ad
 	return args.Get(0).(filTypes.BigInt), args.Error(1)
 }
 
-func (f *FullNodeMock) MsigPropose(ctx context.Context, a address.Address, a2 address.Address, bigInt filTypes.BigInt, a3 address.Address, u uint64, bytes []byte) (cid.Cid, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) MarketEnsureAvailable(ctx context.Context, a address.Address, a2 address.Address, bigInt filTypes.BigInt) (cid.Cid, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychGet(ctx context.Context, from, to address.Address, ensureFunds filTypes.BigInt) (*api.ChannelInfo, error) {
 	panic("implement me")
 }
 
@@ -862,5 +954,17 @@ func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, v
 }
 
 func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRetrieveWait(ctx context.Context, deal retrievalmarket.DealID) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientExport(ctx context.Context, exportRef api.ExportRef, fileRef api.FileRef) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) MsigCancelTxnHash(context.Context, address.Address, uint64, address.Address, filTypes.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error) {
 	panic("implement me")
 }

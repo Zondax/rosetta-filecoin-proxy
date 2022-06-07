@@ -3,23 +3,26 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/coinbase/rosetta-sdk-go/client"
-	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"net/http"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/coinbase/rosetta-sdk-go/client"
+	"github.com/coinbase/rosetta-sdk-go/types"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 )
 
 const ServerURL = "http://localhost:8081"
+
+const NetworkName = "mainnet"
 
 var (
 	ctx = context.Background()
 
 	NetworkID = &types.NetworkIdentifier{
 		Blockchain: services.BlockChainName,
-		Network:    services.NetworkName,
+		Network:    NetworkName,
 	}
 )
 

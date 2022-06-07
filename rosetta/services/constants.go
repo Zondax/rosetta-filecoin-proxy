@@ -16,7 +16,6 @@ var (
 const (
 	// Network
 	BlockChainName = "Filecoin"
-	NetworkName    = "mainnet"
 
 	// Currency
 	CurrencySymbol   = "FIL"
@@ -53,4 +52,5 @@ var SupportedOperations = map[string]bool{
 	"SubmitWindowedPoSt":  true, // MethodsMiner
 	"ApplyRewards":        true, // MethodsMiner
 	"AddBalance":          true, // MethodsMarket
+	"RepayDebt":           true, // MethodsMiner
 }

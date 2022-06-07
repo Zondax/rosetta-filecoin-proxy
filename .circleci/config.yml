@@ -10,7 +10,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     working_directory: /rosetta-filecoin-lib
     steps:
       - checkout
@@ -20,7 +20,7 @@ jobs:
 
   checks:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     steps:
       - checkout
       - ffi_deps
@@ -29,35 +29,9 @@ jobs:
       - run: make check-modtidy
       - run: make lint
 
-  integration_testnet:
-    docker:
-      - image: golang:1.16
-    steps:
-      - checkout
-      - ffi_deps
-      - run:
-          name: "Prebuild"
-          command: |
-            make build_CI
-      - run:
-          name: "Launch proxy"
-          background: true
-          command: |
-            export LOTUS_RPC_URL=${LOTUS_URL}
-            export LOTUS_RPC_TOKEN=${LOTUS_JWT}
-            ./rosetta-filecoin-proxy
-      - run:
-          name: "Give time for the proxy to start"
-          command: sleep 3
-      - run:
-          name: "Run tests"
-          command: |
-            make test_integration
-
 workflows:
   version: 2
   build_all:
     jobs:
       - build
       - checks
-      - integration_testnet

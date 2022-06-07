@@ -4,16 +4,19 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/coinbase/rosetta-sdk-go/client"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 const ServerURL = "http://localhost:8080"
+
+const NetworkName = "mainnet"
 
 func setupRosettaClient() *client.APIClient {
 	clientCfg := client.NewConfiguration(
@@ -35,7 +38,7 @@ func main() {
 
 		Network = &types.NetworkIdentifier{
 			Blockchain: services.BlockChainName,
-			Network:    services.NetworkName,
+			Network:    NetworkName,
 		}
 	)
 

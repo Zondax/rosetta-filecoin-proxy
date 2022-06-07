@@ -1,10 +1,11 @@
 package services
 
 import (
-	"github.com/coinbase/rosetta-sdk-go/types"
-	logging "github.com/ipfs/go-log"
 	"runtime"
 	"strings"
+
+	"github.com/coinbase/rosetta-sdk-go/types"
+	logging "github.com/ipfs/go-log"
 )
 
 const LotusErrKey = "lotusErr"
