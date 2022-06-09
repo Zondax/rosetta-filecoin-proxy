@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
 	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
@@ -9,7 +10,6 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
-	filBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
@@ -133,7 +133,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is a multisig
-		if !filBuiltin.IsMultisigActor(actor.Code) {
+		if !actors.IsMultisigActor(actor.Code) {
 			return nil, BuildError(ErrAddNotMSig, nil, true)
 		}
 

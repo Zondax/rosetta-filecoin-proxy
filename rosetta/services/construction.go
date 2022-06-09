@@ -9,8 +9,8 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
-	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -153,7 +153,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 
-			if builtin.IsMultisigActor(actor.Code) {
+			if actors.IsMultisigActor(actor.Code) {
 				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {

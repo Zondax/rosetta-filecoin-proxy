@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
 	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
-	methods "github.com/filecoin-project/specs-actors/v7/actors/builtin"
+	methods "github.com/filecoin-project/specs-actors/v8/actors/builtin"
+	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -65,12 +65,6 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
-func GetActorNameFromCid(actorCode cid.Cid) string {
-	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
-	actorName := actorNameArr[len(actorNameArr)-1]
-	return actorName
-}
-
 func GetActorNameFromAddress(address address.Address) string {
 	var actorCode cid.Cid
 	// Search for actor in cache
@@ -79,7 +73,7 @@ func GetActorNameFromAddress(address address.Address) string {
 	if err != nil {
 		return unknownStr
 	}
-	return GetActorNameFromCid(actorCode)
+	return actors.GetActorNameFromCid(actorCode)
 }
 
 func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
@@ -152,7 +146,7 @@ func GetActorPubKey(add address.Address) (string, *types.Error) {
 	// If cannot get actor's pubkey, GetActorPubKey will return the same address
 
 	// Handler for msig
-	if builtin2.IsMultisigActor(actorCode) {
+	if actors.IsMultisigActor(actorCode) {
 		return getPubKeyForMsig(add)
 	}
 
