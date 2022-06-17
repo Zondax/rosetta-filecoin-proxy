@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
@@ -15,15 +16,17 @@ import (
 
 // AccountAPIService implements the server.BlockAPIServicer interface.
 type AccountAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.AccountAPIServicer {
+func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
 	return &AccountAPIService{
-		network: network,
-		node:    *node,
+		network:    network,
+		node:       *node,
+		rosettaLib: r,
 	}
 }
 
@@ -133,7 +136,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is a multisig
-		if !actors.IsMultisigActor(actor.Code) {
+		if !a.rosettaLib.BuiltinActors.IsActor(actor.Code, actors.ActorMultisigName) {
 			return nil, BuildError(ErrAddNotMSig, nil, true)
 		}
 

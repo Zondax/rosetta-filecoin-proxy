@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"net/http"
 	"os"
 	"os/signal"
@@ -57,8 +58,9 @@ func newBlockchainRouter(
 	network *types.NetworkIdentifier,
 	asserter *rosettaAsserter.Asserter,
 	api api.FullNode,
+	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin,
 ) http.Handler {
-	accountAPIService := srv.NewAccountAPIService(network, &api)
+	accountAPIService := srv.NewAccountAPIService(network, &api, rosettaLib)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
@@ -70,19 +72,19 @@ func newBlockchainRouter(
 		asserter,
 	)
 
-	blockAPIService := srv.NewBlockAPIService(network, &api)
+	blockAPIService := srv.NewBlockAPIService(network, &api, rosettaLib)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,
 	)
 
-	mempoolAPIService := srv.NewMemPoolAPIService(network, &api)
+	mempoolAPIService := srv.NewMemPoolAPIService(network, &api, rosettaLib)
 	mempoolAPIController := server.NewMempoolAPIController(
 		mempoolAPIService,
 		asserter,
 	)
 
-	constructionAPIService := srv.NewConstructionAPIService(network, &api)
+	constructionAPIService := srv.NewConstructionAPIService(network, &api, rosettaLib)
 	constructionAPIController := server.NewConstructionAPIController(
 		constructionAPIService,
 		asserter,
@@ -113,7 +115,10 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 		srv.Logger.Fatal(err)
 	}
 
-	router := newBlockchainRouter(network, asserter, api)
+	// Create instance of RosettaFilecoinLib for current network
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(srv.NetworkName)
+
+	router := newBlockchainRouter(network, asserter, api, r)
 	loggedRouter := server.LoggerMiddleware(router)
 	corsRouter := server.CorsMiddleware(loggedRouter)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}

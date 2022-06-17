@@ -16,6 +16,7 @@ var (
 const (
 	// Network
 	BlockChainName = "Filecoin"
+	NetworkName    = "mainnet"
 
 	// Currency
 	CurrencySymbol   = "FIL"

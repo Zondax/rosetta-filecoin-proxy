@@ -10,7 +10,8 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
+	filLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -56,15 +57,17 @@ const OptionsValueKey = "value"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewConstructionAPIService creates a new instance of an ConstructionAPIService.
-func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.ConstructionAPIServicer {
+func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.ConstructionAPIServicer {
 	return &ConstructionAPIService{
-		network: network,
-		node:    *node,
+		network:    network,
+		node:       *node,
+		rosettaLib: r,
 	}
 }
 
@@ -153,7 +156,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 
-			if actors.IsMultisigActor(actor.Code) {
+			if c.rosettaLib.BuiltinActors.IsActor(actor.Code, actors.ActorMultisigName) {
 				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
