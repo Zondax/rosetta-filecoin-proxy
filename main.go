@@ -150,12 +150,19 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 		return nil, nil, err
 	}
 
+	networkName, err := lotusAPI.StateNetworkName(context.Background())
+	if err != nil {
+		srv.Logger.Warn("Could not get Lotus network name!")
+	}
+
+	srv.NetworkName = string(networkName)
+
 	version, err := lotusAPI.Version(context.Background())
 	if err != nil {
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	srv.Logger.Info("Connected to Lotus version: ", version.String())
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s ", version.String(), srv.NetworkName)
 
 	return lotusAPI, clientCloser, nil
 }

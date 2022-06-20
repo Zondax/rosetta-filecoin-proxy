@@ -11,12 +11,14 @@ var (
 
 	// Other configs
 	RetryConnectAttempts = "1000000"
+
+	// Network name (read from api in main)
+	NetworkName = ""
 )
 
 const (
 	// Network
 	BlockChainName = "Filecoin"
-	NetworkName    = "mainnet"
 
 	// Currency
 	CurrencySymbol   = "FIL"
