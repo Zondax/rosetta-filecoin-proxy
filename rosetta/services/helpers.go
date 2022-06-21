@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
-	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
 	methods "github.com/filecoin-project/specs-actors/v8/actors/builtin"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
 	"time"
@@ -17,8 +17,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
 )
-
-const unknownStr = "Unknown"
 
 func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
@@ -65,18 +63,24 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
-func GetActorNameFromAddress(address address.Address) string {
+func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) string {
 	var actorCode cid.Cid
 	// Search for actor in cache
 	var err error
 	actorCode, err = tools.ActorsDB.GetActorCode(address)
 	if err != nil {
-		return unknownStr
+		return actors.UnknownStr
 	}
-	return actors.GetActorNameFromCid(actorCode)
+
+	actorName, err := lib.BuiltinActors.GetActorNameFromCid(actorCode)
+	if err != nil {
+		return actors.UnknownStr
+	}
+
+	return actorName
 }
 
-func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
+func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
@@ -92,7 +96,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	actorName := GetActorNameFromAddress(msg.To)
+	actorName := GetActorNameFromAddress(msg.To, lib)
 
 	var method interface{}
 	switch actorName {
@@ -117,7 +121,7 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	case "verifiedregistry":
 		method = methods.MethodsVerifiedRegistry
 	default:
-		return unknownStr, nil
+		return actors.UnknownStr, nil
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
@@ -127,14 +131,14 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 	}
 
 	if val.Type().NumField() <= idx {
-		return unknownStr, nil
+		return actors.UnknownStr, nil
 	}
 
 	methodName := val.Type().Field(idx).Name
 	return methodName, nil
 }
 
-func GetActorPubKey(add address.Address) (string, *types.Error) {
+func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 
 	actorCode, err := tools.ActorsDB.GetActorCode(add)
 	if err != nil {
@@ -146,12 +150,12 @@ func GetActorPubKey(add address.Address) (string, *types.Error) {
 	// If cannot get actor's pubkey, GetActorPubKey will return the same address
 
 	// Handler for msig
-	if actors.IsMultisigActor(actorCode) {
+	if lib.BuiltinActors.IsActor(actorCode, actors.ActorMultisigName) {
 		return getPubKeyForMsig(add)
 	}
 
 	// Handler for storage miner
-	if builtin2.IsStorageMinerActor(actorCode) {
+	if lib.BuiltinActors.IsActor(actorCode, actors.ActorStorageMinerName) {
 		return getPubKeyForStorageMiner(add)
 	}
 

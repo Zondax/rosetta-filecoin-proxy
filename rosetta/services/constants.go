@@ -11,6 +11,9 @@ var (
 
 	// Other configs
 	RetryConnectAttempts = "1000000"
+
+	// Network name (read from api in main)
+	NetworkName = ""
 )
 
 const (

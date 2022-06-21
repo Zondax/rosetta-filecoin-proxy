@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/zondax/rosetta-filecoin-proxy/rosetta/actors"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
@@ -27,15 +27,17 @@ const BlockCIDsKey = "blockCIDs"
 
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode) server.BlockAPIServicer {
+func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
-		network: network,
-		node:    *api,
+		network:    network,
+		node:       *api,
+		rosettaLib: r,
 	}
 }
 
@@ -137,7 +139,7 @@ func (s *BlockAPIService) Block(
 		if err != nil {
 			return nil, err
 		}
-		transactions = buildTransactions(states)
+		transactions = s.buildTransactions(states)
 	}
 
 	// Add block metadata
@@ -182,7 +184,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
+func (s *BlockAPIService) buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
 
 	var transactions []*types.Transaction
@@ -196,7 +198,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		var operations []*types.Operation
 
 		// Analyze full trace recursively
-		processTrace(&trace.ExecutionTrace, &operations)
+		s.processTrace(&trace.ExecutionTrace, &operations)
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
@@ -231,21 +233,21 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 	return states, nil
 }
 
-func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
 
 	if trace.Msg == nil {
 		return
 	}
 
-	baseMethod, err := GetMethodName(trace.Msg)
+	baseMethod, err := GetMethodName(trace.Msg, s.rosettaLib)
 	if err != nil {
 		Logger.Error("could not get method name. Error:", err.Message, err.Details)
-		baseMethod = unknownStr
+		baseMethod = "unknown"
 	}
 
 	if IsOpSupported(baseMethod) {
-		fromPk, err1 := GetActorPubKey(trace.Msg.From)
-		toPk, err2 := GetActorPubKey(trace.Msg.To)
+		fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
+		toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
 		if err1 != nil || err2 != nil {
 			Logger.Error("could not retrieve one or both pubkeys for addresses:",
 				trace.Msg.From.String(), trace.Msg.To.String())
@@ -273,7 +275,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 					trace.Msg.Value.String(), opStatus, true)
 
 				// Check if this Exec op created and funded a msig account
-				params, err := parseExecParams(trace.Msg, trace.MsgRct)
+				params, err := s.parseExecParams(trace.Msg, trace.MsgRct)
 				if err == nil {
 					var paramsMap map[string]string
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -299,7 +301,7 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 			}
 		case "SwapSigner":
 			{
-				params, err := parseMsigParams(trace.Msg)
+				params, err := s.parseMsigParams(trace.Msg)
 				if err == nil {
 					var paramsMap map[string]string
 					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -327,13 +329,13 @@ func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation
 
 	for i := range trace.Subcalls {
 		subTrace := trace.Subcalls[i]
-		processTrace(&subTrace, operations)
+		s.processTrace(&subTrace, operations)
 	}
 }
 
-func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
+func (s *BlockAPIService) parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
 
-	actorName := GetActorNameFromAddress(msg.To)
+	actorName := GetActorNameFromAddress(msg.To, s.rosettaLib)
 
 	switch actorName {
 	case "init":
@@ -344,7 +346,7 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 			if err != nil {
 				return "", err
 			}
-			execActorName := actors.GetActorNameFromCid(params.CodeCID)
+			execActorName, _ := s.rosettaLib.BuiltinActors.GetActorNameFromCid(params.CodeCID)
 			switch execActorName {
 			case "multisig":
 				{
@@ -370,7 +372,7 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 	}
 }
 
-func parseMsigParams(msg *filTypes.Message) (string, error) {
+func (s *BlockAPIService) parseMsigParams(msg *filTypes.Message) (string, error) {
 	r := &filLib.RosettaConstructionFilecoin{}
 	msgSerial, err := msg.MarshalJSON()
 	if err != nil {
@@ -383,7 +385,7 @@ func parseMsigParams(msg *filTypes.Message) (string, error) {
 		return "", err
 	}
 
-	if !actors.IsMultisigActor(actorCode) {
+	if !s.rosettaLib.BuiltinActors.IsActor(actorCode, actors.ActorMultisigName) {
 		return "", fmt.Errorf("this id doesn't correspond to a multisig actor")
 	}
 

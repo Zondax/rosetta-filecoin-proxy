@@ -189,7 +189,7 @@ func TestNewBlockAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBlockAPIService(tt.args.network, tt.args.api); !reflect.DeepEqual(got, tt.want) {
+			if got := NewBlockAPIService(tt.args.network, tt.args.api, rosettaLib); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewBlockAPIService() = %v, want %v", got, tt.want)
 			}
 		})

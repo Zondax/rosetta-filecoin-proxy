@@ -24,6 +24,7 @@ import (
 	"github.com/filecoin-project/lotus/node/repo/imports"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
 	"github.com/google/uuid"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -37,6 +38,18 @@ type MessagePrototype struct{}
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) ChainPutObj(ctx context.Context, block blocks.Block) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateLookupRobustAddress(ctx context.Context, a address.Address, key filTypes.TipSetKey) (address.Address, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetNetworkParams(ctx context.Context) (*api.NetworkParams, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) StateGetBeaconEntry(ctx context.Context, epoch abi.ChainEpoch) (*filTypes.BeaconEntry, error) {
