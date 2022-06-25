@@ -40,6 +40,10 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) StateActorCodeCIDs(ctx context.Context, version network2.Version) (map[string]cid.Cid, error) {
+	panic("implement me")
+}
+
 func (f *FullNodeMock) ChainPutObj(ctx context.Context, block blocks.Block) error {
 	panic("implement me")
 }
