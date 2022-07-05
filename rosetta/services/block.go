@@ -373,7 +373,6 @@ func (s *BlockAPIService) parseExecParams(msg *filTypes.Message, receipt *filTyp
 }
 
 func (s *BlockAPIService) parseMsigParams(msg *filTypes.Message) (string, error) {
-	r := &filLib.RosettaConstructionFilecoin{}
 	msgSerial, err := msg.MarshalJSON()
 	if err != nil {
 		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
@@ -389,7 +388,7 @@ func (s *BlockAPIService) parseMsigParams(msg *filTypes.Message) (string, error)
 		return "", fmt.Errorf("this id doesn't correspond to a multisig actor")
 	}
 
-	parsedParams, err := r.ParseParamsMultisigTx(string(msgSerial), actorCode)
+	parsedParams, err := s.rosettaLib.ParseParamsMultisigTx(string(msgSerial), actorCode)
 	if err != nil {
 		Logger.Error("Could not parse params. ParseParamsMultisigTx returned with error:", err.Error())
 		return "", err
