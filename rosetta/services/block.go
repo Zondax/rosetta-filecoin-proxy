@@ -245,6 +245,11 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		baseMethod = "unknown"
 	}
 
+	opStatus := OperationStatusFailed
+	if trace.MsgRct.ExitCode.IsSuccess() {
+		opStatus = OperationStatusOk
+	}
+
 	if IsOpSupported(baseMethod) {
 		fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
 		toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
@@ -252,11 +257,6 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 			Logger.Error("could not retrieve one or both pubkeys for addresses:",
 				trace.Msg.From.String(), trace.Msg.To.String())
 			return
-		}
-
-		opStatus := OperationStatusFailed
-		if trace.MsgRct.ExitCode.IsSuccess() {
-			opStatus = OperationStatusOk
 		}
 
 		switch baseMethod {
@@ -292,7 +292,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 					}
 				}
 			}
-		case "Propose":
+		case "Propose", "Approve", "Cancel":
 			{
 				*operations = appendOp(*operations, baseMethod, fromPk,
 					"0", opStatus, false)
@@ -327,9 +327,12 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		}
 	}
 
-	for i := range trace.Subcalls {
-		subTrace := trace.Subcalls[i]
-		s.processTrace(&subTrace, operations)
+	// Only process sub-calls if the parent call was successfully executed
+	if opStatus == OperationStatusOk {
+		for i := range trace.Subcalls {
+			subTrace := trace.Subcalls[i]
+			s.processTrace(&subTrace, operations)
+		}
 	}
 }
 
