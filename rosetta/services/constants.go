@@ -48,6 +48,8 @@ var SupportedOperations = map[string]bool{
 	"Exec":                true, // MethodsInit
 	"SwapSigner":          true, // MethodsMultisig
 	"Propose":             true, // MethodsMultisig
+	"Approve":             true, // MethodsMultisig
+	"Cancel":              true, // MethodsMultisig
 	"AwardBlockReward":    true, // MethodsReward
 	"OnDeferredCronEvent": true, // MethodsMiner
 	"PreCommitSector":     true, // MethodsMiner
