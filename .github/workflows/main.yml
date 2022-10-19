@@ -38,24 +38,39 @@ jobs:
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
   build:
-    docker:
-      - image: golang:1.18
-    working_directory: /rosetta-filecoin-lib
+    runs-on: ubuntu-latest
     steps:
-      - checkout
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.18'
+      - name: Test
+        run: make test
       - ffi_deps
-      - run: make build
-      - run: make test
   checks:
-    docker:
-      - image: golang:1.18
+    runs-on: ubuntu-latest
     steps:
-      - checkout
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.18'
+      - name: Checks
+        run: |
+          make install_lint
+          make lint
       - ffi_deps
       - run: make install_lint
       - run: make build_CI
       - run: make check-modtidy
       - run: make lint
+
+
 
 
 #    runs-on: self-hosted
