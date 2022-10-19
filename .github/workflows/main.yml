@@ -37,6 +37,7 @@ jobs:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +50,7 @@ jobs:
           go-version: '^1.18'
       - name: Test
         run: make test
+
   checks:
     runs-on: ubuntu-latest
     steps:

@@ -9,8 +9,9 @@ import (
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/filecoin-project/go-state-types/builtin/v8/miner"
 	"github.com/filecoin-project/go-state-types/builtin/v8/paych"
+	"github.com/filecoin-project/go-state-types/builtin/v9/miner"
+	verifreg2 "github.com/filecoin-project/go-state-types/builtin/v9/verifreg"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/go-state-types/dline"
 	network2 "github.com/filecoin-project/go-state-types/network"
@@ -38,6 +39,47 @@ type MessagePrototype struct{}
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainPrune(ctx context.Context, opts api.PruneOpts) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocationForPendingDeal(ctx context.Context, dealId abi.DealID, tsk filTypes.TipSetKey) (*verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocation(ctx context.Context, clientAddr address.Address, allocationId verifreg2.AllocationId, tsk filTypes.TipSetKey) (*verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocations(ctx context.Context, clientAddr address.Address, tsk filTypes.TipSetKey) (map[verifreg2.AllocationId]verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetClaim(ctx context.Context, providerAddr address.Address, claimId verifreg2.ClaimId, tsk filTypes.TipSetKey) (*verifreg2.Claim, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetClaims(ctx context.Context, providerAddr address.Address, tsk filTypes.TipSetKey) (map[verifreg2.ClaimId]verifreg2.Claim, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateComputeDataCID(ctx context.Context, maddr address.Address, sectorType abi.RegisteredSealProof, deals []abi.DealID, tsk filTypes.TipSetKey) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerAllocated(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*bitfield.BitField, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateActorManifestCID(ctx context.Context, version network2.Version) (cid.Cid, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) StateActorCodeCIDs(ctx context.Context, version network2.Version) (map[string]cid.Cid, error) {
@@ -72,15 +114,11 @@ func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, ke
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerInitialPledgeCollateral(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (miner.SectorPreCommitOnChainInfo, error) {
+func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*miner.SectorPreCommitOnChainInfo, error) {
 	panic("implement me")
 }
 
