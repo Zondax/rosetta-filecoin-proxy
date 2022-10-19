@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - network: mainnet
-            url: LOTUS_RPC_URL
+#          - network: mainnet
+#            url: LOTUS_RPC_URL
           - network: butterfly
             url: LOTUS_BUTTERFLY_RPC_URL
           - network: calibration
