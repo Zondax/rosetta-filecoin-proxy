@@ -128,7 +128,7 @@ func TestNewNetworkAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNetworkAPIService(tt.args.network, tt.args.node); !reflect.DeepEqual(got, tt.want) {
+			if got := NewNetworkAPIService(tt.args.network, tt.args.node, nil); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewNetworkAPIService() = %v, want %v", got, tt.want)
 			}
 		})
