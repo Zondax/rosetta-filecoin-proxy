@@ -11,7 +11,6 @@
     "tip_delay": 300,
     "log_configuration": false,
     "compression_disabled": true,
-    "memory_limit_disabled": true,
     "construction": null,
     "data": {
       "reconciler_active_backlog": 1000000,
@@ -30,11 +29,9 @@
       "balance_tracking_disabled": false,
       "coin_tracking_disabled": false,
       "status_port": 9090,
-      "pruning_disabled": false,
-      "historical_balance_enabled": true,
-      "start_index": 680000,
+      "start_index": 34000,
       "end_conditions": {
-        "index": 681482
+        "index": 34287
       }
     }
   }

@@ -14,7 +14,7 @@ if [ -z $NETWORK ]; then
     echo "${YLW}Using default mainnet value for network${OFF}"
 fi
 
-go install github.com/coinbase/rosetta-cli@v0.7.3
+go install github.com/coinbase/rosetta-cli@v0.10.0
 
 rm -rf /tmp/rosetta-cli-test/*
 

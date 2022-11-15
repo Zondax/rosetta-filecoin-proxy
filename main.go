@@ -66,7 +66,7 @@ func newBlockchainRouter(
 		asserter,
 	)
 
-	networkAPIService := srv.NewNetworkAPIService(network, &api)
+	networkAPIService := srv.NewNetworkAPIService(network, &api, srv.GetSupportedOpList())
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,

@@ -48,7 +48,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(rosettaLib.BuiltinActors.GetActorCid(utils.ActorsV8, actors.ActorMultisigName), "100")
+	mockMsigActor := buildActorMock(rosettaLib.BuiltinActors.GetActorCid(utils.LatestVersion, actors.ActorMultisigName), "100")
 	///
 
 	// Output

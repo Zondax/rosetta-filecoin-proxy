@@ -102,6 +102,16 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		if filErr != nil {
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
 		}
+		if queryTipSet.Height() == abi.ChainEpoch(originalQueryHeight) {
+			// Means that the tipset at originalQueryHeight + 1 has no blocks, so we need to skip it
+			fixedQueryHeight = originalQueryHeight + 2
+
+			// Repeat the call with the updated height
+			queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(fixedQueryHeight), filTypes.EmptyTSK)
+			if filErr != nil {
+				return nil, BuildError(ErrUnableToGetBlk, filErr, true)
+			}
+		}
 		responseTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(originalQueryHeight), filTypes.EmptyTSK)
 		if filErr != nil {
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
