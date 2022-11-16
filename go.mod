@@ -10,7 +10,7 @@ require (
 	github.com/filecoin-project/go-fil-markets v1.24.0-v17
 	github.com/filecoin-project/go-jsonrpc v0.1.8
 	github.com/filecoin-project/go-state-types v0.9.8
-	github.com/filecoin-project/lotus v1.18.0-rc5
+	github.com/filecoin-project/lotus v1.18.0
 	github.com/filecoin-project/specs-actors v0.9.15
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.3.0
@@ -21,8 +21,8 @@ require (
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.8.0
-	github.com/zondax/filecoin-actors-cids v1.1800.1
-	github.com/zondax/rosetta-filecoin-lib v1.1800.0-rc5
+	github.com/zondax/filecoin-actors-cids v1.1800.2
+	github.com/zondax/rosetta-filecoin-lib v1.1800.0
 	gotest.tools v2.2.0+incompatible
 )
 
