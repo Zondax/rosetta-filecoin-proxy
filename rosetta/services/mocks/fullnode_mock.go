@@ -83,7 +83,13 @@ func (f *FullNodeMock) StateActorManifestCID(ctx context.Context, version networ
 }
 
 func (f *FullNodeMock) StateActorCodeCIDs(ctx context.Context, version network2.Version) (map[string]cid.Cid, error) {
-	panic("implement me")
+	args := f.Called(ctx, version)
+	cids := args.Get(0)
+	err := args.Error(1)
+	if cids != nil {
+		return cids.(map[string]cid.Cid), err
+	}
+	return nil, err
 }
 
 func (f *FullNodeMock) ChainPutObj(ctx context.Context, block blocks.Block) error {
@@ -485,7 +491,13 @@ func (f *FullNodeMock) StateSectorPartition(ctx context.Context, maddr address.A
 }
 
 func (f *FullNodeMock) StateNetworkVersion(ctx context.Context, key filTypes.TipSetKey) (network2.Version, error) {
-	panic("implement me")
+	args := f.Called(ctx, key)
+	version := args.Get(0)
+	err := args.Error(1)
+	if version != nil {
+		return version.(network2.Version), err
+	}
+	return 0, err
 }
 
 func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, oldmsgskip bool, tsk filTypes.TipSetKey) (<-chan []byte, error) {
