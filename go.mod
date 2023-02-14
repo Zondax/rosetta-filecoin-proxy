@@ -61,7 +61,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hannahhoward/cbor-gen-for v0.0.0-20200817222906-ea96cece81f1 // indirect
@@ -91,7 +91,7 @@ require (
 	github.com/ipfs/interface-go-ipfs-core v0.7.0 // indirect
 	github.com/ipld/go-car v0.4.0 // indirect
 	github.com/ipld/go-codec-dagpb v1.3.2 // indirect
-	github.com/ipld/go-ipld-prime v0.17.0 // indirect
+	github.com/ipld/go-ipld-prime v0.19.0 // indirect
 	github.com/ipld/go-ipld-selector-text-lite v0.0.1 // indirect
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
@@ -118,7 +118,7 @@ require (
 	github.com/multiformats/go-multiaddr v0.6.0 // indirect
 	github.com/multiformats/go-multiaddr-dns v0.3.1 // indirect
 	github.com/multiformats/go-multibase v0.1.1 // indirect
-	github.com/multiformats/go-multicodec v0.5.0 // indirect
+	github.com/multiformats/go-multicodec v0.6.0 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
 	github.com/nkovacs/streamquote v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
