@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
-	methods "github.com/filecoin-project/specs-actors/v8/actors/builtin"
+	"github.com/filecoin-project/go-state-types/builtin"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
@@ -81,7 +81,6 @@ func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.Ro
 }
 
 func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
-
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
 	}
@@ -101,41 +100,47 @@ func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstru
 	var method interface{}
 	switch actorName {
 	case "init":
-		method = methods.MethodsInit
+		method = builtin.MethodsInit
 	case "cron":
-		method = methods.MethodsCron
+		method = builtin.MethodsCron
 	case "account":
-		method = methods.MethodsAccount
+		method = builtin.MethodsAccount
 	case "storagepower":
-		method = methods.MethodsPower
+		method = builtin.MethodsPower
 	case "storageminer":
-		method = methods.MethodsMiner
+		method = builtin.MethodsMiner
 	case "storagemarket":
-		method = methods.MethodsMarket
+		method = builtin.MethodsMarket
 	case "paymentchannel":
-		method = methods.MethodsPaych
+		method = builtin.MethodsPaych
 	case "multisig":
-		method = methods.MethodsMultisig
+		method = builtin.MethodsMultisig
 	case "reward":
-		method = methods.MethodsReward
+		method = builtin.MethodsReward
 	case "verifiedregistry":
-		method = methods.MethodsVerifiedRegistry
+		method = builtin.MethodsVerifiedRegistry
+	case "evm":
+		method = builtin.MethodsEVM
+	case "eam":
+		method = builtin.MethodsEAM
+	case "datacap":
+		method = builtin.MethodsDatacap
 	default:
 		return actors.UnknownStr, nil
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
-	idx := int(msg.Method)
-	if idx > 0 {
-		idx--
+
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		methodNum := field.Uint()
+		if methodNum == uint64(msg.Method) {
+			methodName := val.Type().Field(i).Name
+			return methodName, nil
+		}
 	}
 
-	if val.Type().NumField() <= idx {
-		return actors.UnknownStr, nil
-	}
-
-	methodName := val.Type().Field(idx).Name
-	return methodName, nil
+	return actors.UnknownStr, nil
 }
 
 func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
