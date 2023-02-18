@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/zondax/filecoin-actors-cids/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -68,7 +67,7 @@ func main() {
 		panic("Panicking")
 	}
 
-	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(utils.NetworkDevnet)
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
 
 	gasLimit, err := strconv.ParseInt(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
 	if err != nil {

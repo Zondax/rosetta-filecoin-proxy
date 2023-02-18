@@ -116,7 +116,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	}
 
 	// Create instance of RosettaFilecoinLib for current network
-	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(srv.NetworkName)
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(api)
 
 	router := newBlockchainRouter(network, asserter, api, r)
 	loggedRouter := server.LoggerMiddleware(router)
