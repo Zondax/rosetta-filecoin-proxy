@@ -44,6 +44,10 @@ func main() {
 
 	rosettaClient := setupRosettaClient()
 
+	//        IMPORTANT          //
+	// Constructing transactions that have a f4 address as receiver are disabled by default for safety reasons.
+	// Only if needed, and you understand the risks, can be enabled by setting the env ENABLE_F4_RECEIVER=true
+
 	var options = make(map[string]interface{})
 	options[services.OptionsSenderIDKey] = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
 	options[services.OptionsReceiverIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
