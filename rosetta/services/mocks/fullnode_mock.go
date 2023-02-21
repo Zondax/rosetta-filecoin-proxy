@@ -43,6 +43,11 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) EthAddressToFilecoinAddress(ctx context.Context, ethAddress ethtypes.EthAddress) (address.Address, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f *FullNodeMock) StartTime(ctx context.Context) (time.Time, error) {
 	// TODO implement me
 	panic("implement me")
