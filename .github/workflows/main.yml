@@ -9,25 +9,37 @@ on:
     branches: [ master ]
 
 jobs:
+  build:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+      - name: Test
+        run: make test
+
   rosetta_cli:
     name: Rosetta CLI integration tests
+    runs-on: [self-hosted, linux, x64]
+    needs: [ build ]
     strategy:
       fail-fast: false
       matrix:
         include:
 #          - network: mainnet
-#            url: LOTUS_RPC_URL
-#          - network: butterfly
-#            url: LOTUS_BUTTERFLY_RPC_URL
+#            url: LOTUS_URL_MAINNET
           - network: calibration
-            url: LOTUS_CALIBRATION_RPC_URL
-    runs-on: self-hosted
+            url: LOTUS_URL_CALIBNET
     timeout-minutes: 5760
     steps:
       - uses: actions/checkout@v2.3.3
       - uses: actions/setup-go@v2.1.3
         with:
-          go-version: '^1.19' # The Go version to download (if necessary) and use.
+          go-version: '1.19' # The Go version to download (if necessary) and use.
       - run: git submodule update --init --recursive
       - run: sudo apt update && sudo apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
       - run: make build_CI
@@ -37,16 +49,3 @@ jobs:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.19'
-      - name: Test
-        run: make test
