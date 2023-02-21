@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
@@ -12,6 +13,9 @@ import (
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-lib/actors"
+	"os"
+	"strconv"
+	"strings"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -121,6 +125,15 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			if err != nil {
 				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
+
+			if strings.HasPrefix(addressReceiverParsed.String(), "f4") {
+				f4EnabledEnv := os.Getenv("ENABLE_F4_RECEIVER")
+				f4Enabled, err := strconv.ParseBool(f4EnabledEnv)
+				if !f4Enabled || err != nil {
+					return nil, BuildError(ErrInvalidAccountAddress, fmt.Errorf("addresses with f4 format are not supported. To enable set the env ENABLE_F4_RECEIVER = true"), true)
+				}
+			}
+
 			message.To = addressReceiverParsed
 
 			// Get receiver's actor code

@@ -4,9 +4,10 @@ set -o nounset -o pipefail -o errexit
 trap "exit 1" INT
 
 GRN=$'\e[32;1m'
+YLW=$'\e[33;1m'
 OFF=$'\e[0m'
 
-go install github.com/coinbase/rosetta-cli@v0.7.3
+go install github.com/coinbase/rosetta-cli@v0.10.0
 
 rm -rf /tmp/rosetta-cli-test/*
 

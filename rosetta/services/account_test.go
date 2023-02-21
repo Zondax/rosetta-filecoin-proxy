@@ -7,9 +7,7 @@ import (
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
-	"github.com/zondax/filecoin-actors-cids/utils"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
-	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"reflect"
 	"testing"
 
@@ -22,7 +20,7 @@ import (
 var rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 
 func TestMain(m *testing.M) {
-	rosettaLib = rosettaFilecoinLib.NewRosettaConstructionFilecoin(utils.NetworkDevnet)
+	rosettaLib = rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
 }
 
 func TestAccountAPIService_AccountBalance(t *testing.T) {
@@ -48,7 +46,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(rosettaLib.BuiltinActors.GetActorCid(utils.LatestVersion, actors.ActorMultisigName), "100")
+	mockMsigActor := buildActorMock(cid.Cid{}, "100")
 	///
 
 	// Output

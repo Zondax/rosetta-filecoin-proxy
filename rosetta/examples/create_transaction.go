@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/zondax/filecoin-actors-cids/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -45,6 +44,10 @@ func main() {
 
 	rosettaClient := setupRosettaClient()
 
+	//        IMPORTANT          //
+	// Constructing transactions that have a f4 address as receiver are disabled by default for safety reasons.
+	// Only if needed, and you understand the risks, can be enabled by setting the env ENABLE_F4_RECEIVER=true
+
 	var options = make(map[string]interface{})
 	options[services.OptionsSenderIDKey] = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
 	options[services.OptionsReceiverIDKey] = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
@@ -68,7 +71,7 @@ func main() {
 		panic("Panicking")
 	}
 
-	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(utils.NetworkDevnet)
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
 
 	gasLimit, err := strconv.ParseInt(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
 	if err != nil {

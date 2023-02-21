@@ -52,3 +52,8 @@ test_integration: build
 gitclean:
 	git clean -xfd
 	git submodule foreach --recursive git clean -xfd
+
+test_calibration_macos: build
+	LOTUS_RPC_URL=https://node-fil-calibration-light.zondax.dev/rpc/v1  ./rosetta-filecoin-proxy &
+
+
