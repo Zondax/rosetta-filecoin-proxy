@@ -26,7 +26,7 @@ require (
 )
 
 // Replace with final release once released
-replace github.com/zondax/rosetta-filecoin-lib => github.com/zondax/rosetta-filecoin-lib v1.1901.0-dev.0.20230217204633-216bda4af8fc
+replace github.com/zondax/rosetta-filecoin-lib => github.com/zondax/rosetta-filecoin-lib v1.2000.0-rc2.0.20230227185657-347e9ab03a2b
 
 require (
 	github.com/DataDog/zstd v1.5.0 // indirect
