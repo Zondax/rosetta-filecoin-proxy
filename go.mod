@@ -21,12 +21,9 @@ require (
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/stretchr/testify v1.8.1
-	github.com/zondax/rosetta-filecoin-lib v1.1800.0
+	github.com/zondax/rosetta-filecoin-lib v1.2000.0-rc2-p1
 	gotest.tools v2.2.0+incompatible
 )
-
-// Replace with final release once released
-replace github.com/zondax/rosetta-filecoin-lib => github.com/zondax/rosetta-filecoin-lib v1.2000.0-rc2.0.20230227185657-347e9ab03a2b
 
 require (
 	github.com/DataDog/zstd v1.5.0 // indirect
