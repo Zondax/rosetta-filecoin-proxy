@@ -125,6 +125,10 @@ func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstru
 		method = builtin.MethodsEAM
 	case "datacap":
 		method = builtin.MethodsDatacap
+	case "placeholder":
+		method = builtin.MethodsPlaceholder
+	case "ethaccount":
+		method = builtin.MethodsEthAccount
 	default:
 		return actors.UnknownStr, nil
 	}

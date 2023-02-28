@@ -11,11 +11,10 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/chain/types/ethtypes"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-lib/actors"
-	"os"
-	"strconv"
-	"strings"
+	"regexp"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -111,7 +110,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		// Parse sender address - this field is optional
 		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
 		if okSender {
-			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
+			addressSenderParsed, err = c.parseAddress(addressSenderRaw.(string))
 			if err != nil {
 				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
@@ -121,17 +120,9 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		// Parse receiver address - this field is optional
 		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
 		if okReceiver {
-			addressReceiverParsed, err = address.NewFromString(addressReceiverRaw.(string))
+			addressReceiverParsed, err = c.parseAddress(addressReceiverRaw.(string))
 			if err != nil {
 				return nil, BuildError(ErrInvalidAccountAddress, err, true)
-			}
-
-			if strings.HasPrefix(addressReceiverParsed.String(), "f4") {
-				f4EnabledEnv := os.Getenv("ENABLE_F4_RECEIVER")
-				f4Enabled, err := strconv.ParseBool(f4EnabledEnv)
-				if !f4Enabled || err != nil {
-					return nil, BuildError(ErrInvalidAccountAddress, fmt.Errorf("addresses with f4 format are not supported. To enable set the env ENABLE_F4_RECEIVER = true"), true)
-				}
 			}
 
 			message.To = addressReceiverParsed
@@ -270,6 +261,55 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	}
 
 	return resp, nil
+}
+
+func (c *ConstructionAPIService) parseAddress(add string) (address.Address, error) {
+	if ok := IsEthereumAddress(add); ok {
+		filCid, err := EthereumAddressToFilecoin(add)
+		if err != nil {
+			return address.Undef, err
+		}
+		return filCid, nil
+	}
+
+	if ok, filAddress := IsFilecoinAddress(add); ok {
+		return filAddress, nil
+	}
+
+	return address.Undef, fmt.Errorf("address '%s' doesn't correspond to a valid Filecoin nor Ethereum format", add)
+}
+
+func IsFilecoinAddress(add string) (bool, address.Address) {
+	filAdd, err := address.NewFromString(add)
+	return err == nil, filAdd
+}
+
+func IsEthereumAddress(address string) bool {
+	exp := regexp.MustCompile("0x[a-fA-F0-9]{40}")
+	return exp.MatchString(address)
+}
+
+func EthereumAddressToFilecoin(add string) (address.Address, error) {
+	ethAdd, err := EthereumAddressFromHex(add)
+	if err != nil {
+		return address.Undef, err
+	}
+
+	filAdd, err := ethAdd.ToFilecoinAddress()
+	if err != nil {
+		return address.Undef, err
+	}
+
+	return filAdd, nil
+}
+
+func EthereumAddressFromHex(add string) (ethtypes.EthAddress, error) {
+	ethAdd, err := ethtypes.ParseEthAddress(add)
+	if err != nil {
+		return ethtypes.EthAddress{}, err
+	}
+
+	return ethAdd, nil
 }
 
 func (c *ConstructionAPIService) ConstructionCombine(ctx context.Context, request *types.ConstructionCombineRequest) (*types.ConstructionCombineResponse, *types.Error) {
