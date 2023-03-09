@@ -326,9 +326,10 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 	default:
 		// We parse here any other transaction type only if Msg.Value != 0
 		if !trace.Msg.Value.NilOrZero() {
-			*operations = appendOp(*operations, baseMethod, fromPk,
+			methodName := "unknown"
+			*operations = appendOp(*operations, methodName, fromPk,
 				trace.Msg.Value.Neg().String(), opStatus, false)
-			*operations = appendOp(*operations, baseMethod, toPk,
+			*operations = appendOp(*operations, methodName, toPk,
 				trace.Msg.Value.String(), opStatus, true)
 		}
 	}

@@ -43,19 +43,22 @@ const (
 
 // Supported operations
 var SupportedOperations = map[string]bool{
-	"Send":                true, // Common
-	"Fee":                 true, // Common
-	"Exec":                true, // MethodsInit
-	"SwapSigner":          true, // MethodsMultisig
-	"Propose":             true, // MethodsMultisig
-	"Approve":             true, // MethodsMultisig
-	"Cancel":              true, // MethodsMultisig
-	"AwardBlockReward":    true, // MethodsReward
-	"OnDeferredCronEvent": true, // MethodsMiner
-	"PreCommitSector":     true, // MethodsMiner
-	"ProveCommitSector":   true, // MethodsMiner
-	"SubmitWindowedPoSt":  true, // MethodsMiner
-	"ApplyRewards":        true, // MethodsMiner
-	"AddBalance":          true, // MethodsMarket
-	"RepayDebt":           true, // MethodsMiner
+	"Send":                   true, // Common
+	"Fee":                    true, // Common
+	"Exec":                   true, // MethodsInit
+	"SwapSigner":             true, // MethodsMultisig
+	"Propose":                true, // MethodsMultisig
+	"Approve":                true, // MethodsMultisig
+	"Cancel":                 true, // MethodsMultisig
+	"AwardBlockReward":       true, // MethodsReward
+	"OnDeferredCronEvent":    true, // MethodsMiner
+	"PreCommitSector":        true, // MethodsMiner
+	"ProveCommitSector":      true, // MethodsMiner
+	"SubmitWindowedPoSt":     true, // MethodsMiner
+	"ApplyRewards":           true, // MethodsMiner
+	"AddBalance":             true, // MethodsMarket
+	"RepayDebt":              true, // MethodsMiner
+	"InvokeContract":         true, // MethodsEVM
+	"InvokeContractDelegate": true, // MethodsEVM
+	"unknown":                true, // For all other kinds of transactions
 }
