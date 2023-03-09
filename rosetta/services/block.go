@@ -250,80 +250,86 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		opStatus = OperationStatusOk
 	}
 
-	if IsOpSupported(baseMethod) {
-		fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
-		toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
-		if err1 != nil || err2 != nil {
-			Logger.Error("could not retrieve one or both pubkeys for addresses:",
-				trace.Msg.From.String(), trace.Msg.To.String())
-			return
+	fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
+	toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
+	if err1 != nil || err2 != nil {
+		Logger.Error("could not retrieve one or both pubkeys for addresses:",
+			trace.Msg.From.String(), trace.Msg.To.String())
+		return
+	}
+
+	switch baseMethod {
+	case "Send", "AddBalance":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 		}
+	case "InvokeContract", "InvokeContractDelegate":
+		{
+			methodName := "EVM_CALL"
+			*operations = appendOp(*operations, methodName, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, methodName, toPk,
+				trace.Msg.Value.String(), opStatus, true)
+		}
+	case "Exec":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 
-		switch baseMethod {
-		case "Send", "AddBalance":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-			}
-		case "Exec":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-
-				// Check if this Exec op created and funded a msig account
-				params, err := s.parseExecParams(trace.Msg, trace.MsgRct)
-				if err == nil {
-					var paramsMap map[string]string
-					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-						if fundedAddress, ok := paramsMap["IDAddress"]; ok {
-							fromPk = toPk        // init actor
-							toPk = fundedAddress // new msig address
-							*operations = appendOp(*operations, "Send", fromPk,
-								trace.Msg.Value.Neg().String(), opStatus, false)
-							*operations = appendOp(*operations, "Send", toPk,
-								trace.Msg.Value.String(), opStatus, true)
-						}
-					} else {
-						Logger.Error("Could not parse message params for", baseMethod)
+			// Check if this Exec op created and funded a msig account
+			params, err := s.parseExecParams(trace.Msg, trace.MsgRct)
+			if err == nil {
+				var paramsMap map[string]string
+				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+					if fundedAddress, ok := paramsMap["IDAddress"]; ok {
+						fromPk = toPk        // init actor
+						toPk = fundedAddress // new msig address
+						*operations = appendOp(*operations, "Send", fromPk,
+							trace.Msg.Value.Neg().String(), opStatus, false)
+						*operations = appendOp(*operations, "Send", toPk,
+							trace.Msg.Value.String(), opStatus, true)
 					}
+				} else {
+					Logger.Error("Could not parse message params for", baseMethod)
 				}
 			}
-		case "Propose", "Approve", "Cancel":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					"0", opStatus, true)
-			}
-		case "SwapSigner":
-			{
-				params, err := s.parseMsigParams(trace.Msg)
-				if err == nil {
-					var paramsMap map[string]string
-					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-						fromPk = paramsMap["From"]
-						toPk = paramsMap["To"]
-						*operations = appendOp(*operations, baseMethod, fromPk,
-							"0", opStatus, false)
-						*operations = appendOp(*operations, baseMethod, toPk,
-							"0", opStatus, true)
-					} else {
-						Logger.Error("Could not parse message params for", baseMethod)
-					}
+		}
+	case "Propose", "Approve", "Cancel":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				"0", opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				"0", opStatus, true)
+		}
+	case "SwapSigner":
+		{
+			params, err := s.parseMsigParams(trace.Msg)
+			if err == nil {
+				var paramsMap map[string]string
+				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+					fromPk = paramsMap["From"]
+					toPk = paramsMap["To"]
+					*operations = appendOp(*operations, baseMethod, fromPk,
+						"0", opStatus, false)
+					*operations = appendOp(*operations, baseMethod, toPk,
+						"0", opStatus, true)
+				} else {
+					Logger.Error("Could not parse message params for", baseMethod)
 				}
 			}
-		case "AwardBlockReward", "ApplyRewards", "OnDeferredCronEvent",
-			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt", "RepayDebt":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-			}
+		}
+	default:
+		// We parse here any other transaction type only if Msg.Value != 0
+		if !trace.Msg.Value.NilOrZero() {
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 		}
 	}
 
