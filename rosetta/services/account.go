@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
@@ -9,21 +11,22 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
-	filBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
 // AccountAPIService implements the server.BlockAPIServicer interface.
 type AccountAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.AccountAPIServicer {
+func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
 	return &AccountAPIService{
-		network: network,
-		node:    *node,
+		network:    network,
+		node:       *node,
+		rosettaLib: r,
 	}
 }
 
@@ -99,6 +102,16 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		if filErr != nil {
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
 		}
+		if queryTipSet.Height() == abi.ChainEpoch(originalQueryHeight) {
+			// Means that the tipset at originalQueryHeight + 1 has no blocks, so we need to skip it
+			fixedQueryHeight = originalQueryHeight + 2
+
+			// Repeat the call with the updated height
+			queryTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(fixedQueryHeight), filTypes.EmptyTSK)
+			if filErr != nil {
+				return nil, BuildError(ErrUnableToGetBlk, filErr, true)
+			}
+		}
 		responseTipSet, filErr = a.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(originalQueryHeight), filTypes.EmptyTSK)
 		if filErr != nil {
 			return nil, BuildError(ErrUnableToGetBlk, filErr, true)
@@ -133,7 +146,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	if request.AccountIdentifier.SubAccount != nil {
 		// First, check if account is a multisig
-		if !filBuiltin.IsMultisigActor(actor.Code) {
+		if !a.rosettaLib.BuiltinActors.IsActor(actor.Code, actors.ActorMultisigName) {
 			return nil, BuildError(ErrAddNotMSig, nil, true)
 		}
 

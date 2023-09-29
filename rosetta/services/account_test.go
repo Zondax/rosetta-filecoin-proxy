@@ -5,9 +5,9 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
-	"github.com/filecoin-project/specs-actors/v2/actors/builtin"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"reflect"
 	"testing"
 
@@ -16,6 +16,12 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	mocks "github.com/zondax/rosetta-filecoin-proxy/rosetta/services/mocks"
 )
+
+var rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
+
+func TestMain(m *testing.M) {
+	rosettaLib = rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
+}
 
 func TestAccountAPIService_AccountBalance(t *testing.T) {
 
@@ -40,7 +46,7 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(builtin.MultisigActorCodeID, "100")
+	mockMsigActor := buildActorMock(cid.Cid{}, "100")
 	///
 
 	// Output
@@ -240,7 +246,7 @@ func TestNewAccountAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAccountAPIService(tt.args.network, tt.args.node); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAccountAPIService(tt.args.network, tt.args.node, rosettaLib); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAccountAPIService() = %v, want %v", got, tt.want)
 			}
 		})

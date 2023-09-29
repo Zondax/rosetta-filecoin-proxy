@@ -7,9 +7,12 @@ import (
 	"github.com/filecoin-project/go-bitfield"
 	datatransfer "github.com/filecoin-project/go-data-transfer"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
-	"github.com/filecoin-project/go-fil-markets/storagemarket"
+	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/filecoin-project/go-state-types/abi"
+	"github.com/filecoin-project/go-state-types/builtin/v8/paych"
+	"github.com/filecoin-project/go-state-types/builtin/v9/miner"
+	verifreg2 "github.com/filecoin-project/go-state-types/builtin/v9/verifreg"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/go-state-types/dline"
 	network2 "github.com/filecoin-project/go-state-types/network"
@@ -17,26 +20,349 @@ import (
 	"github.com/filecoin-project/lotus/api/types"
 	minerBuiltin "github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/chain/types/ethtypes"
 	"github.com/filecoin-project/lotus/journal/alerting"
 	marketevents "github.com/filecoin-project/lotus/markets/loggers"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/repo/imports"
-	"github.com/filecoin-project/specs-actors/actors/builtin/miner"
-	"github.com/filecoin-project/specs-actors/actors/builtin/paych"
 	"github.com/filecoin-project/specs-actors/actors/builtin/verifreg"
 	"github.com/google/uuid"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/stretchr/testify/mock"
+	"time"
 )
 
 type MessagePrototype struct{}
 
 type FullNodeMock struct {
 	mock.Mock
+}
+
+func (f *FullNodeMock) FilecoinAddressToEthAddress(ctx context.Context, filecoinAddress address.Address) (ethtypes.EthAddress, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthAddressToFilecoinAddress(ctx context.Context, ethAddress ethtypes.EthAddress) (address.Address, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StartTime(ctx context.Context) (time.Time, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainGetEvents(ctx context.Context, c cid.Cid) ([]filTypes.Event, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthAccounts(ctx context.Context) ([]ethtypes.EthAddress, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthBlockNumber(ctx context.Context) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBlockTransactionCountByNumber(ctx context.Context, blkNum ethtypes.EthUint64) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBlockTransactionCountByHash(ctx context.Context, blkHash ethtypes.EthHash) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBlockByHash(ctx context.Context, blkHash ethtypes.EthHash, fullTxInfo bool) (ethtypes.EthBlock, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBlockByNumber(ctx context.Context, blkNum string, fullTxInfo bool) (ethtypes.EthBlock, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionByHash(ctx context.Context, txHash *ethtypes.EthHash) (*ethtypes.EthTx, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionHashByCid(ctx context.Context, cid cid.Cid) (*ethtypes.EthHash, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetMessageCidByTransactionHash(ctx context.Context, txHash *ethtypes.EthHash) (*cid.Cid, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionCount(ctx context.Context, sender ethtypes.EthAddress, blkOpt string) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionReceipt(ctx context.Context, txHash ethtypes.EthHash) (*api.EthTxReceipt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionByBlockHashAndIndex(ctx context.Context, blkHash ethtypes.EthHash, txIndex ethtypes.EthUint64) (ethtypes.EthTx, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionByBlockNumberAndIndex(ctx context.Context, blkNum ethtypes.EthUint64, txIndex ethtypes.EthUint64) (ethtypes.EthTx, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetCode(ctx context.Context, address ethtypes.EthAddress, blkOpt string) (ethtypes.EthBytes, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetStorageAt(ctx context.Context, address ethtypes.EthAddress, position ethtypes.EthBytes, blkParam string) (ethtypes.EthBytes, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBalance(ctx context.Context, address ethtypes.EthAddress, blkParam string) (ethtypes.EthBigInt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthChainId(ctx context.Context) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetVersion(ctx context.Context) (string, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetListening(ctx context.Context) (bool, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthProtocolVersion(ctx context.Context) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGasPrice(ctx context.Context) (ethtypes.EthBigInt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthFeeHistory(ctx context.Context, p jsonrpc.RawParams) (ethtypes.EthFeeHistory, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthMaxPriorityFeePerGas(ctx context.Context) (ethtypes.EthBigInt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthEstimateGas(ctx context.Context, tx ethtypes.EthCall) (ethtypes.EthUint64, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthCall(ctx context.Context, tx ethtypes.EthCall, blkParam string) (ethtypes.EthBytes, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthSendRawTransaction(ctx context.Context, rawTx ethtypes.EthBytes) (ethtypes.EthHash, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetLogs(ctx context.Context, filter *ethtypes.EthFilterSpec) (*ethtypes.EthFilterResult, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetFilterChanges(ctx context.Context, id ethtypes.EthFilterID) (*ethtypes.EthFilterResult, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetFilterLogs(ctx context.Context, id ethtypes.EthFilterID) (*ethtypes.EthFilterResult, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthNewFilter(ctx context.Context, filter *ethtypes.EthFilterSpec) (ethtypes.EthFilterID, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthNewBlockFilter(ctx context.Context) (ethtypes.EthFilterID, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthNewPendingTransactionFilter(ctx context.Context) (ethtypes.EthFilterID, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthUninstallFilter(ctx context.Context, id ethtypes.EthFilterID) (bool, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthSubscribe(ctx context.Context, params jsonrpc.RawParams) (ethtypes.EthSubscriptionID, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthUnsubscribe(ctx context.Context, id ethtypes.EthSubscriptionID) (bool, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) Web3ClientVersion(ctx context.Context) (string, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) RaftState(ctx context.Context) (*api.RaftStateData, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) RaftLeader(ctx context.Context) (peer.ID, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainPrune(ctx context.Context, opts api.PruneOpts) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocationForPendingDeal(ctx context.Context, dealId abi.DealID, tsk filTypes.TipSetKey) (*verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocation(ctx context.Context, clientAddr address.Address, allocationId verifreg2.AllocationId, tsk filTypes.TipSetKey) (*verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllocations(ctx context.Context, clientAddr address.Address, tsk filTypes.TipSetKey) (map[verifreg2.AllocationId]verifreg2.Allocation, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetClaim(ctx context.Context, providerAddr address.Address, claimId verifreg2.ClaimId, tsk filTypes.TipSetKey) (*verifreg2.Claim, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetClaims(ctx context.Context, providerAddr address.Address, tsk filTypes.TipSetKey) (map[verifreg2.ClaimId]verifreg2.Claim, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateComputeDataCID(ctx context.Context, maddr address.Address, sectorType abi.RegisteredSealProof, deals []abi.DealID, tsk filTypes.TipSetKey) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerAllocated(ctx context.Context, a address.Address, key filTypes.TipSetKey) (*bitfield.BitField, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateActorManifestCID(ctx context.Context, version network2.Version) (cid.Cid, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateActorCodeCIDs(ctx context.Context, version network2.Version) (map[string]cid.Cid, error) {
+	args := f.Called(ctx, version)
+	cids := args.Get(0)
+	err := args.Error(1)
+	if cids != nil {
+		return cids.(map[string]cid.Cid), err
+	}
+	return nil, err
+}
+
+func (f *FullNodeMock) ChainPutObj(ctx context.Context, block blocks.Block) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateLookupRobustAddress(ctx context.Context, a address.Address, key filTypes.TipSetKey) (address.Address, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetNetworkParams(ctx context.Context) (*api.NetworkParams, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetBeaconEntry(ctx context.Context, epoch abi.ChainEpoch) (*filTypes.BeaconEntry, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetPing(ctx context.Context, id peer.ID) (time.Duration, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientQueryAsk(ctx context.Context, p peer.ID, miner address.Address) (*api.StorageAsk, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, key filTypes.TipSetKey) (api.MinerInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMinerInitialPledgeCollateral(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (*miner.SectorPreCommitOnChainInfo, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateMarketDeals(ctx context.Context, key filTypes.TipSetKey) (map[string]*api.MarketDeal, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherCheckValid(ctx context.Context, a address.Address, voucher *paych.SignedVoucher) error {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherCheckSpendable(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (bool, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bigInt filTypes.BigInt) (filTypes.BigInt, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
+	panic("implement me")
+}
+
+func (f *FullNodeMock) PaychVoucherSubmit(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (cid.Cid, error) {
+	panic("implement me")
 }
 
 func (f *FullNodeMock) MsigApproveTxnHash(ctx context.Context, a address.Address, u uint64, a2 address.Address, a3 address.Address, bigInt filTypes.BigInt, a4 address.Address, u2 uint64, bytes []byte) (*api.MessagePrototype, error) {
@@ -340,23 +666,11 @@ func (f *FullNodeMock) WalletValidateAddress(ctx context.Context, s string) (add
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ClientQueryAsk(ctx context.Context, p peer.ID, miner address.Address) (*storagemarket.StorageAsk, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMinerSectors(ctx context.Context, a address.Address, field *bitfield.BitField, key filTypes.TipSetKey) ([]*minerBuiltin.SectorOnChainInfo, error) {
 	panic("implement me")
 }
 
 func (f *FullNodeMock) StateMinerActiveSectors(ctx context.Context, a address.Address, key filTypes.TipSetKey) ([]*minerBuiltin.SectorOnChainInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerInfo(ctx context.Context, a address.Address, key filTypes.TipSetKey) (minerBuiltin.MinerInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateSectorPreCommitInfo(ctx context.Context, a address.Address, number abi.SectorNumber, key filTypes.TipSetKey) (minerBuiltin.SectorPreCommitOnChainInfo, error) {
 	panic("implement me")
 }
 
@@ -389,7 +703,13 @@ func (f *FullNodeMock) StateSectorPartition(ctx context.Context, maddr address.A
 }
 
 func (f *FullNodeMock) StateNetworkVersion(ctx context.Context, key filTypes.TipSetKey) (network2.Version, error) {
-	panic("implement me")
+	args := f.Called(ctx, key)
+	version := args.Get(0)
+	err := args.Error(1)
+	if version != nil {
+		return version.(network2.Version), err
+	}
+	return 0, err
 }
 
 func (f *FullNodeMock) ChainExport(ctx context.Context, nroots abi.ChainEpoch, oldmsgskip bool, tsk filTypes.TipSetKey) (<-chan []byte, error) {
@@ -452,10 +772,6 @@ func (f *FullNodeMock) ClientGetDealUpdates(ctx context.Context) (<-chan api.Dea
 	panic("implement me")
 }
 
-func (f *FullNodeMock) PaychVoucherSubmit(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (cid.Cid, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) MpoolPushMessage(ctx context.Context, msg *filTypes.Message, spec *api.MessageSendSpec) (*filTypes.SignedMessage, error) {
 	panic("implement me")
 }
@@ -477,10 +793,6 @@ func (f *FullNodeMock) StateMinerFaults(ctx context.Context, a address.Address, 
 }
 
 func (f *FullNodeMock) StateMinerRecoveries(ctx context.Context, a address.Address, key filTypes.TipSetKey) (bitfield.BitField, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerInitialPledgeCollateral(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
 	panic("implement me")
 }
 
@@ -545,10 +857,6 @@ func (f *FullNodeMock) ClientListDataTransfers(ctx context.Context) ([]api.DataT
 }
 
 func (f *FullNodeMock) ClientDataTransferUpdates(ctx context.Context) (<-chan api.DataTransferChannel, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) StateMinerPreCommitDepositForPower(ctx context.Context, a address.Address, info miner.SectorPreCommitInfo, key filTypes.TipSetKey) (filTypes.BigInt, error) {
 	panic("implement me")
 }
 
@@ -880,10 +1188,6 @@ func (f *FullNodeMock) StateMarketParticipants(ctx context.Context, key filTypes
 	panic("implement me")
 }
 
-func (f *FullNodeMock) StateMarketDeals(ctx context.Context, key filTypes.TipSetKey) (map[string]api.MarketDeal, error) {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateMarketStorageDeal(ctx context.Context, id abi.DealID, key filTypes.TipSetKey) (*api.MarketDeal, error) {
 	panic("implement me")
 }
@@ -938,22 +1242,6 @@ func (f *FullNodeMock) PaychAllocateLane(ctx context.Context, ch address.Address
 }
 
 func (f *FullNodeMock) PaychNewPayment(ctx context.Context, from, to address.Address, vouchers []api.VoucherSpec) (*api.PaymentInfo, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherCheckValid(ctx context.Context, a address.Address, voucher *paych.SignedVoucher) error {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherCheckSpendable(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bytes2 []byte) (bool, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherAdd(ctx context.Context, a address.Address, voucher *paych.SignedVoucher, bytes []byte, bigInt filTypes.BigInt) (filTypes.BigInt, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) PaychVoucherList(ctx context.Context, a address.Address) ([]*paych.SignedVoucher, error) {
 	panic("implement me")
 }
 

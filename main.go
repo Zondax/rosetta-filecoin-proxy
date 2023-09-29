@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"net/http"
 	"os"
 	"os/signal"
@@ -60,32 +61,33 @@ func newBlockchainRouter(
 	network *types.NetworkIdentifier,
 	asserter *rosettaAsserter.Asserter,
 	api api.FullNode,
+	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin,
 ) http.Handler {
-	accountAPIService := srv.NewAccountAPIService(network, &api)
+	accountAPIService := srv.NewAccountAPIService(network, &api, rosettaLib)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
 	)
 
-	networkAPIService := srv.NewNetworkAPIService(network, &api)
+	networkAPIService := srv.NewNetworkAPIService(network, &api, srv.GetSupportedOpList())
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
 	)
 
-	blockAPIService := srv.NewBlockAPIService(network, &api)
+	blockAPIService := srv.NewBlockAPIService(network, &api, rosettaLib)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,
 	)
 
-	mempoolAPIService := srv.NewMemPoolAPIService(network, &api)
+	mempoolAPIService := srv.NewMemPoolAPIService(network, &api, rosettaLib)
 	mempoolAPIController := server.NewMempoolAPIController(
 		mempoolAPIService,
 		asserter,
 	)
 
-	constructionAPIService := srv.NewConstructionAPIService(network, &api)
+	constructionAPIService := srv.NewConstructionAPIService(network, &api, rosettaLib)
 	constructionAPIController := server.NewConstructionAPIController(
 		constructionAPIService,
 		asserter,
@@ -116,7 +118,10 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 		srv.Logger.Fatal(err)
 	}
 
-	router := newBlockchainRouter(network, asserter, api)
+	// Create instance of RosettaFilecoinLib for current network
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(api)
+
+	router := newBlockchainRouter(network, asserter, api, r)
 	loggedRouter := server.LoggerMiddleware(router)
 	corsRouter := server.CorsMiddleware(loggedRouter)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
@@ -148,12 +153,19 @@ func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, 
 		return nil, nil, err
 	}
 
+	networkName, err := lotusAPI.StateNetworkName(context.Background())
+	if err != nil {
+		srv.Logger.Warn("Could not get Lotus network name!")
+	}
+
+	srv.NetworkName = string(networkName)
+
 	version, err := lotusAPI.Version(context.Background())
 	if err != nil {
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	srv.Logger.Info("Connected to Lotus version: ", version.String())
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s ", version.String(), srv.NetworkName)
 
 	c, _ := semver.NewConstraint(">= 1.5")
 

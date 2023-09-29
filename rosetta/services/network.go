@@ -11,16 +11,18 @@ import (
 
 // NetworkAPIService implements the server.NetworkAPIServicer interface.
 type NetworkAPIService struct {
-	response *types.NetworkStatusResponse
-	network  *types.NetworkIdentifier
-	node     api.FullNode
+	response     *types.NetworkStatusResponse
+	network      *types.NetworkIdentifier
+	node         api.FullNode
+	supportedOps []string
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
-func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.NetworkAPIServicer {
+func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode, supportedOps []string) server.NetworkAPIServicer {
 	return &NetworkAPIService{
-		network: network,
-		node:    *node,
+		network:      network,
+		node:         *node,
+		supportedOps: supportedOps,
 	}
 }
 
@@ -176,7 +178,7 @@ func (s *NetworkAPIService) NetworkOptions(
 					Successful: false,
 				},
 			},
-			OperationTypes: GetSupportedOpList(),
+			OperationTypes: s.supportedOps,
 			Errors:         ErrorList,
 		},
 	}, nil

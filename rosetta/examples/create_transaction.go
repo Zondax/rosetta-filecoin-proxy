@@ -67,7 +67,7 @@ func main() {
 		panic("Panicking")
 	}
 
-	r := &rosettaFilecoinLib.RosettaConstructionFilecoin{false}
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
 
 	gasLimit, err := strconv.ParseInt(respMetadata.Metadata[services.GasLimitKey].(string), 10, 64)
 	if err != nil {

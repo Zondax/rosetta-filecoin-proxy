@@ -5,15 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
-	"github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
-	initActor "github.com/filecoin-project/specs-actors/v7/actors/builtin/init"
+	initActor "github.com/filecoin-project/specs-actors/v8/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
@@ -27,15 +27,17 @@ const BlockCIDsKey = "blockCIDs"
 
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode) server.BlockAPIServicer {
+func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
-		network: network,
-		node:    *api,
+		network:    network,
+		node:       *api,
+		rosettaLib: r,
 	}
 }
 
@@ -137,7 +139,7 @@ func (s *BlockAPIService) Block(
 		if err != nil {
 			return nil, err
 		}
-		transactions = buildTransactions(states)
+		transactions = s.buildTransactions(states)
 	}
 
 	// Add block metadata
@@ -182,7 +184,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
+func (s *BlockAPIService) buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
 
 	var transactions []*types.Transaction
@@ -196,7 +198,7 @@ func buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
 		var operations []*types.Operation
 
 		// Analyze full trace recursively
-		processTrace(&trace.ExecutionTrace, &operations)
+		s.processTrace(&trace.ExecutionTrace, &operations)
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
@@ -231,109 +233,119 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 	return states, nil
 }
 
-func processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
 
 	if trace.Msg == nil {
 		return
 	}
 
-	baseMethod, err := GetMethodName(trace.Msg)
+	baseMethod, err := GetMethodName(trace.Msg, s.rosettaLib)
 	if err != nil {
 		Logger.Error("could not get method name. Error:", err.Message, err.Details)
-		baseMethod = unknownStr
+		baseMethod = "unknown"
 	}
 
-	if IsOpSupported(baseMethod) {
-		fromPk, err1 := GetActorPubKey(trace.Msg.From)
-		toPk, err2 := GetActorPubKey(trace.Msg.To)
-		if err1 != nil || err2 != nil {
-			Logger.Error("could not retrieve one or both pubkeys for addresses:",
-				trace.Msg.From.String(), trace.Msg.To.String())
-			return
+	opStatus := OperationStatusFailed
+	if trace.MsgRct.ExitCode.IsSuccess() {
+		opStatus = OperationStatusOk
+	}
+
+	fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
+	toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
+	if err1 != nil || err2 != nil {
+		Logger.Error("could not retrieve one or both pubkeys for addresses:",
+			trace.Msg.From.String(), trace.Msg.To.String())
+		return
+	}
+
+	switch baseMethod {
+	case "Send", "AddBalance":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 		}
-
-		opStatus := OperationStatusFailed
-		if trace.MsgRct.ExitCode.IsSuccess() {
-			opStatus = OperationStatusOk
+	case "InvokeContract", "InvokeContractDelegate":
+		{
+			methodName := "EVM_CALL"
+			*operations = appendOp(*operations, methodName, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, methodName, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 		}
+	case "Exec":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 
-		switch baseMethod {
-		case "Send", "AddBalance":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-			}
-		case "Exec":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-
-				// Check if this Exec op created and funded a msig account
-				params, err := parseExecParams(trace.Msg, trace.MsgRct)
-				if err == nil {
-					var paramsMap map[string]string
-					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-						if fundedAddress, ok := paramsMap["IDAddress"]; ok {
-							fromPk = toPk        // init actor
-							toPk = fundedAddress // new msig address
-							*operations = appendOp(*operations, "Send", fromPk,
-								trace.Msg.Value.Neg().String(), opStatus, false)
-							*operations = appendOp(*operations, "Send", toPk,
-								trace.Msg.Value.String(), opStatus, true)
-						}
-					} else {
-						Logger.Error("Could not parse message params for", baseMethod)
+			// Check if this Exec op created and funded a msig account
+			params, err := s.parseExecParams(trace.Msg, trace.MsgRct)
+			if err == nil {
+				var paramsMap map[string]string
+				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+					if fundedAddress, ok := paramsMap["IDAddress"]; ok {
+						fromPk = toPk        // init actor
+						toPk = fundedAddress // new msig address
+						*operations = appendOp(*operations, "Send", fromPk,
+							trace.Msg.Value.Neg().String(), opStatus, false)
+						*operations = appendOp(*operations, "Send", toPk,
+							trace.Msg.Value.String(), opStatus, true)
 					}
+				} else {
+					Logger.Error("Could not parse message params for", baseMethod)
 				}
 			}
-		case "Propose":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					"0", opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					"0", opStatus, true)
-			}
-		case "SwapSigner":
-			{
-				params, err := parseMsigParams(trace.Msg)
-				if err == nil {
-					var paramsMap map[string]string
-					if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
-						fromPk = paramsMap["From"]
-						toPk = paramsMap["To"]
-						*operations = appendOp(*operations, baseMethod, fromPk,
-							"0", opStatus, false)
-						*operations = appendOp(*operations, baseMethod, toPk,
-							"0", opStatus, true)
-					} else {
-						Logger.Error("Could not parse message params for", baseMethod)
-					}
+		}
+	case "Propose", "Approve", "Cancel":
+		{
+			*operations = appendOp(*operations, baseMethod, fromPk,
+				"0", opStatus, false)
+			*operations = appendOp(*operations, baseMethod, toPk,
+				"0", opStatus, true)
+		}
+	case "SwapSigner":
+		{
+			params, err := s.parseMsigParams(trace.Msg)
+			if err == nil {
+				var paramsMap map[string]string
+				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
+					fromPk = paramsMap["From"]
+					toPk = paramsMap["To"]
+					*operations = appendOp(*operations, baseMethod, fromPk,
+						"0", opStatus, false)
+					*operations = appendOp(*operations, baseMethod, toPk,
+						"0", opStatus, true)
+				} else {
+					Logger.Error("Could not parse message params for", baseMethod)
 				}
 			}
-		case "AwardBlockReward", "ApplyRewards", "OnDeferredCronEvent",
-			"PreCommitSector", "ProveCommitSector", "SubmitWindowedPoSt", "RepayDebt":
-			{
-				*operations = appendOp(*operations, baseMethod, fromPk,
-					trace.Msg.Value.Neg().String(), opStatus, false)
-				*operations = appendOp(*operations, baseMethod, toPk,
-					trace.Msg.Value.String(), opStatus, true)
-			}
+		}
+	default:
+		// We parse here any other transaction type only if Msg.Value != 0
+		if !trace.Msg.Value.NilOrZero() {
+			methodName := "unknown"
+			*operations = appendOp(*operations, methodName, fromPk,
+				trace.Msg.Value.Neg().String(), opStatus, false)
+			*operations = appendOp(*operations, methodName, toPk,
+				trace.Msg.Value.String(), opStatus, true)
 		}
 	}
 
-	for i := range trace.Subcalls {
-		subTrace := trace.Subcalls[i]
-		processTrace(&subTrace, operations)
+	// Only process sub-calls if the parent call was successfully executed
+	if opStatus == OperationStatusOk {
+		for i := range trace.Subcalls {
+			subTrace := trace.Subcalls[i]
+			s.processTrace(&subTrace, operations)
+		}
 	}
 }
 
-func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
+func (s *BlockAPIService) parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
 
-	actorName := GetActorNameFromAddress(msg.To)
+	actorName := GetActorNameFromAddress(msg.To, s.rosettaLib)
 
 	switch actorName {
 	case "init":
@@ -344,7 +356,7 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 			if err != nil {
 				return "", err
 			}
-			execActorName := GetActorNameFromCid(params.CodeCID)
+			execActorName, _ := s.rosettaLib.BuiltinActors.GetActorNameFromCid(params.CodeCID)
 			switch execActorName {
 			case "multisig":
 				{
@@ -370,8 +382,7 @@ func parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (s
 	}
 }
 
-func parseMsigParams(msg *filTypes.Message) (string, error) {
-	r := &filLib.RosettaConstructionFilecoin{}
+func (s *BlockAPIService) parseMsigParams(msg *filTypes.Message) (string, error) {
 	msgSerial, err := msg.MarshalJSON()
 	if err != nil {
 		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
@@ -383,11 +394,11 @@ func parseMsigParams(msg *filTypes.Message) (string, error) {
 		return "", err
 	}
 
-	if !builtin.IsMultisigActor(actorCode) {
+	if !s.rosettaLib.BuiltinActors.IsActor(actorCode, actors.ActorMultisigName) {
 		return "", fmt.Errorf("this id doesn't correspond to a multisig actor")
 	}
 
-	parsedParams, err := r.ParseParamsMultisigTx(string(msgSerial), actorCode)
+	parsedParams, err := s.rosettaLib.ParseParamsMultisigTx(string(msgSerial), actorCode)
 	if err != nil {
 		Logger.Error("Could not parse params. ParseParamsMultisigTx returned with error:", err.Error())
 		return "", err

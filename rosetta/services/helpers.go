@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/filecoin-project/go-address"
-	builtin2 "github.com/filecoin-project/lotus/chain/actors/builtin"
-	methods "github.com/filecoin-project/specs-actors/v7/actors/builtin"
+	"github.com/filecoin-project/go-state-types/builtin"
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -17,8 +17,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
 )
-
-const unknownStr = "Unknown"
 
 func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
@@ -65,25 +63,24 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
-func GetActorNameFromCid(actorCode cid.Cid) string {
-	actorNameArr := strings.Split(builtin2.ActorNameByCode(actorCode), "/")
-	actorName := actorNameArr[len(actorNameArr)-1]
-	return actorName
-}
-
-func GetActorNameFromAddress(address address.Address) string {
+func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) string {
 	var actorCode cid.Cid
 	// Search for actor in cache
 	var err error
 	actorCode, err = tools.ActorsDB.GetActorCode(address)
 	if err != nil {
-		return unknownStr
+		return actors.UnknownStr
 	}
-	return GetActorNameFromCid(actorCode)
+
+	actorName, err := lib.BuiltinActors.GetActorNameFromCid(actorCode)
+	if err != nil {
+		return actors.UnknownStr
+	}
+
+	return actorName
 }
 
-func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
-
+func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
 	}
@@ -98,49 +95,59 @@ func GetMethodName(msg *filTypes.Message) (string, *types.Error) {
 		return "Constructor", nil
 	}
 
-	actorName := GetActorNameFromAddress(msg.To)
+	actorName := GetActorNameFromAddress(msg.To, lib)
 
 	var method interface{}
 	switch actorName {
 	case "init":
-		method = methods.MethodsInit
+		method = builtin.MethodsInit
 	case "cron":
-		method = methods.MethodsCron
+		method = builtin.MethodsCron
 	case "account":
-		method = methods.MethodsAccount
+		method = builtin.MethodsAccount
 	case "storagepower":
-		method = methods.MethodsPower
+		method = builtin.MethodsPower
 	case "storageminer":
-		method = methods.MethodsMiner
+		method = builtin.MethodsMiner
 	case "storagemarket":
-		method = methods.MethodsMarket
+		method = builtin.MethodsMarket
 	case "paymentchannel":
-		method = methods.MethodsPaych
+		method = builtin.MethodsPaych
 	case "multisig":
-		method = methods.MethodsMultisig
+		method = builtin.MethodsMultisig
 	case "reward":
-		method = methods.MethodsReward
+		method = builtin.MethodsReward
 	case "verifiedregistry":
-		method = methods.MethodsVerifiedRegistry
+		method = builtin.MethodsVerifiedRegistry
+	case "evm":
+		method = builtin.MethodsEVM
+	case "eam":
+		method = builtin.MethodsEAM
+	case "datacap":
+		method = builtin.MethodsDatacap
+	case "placeholder":
+		method = builtin.MethodsPlaceholder
+	case "ethaccount":
+		method = builtin.MethodsEthAccount
 	default:
-		return unknownStr, nil
+		return actors.UnknownStr, nil
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
-	idx := int(msg.Method)
-	if idx > 0 {
-		idx--
+
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		methodNum := field.Uint()
+		if methodNum == uint64(msg.Method) {
+			methodName := val.Type().Field(i).Name
+			return methodName, nil
+		}
 	}
 
-	if val.Type().NumField() <= idx {
-		return unknownStr, nil
-	}
-
-	methodName := val.Type().Field(idx).Name
-	return methodName, nil
+	return actors.UnknownStr, nil
 }
 
-func GetActorPubKey(add address.Address) (string, *types.Error) {
+func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 
 	actorCode, err := tools.ActorsDB.GetActorCode(add)
 	if err != nil {
@@ -152,12 +159,12 @@ func GetActorPubKey(add address.Address) (string, *types.Error) {
 	// If cannot get actor's pubkey, GetActorPubKey will return the same address
 
 	// Handler for msig
-	if builtin2.IsMultisigActor(actorCode) {
+	if lib.BuiltinActors.IsActor(actorCode, actors.ActorMultisigName) {
 		return getPubKeyForMsig(add)
 	}
 
 	// Handler for storage miner
-	if builtin2.IsStorageMinerActor(actorCode) {
+	if lib.BuiltinActors.IsActor(actorCode, actors.ActorStorageMinerName) {
 		return getPubKeyForStorageMiner(add)
 	}
 

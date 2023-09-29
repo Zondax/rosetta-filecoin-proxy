@@ -12,7 +12,7 @@ export LIBRARY_PATH=$(shell brew --prefix hwloc)/lib
 export LDFLAGS="-L$(LIBRARY_PATH)"
 export LD_LIBRARY_PATH=$(LIBRARY_PATH)
 export RUSTFLAGS="-C target-cpu=native -g"
-export FFI_BUILD_FROM_SOURCE=1
+export FFI_BUILD_FROM_SOURCE=0
 endif
 
 .PHONY: build
@@ -32,7 +32,7 @@ build_ffi:
 	make -C extern/filecoin-ffi
 
 install_lint:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.45.2
 
 check-modtidy:
 	go mod tidy
@@ -52,3 +52,8 @@ test_integration: build
 gitclean:
 	git clean -xfd
 	git submodule foreach --recursive git clean -xfd
+
+test_calibration_macos: build
+	LOTUS_RPC_URL=https://node-fil-calibration-light.zondax.dev/rpc/v1  ./rosetta-filecoin-proxy &
+
+

@@ -3,14 +3,18 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/build"
-	builtin "github.com/filecoin-project/lotus/chain/actors/builtin"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/chain/types/ethtypes"
+	filLib "github.com/zondax/rosetta-filecoin-lib"
+	"github.com/zondax/rosetta-filecoin-lib/actors"
+	"regexp"
 )
 
 // ChainIDKey is the name of the key in the Options map inside a
@@ -56,15 +60,17 @@ const OptionsValueKey = "value"
 
 // ConstructionAPIService implements the server.ConstructionAPIServicer interface.
 type ConstructionAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewConstructionAPIService creates a new instance of an ConstructionAPIService.
-func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode) server.ConstructionAPIServicer {
+func NewConstructionAPIService(network *types.NetworkIdentifier, node *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.ConstructionAPIServicer {
 	return &ConstructionAPIService{
-		network: network,
-		node:    *node,
+		network:    network,
+		node:       *node,
+		rosettaLib: r,
 	}
 }
 
@@ -104,7 +110,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		// Parse sender address - this field is optional
 		addressSenderRaw, okSender := request.Options[OptionsSenderIDKey]
 		if okSender {
-			addressSenderParsed, err = address.NewFromString(addressSenderRaw.(string))
+			addressSenderParsed, err = c.parseAddress(addressSenderRaw.(string))
 			if err != nil {
 				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
@@ -114,10 +120,11 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 		// Parse receiver address - this field is optional
 		addressReceiverRaw, okReceiver := request.Options[OptionsReceiverIDKey]
 		if okReceiver {
-			addressReceiverParsed, err = address.NewFromString(addressReceiverRaw.(string))
+			addressReceiverParsed, err = c.parseAddress(addressReceiverRaw.(string))
 			if err != nil {
 				return nil, BuildError(ErrInvalidAccountAddress, err, true)
 			}
+
 			message.To = addressReceiverParsed
 
 			// Get receiver's actor code
@@ -153,7 +160,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
 
-			if builtin.IsMultisigActor(actor.Code) {
+			if c.rosettaLib.BuiltinActors.IsActor(actor.Code, actors.ActorMultisigName) {
 				// Get the unlocked funds of the multisig account
 				availableFunds, err = c.node.MsigGetAvailableBalance(ctx, addressSenderParsed, filTypes.EmptyTSK)
 				if err != nil {
@@ -165,7 +172,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 
 			// GasEstimateMessageGas to get a safely overestimated value for gas limit
 			message, err = c.node.GasEstimateMessageGas(ctx, message,
-				&api.MessageSendSpec{MaxFee: filTypes.NewInt(build.BlockGasLimit)}, filTypes.TipSetKey{})
+				&api.MessageSendSpec{MaxFee: filTypes.NewInt(uint64(build.BlockGasLimit))}, filTypes.TipSetKey{})
 			if err != nil {
 				return nil, BuildError(ErrUnableToEstimateGasLimit, err, true)
 			}
@@ -254,6 +261,55 @@ func (c *ConstructionAPIService) ConstructionSubmit(
 	}
 
 	return resp, nil
+}
+
+func (c *ConstructionAPIService) parseAddress(add string) (address.Address, error) {
+	if ok := IsEthereumAddress(add); ok {
+		filCid, err := EthereumAddressToFilecoin(add)
+		if err != nil {
+			return address.Undef, err
+		}
+		return filCid, nil
+	}
+
+	if ok, filAddress := IsFilecoinAddress(add); ok {
+		return filAddress, nil
+	}
+
+	return address.Undef, fmt.Errorf("address '%s' doesn't correspond to a valid Filecoin nor Ethereum format", add)
+}
+
+func IsFilecoinAddress(add string) (bool, address.Address) {
+	filAdd, err := address.NewFromString(add)
+	return err == nil, filAdd
+}
+
+func IsEthereumAddress(address string) bool {
+	exp := regexp.MustCompile("0x[a-fA-F0-9]{40}")
+	return exp.MatchString(address)
+}
+
+func EthereumAddressToFilecoin(add string) (address.Address, error) {
+	ethAdd, err := EthereumAddressFromHex(add)
+	if err != nil {
+		return address.Undef, err
+	}
+
+	filAdd, err := ethAdd.ToFilecoinAddress()
+	if err != nil {
+		return address.Undef, err
+	}
+
+	return filAdd, nil
+}
+
+func EthereumAddressFromHex(add string) (ethtypes.EthAddress, error) {
+	ethAdd, err := ethtypes.ParseEthAddress(add)
+	if err != nil {
+		return ethtypes.EthAddress{}, err
+	}
+
+	return ethAdd, nil
 }
 
 func (c *ConstructionAPIService) ConstructionCombine(ctx context.Context, request *types.ConstructionCombineRequest) (*types.ConstructionCombineResponse, *types.Error) {

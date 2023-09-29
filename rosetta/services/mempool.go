@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"github.com/ipfs/go-cid"
+	filLib "github.com/zondax/rosetta-filecoin-lib"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -11,15 +12,17 @@ import (
 
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type MemPoolAPIService struct {
-	network *types.NetworkIdentifier
-	node    api.FullNode
+	network    *types.NetworkIdentifier
+	node       api.FullNode
+	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode) server.MempoolAPIServicer {
+func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.MempoolAPIServicer {
 	return &MemPoolAPIService{
-		network: network,
-		node:    *api,
+		network:    network,
+		node:       *api,
+		rosettaLib: r,
 	}
 }
 
@@ -124,7 +127,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 			Operations: []*types.Operation{},
 		}
 
-		opType, err := GetMethodName(&msg.Message)
+		opType, err := GetMethodName(&msg.Message, m.rosettaLib)
 		if err != nil {
 			return nil, err
 		}
