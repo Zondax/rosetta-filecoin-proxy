@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-bitfield"
-	datatransfer "github.com/filecoin-project/go-data-transfer"
+	datatransfer "github.com/filecoin-project/go-data-transfer/v2"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -30,9 +30,9 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/metrics"
-	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
+	"github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/mock"
 	"time"
 )
@@ -44,6 +44,91 @@ type FullNodeMock struct {
 }
 
 func (f *FullNodeMock) FilecoinAddressToEthAddress(ctx context.Context, filecoinAddress address.Address) (ethtypes.EthAddress, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) NetConnectedness(ctx context.Context, id peer.ID) (network.Connectedness, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientRestartDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ClientCancelDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainExportRangeInternal(ctx context.Context, head, tail filTypes.TipSetKey, cfg api.ChainExportConfig) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) ChainHotGC(ctx context.Context, opts api.HotGCOpts) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetRandomnessDigestFromTickets(ctx context.Context, randEpoch abi.ChainEpoch, tsk filTypes.TipSetKey) (abi.Randomness, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetRandomnessDigestFromBeacon(ctx context.Context, randEpoch abi.ChainEpoch, tsk filTypes.TipSetKey) (abi.Randomness, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionByHashLimited(ctx context.Context, txHash *ethtypes.EthHash, limit abi.ChainEpoch) (*ethtypes.EthTx, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionCount(ctx context.Context, sender ethtypes.EthAddress, blkParam ethtypes.EthBlockNumberOrHash) (ethtypes.EthUint64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetTransactionReceiptLimited(ctx context.Context, txHash ethtypes.EthHash, limit abi.ChainEpoch) (*api.EthTxReceipt, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetCode(ctx context.Context, address ethtypes.EthAddress, blkParam ethtypes.EthBlockNumberOrHash) (ethtypes.EthBytes, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetStorageAt(ctx context.Context, address ethtypes.EthAddress, position ethtypes.EthBytes, blkParam ethtypes.EthBlockNumberOrHash) (ethtypes.EthBytes, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthGetBalance(ctx context.Context, address ethtypes.EthAddress, blkParam ethtypes.EthBlockNumberOrHash) (ethtypes.EthBigInt, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthSyncing(ctx context.Context) (ethtypes.EthSyncingResult, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthCall(ctx context.Context, tx ethtypes.EthCall, blkParam ethtypes.EthBlockNumberOrHash) (ethtypes.EthBytes, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtypes.EthTraceBlock, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthTraceReplayBlockTransactions(ctx context.Context, blkNum string, traceTypes []string) ([]*ethtypes.EthTraceReplayBlockTransaction, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -108,11 +193,6 @@ func (f *FullNodeMock) EthGetMessageCidByTransactionHash(ctx context.Context, tx
 	panic("implement me")
 }
 
-func (f *FullNodeMock) EthGetTransactionCount(ctx context.Context, sender ethtypes.EthAddress, blkOpt string) (ethtypes.EthUint64, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
 func (f *FullNodeMock) EthGetTransactionReceipt(ctx context.Context, txHash ethtypes.EthHash) (*api.EthTxReceipt, error) {
 	// TODO implement me
 	panic("implement me")
@@ -124,21 +204,6 @@ func (f *FullNodeMock) EthGetTransactionByBlockHashAndIndex(ctx context.Context,
 }
 
 func (f *FullNodeMock) EthGetTransactionByBlockNumberAndIndex(ctx context.Context, blkNum ethtypes.EthUint64, txIndex ethtypes.EthUint64) (ethtypes.EthTx, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthGetCode(ctx context.Context, address ethtypes.EthAddress, blkOpt string) (ethtypes.EthBytes, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthGetStorageAt(ctx context.Context, address ethtypes.EthAddress, position ethtypes.EthBytes, blkParam string) (ethtypes.EthBytes, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthGetBalance(ctx context.Context, address ethtypes.EthAddress, blkParam string) (ethtypes.EthBigInt, error) {
 	// TODO implement me
 	panic("implement me")
 }
@@ -179,11 +244,6 @@ func (f *FullNodeMock) EthMaxPriorityFeePerGas(ctx context.Context) (ethtypes.Et
 }
 
 func (f *FullNodeMock) EthEstimateGas(ctx context.Context, tx ethtypes.EthCall) (ethtypes.EthUint64, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthCall(ctx context.Context, tx ethtypes.EthCall, blkParam string) (ethtypes.EthBytes, error) {
 	// TODO implement me
 	panic("implement me")
 }
@@ -569,10 +629,6 @@ func (f *FullNodeMock) ClientDealPieceCID(ctx context.Context, root cid.Cid) (ap
 	panic("implement me")
 }
 
-func (f *FullNodeMock) ClientCancelDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
-	panic("implement me")
-}
-
 func (f *FullNodeMock) StateDecodeParams(ctx context.Context, toAddr address.Address, method abi.MethodNum, params []byte, tsk filTypes.TipSetKey) (interface{}, error) {
 	panic("implement me")
 }
@@ -610,10 +666,6 @@ func (f *FullNodeMock) StateListMessages(ctx context.Context, match *api.Message
 }
 
 func (f *FullNodeMock) WalletNew(ctx context.Context, keyType filTypes.KeyType) (address.Address, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) ClientRestartDataTransfer(ctx context.Context, transferID datatransfer.TransferID, otherPeer peer.ID, isInitiator bool) error {
 	panic("implement me")
 }
 
@@ -885,10 +937,6 @@ func (f *FullNodeMock) AuthVerify(ctx context.Context, token string) ([]auth.Per
 }
 
 func (f *FullNodeMock) AuthNew(ctx context.Context, perms []auth.Permission) ([]byte, error) {
-	panic("implement me")
-}
-
-func (f *FullNodeMock) NetConnectedness(ctx context.Context, id peer.ID) (network.Connectedness, error) {
 	panic("implement me")
 }
 
