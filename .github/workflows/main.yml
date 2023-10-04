@@ -48,6 +48,6 @@ jobs:
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
-          LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
+          LOTUS_RPC_URL: ${{ secrets.LOTUS_RPC_URL }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
