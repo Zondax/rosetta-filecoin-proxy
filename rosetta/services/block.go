@@ -235,11 +235,11 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 
 func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
 
-	if trace.Msg == nil {
+	if trace == nil {
 		return
 	}
 
-	baseMethod, err := GetMethodName(trace.Msg, s.rosettaLib)
+	baseMethod, err := GetMethodName(&trace.Msg, s.rosettaLib)
 	if err != nil {
 		Logger.Error("could not get method name. Error:", err.Message, err.Details)
 		baseMethod = "unknown"
@@ -282,7 +282,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 				trace.Msg.Value.String(), opStatus, true)
 
 			// Check if this Exec op created and funded a msig account
-			params, err := s.parseExecParams(trace.Msg, trace.MsgRct)
+			params, err := s.parseExecParams(&trace.Msg, &trace.MsgRct)
 			if err == nil {
 				var paramsMap map[string]string
 				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -308,7 +308,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		}
 	case "SwapSigner":
 		{
-			params, err := s.parseMsigParams(trace.Msg)
+			params, err := s.parseMsigParams(&trace.Msg)
 			if err == nil {
 				var paramsMap map[string]string
 				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -343,7 +343,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 	}
 }
 
-func (s *BlockAPIService) parseExecParams(msg *filTypes.Message, receipt *filTypes.MessageReceipt) (string, error) {
+func (s *BlockAPIService) parseExecParams(msg *filTypes.MessageTrace, receipt *filTypes.ReturnTrace) (string, error) {
 
 	actorName := GetActorNameFromAddress(msg.To, s.rosettaLib)
 
@@ -382,8 +382,8 @@ func (s *BlockAPIService) parseExecParams(msg *filTypes.Message, receipt *filTyp
 	}
 }
 
-func (s *BlockAPIService) parseMsigParams(msg *filTypes.Message) (string, error) {
-	msgSerial, err := msg.MarshalJSON()
+func (s *BlockAPIService) parseMsigParams(msg *filTypes.MessageTrace) (string, error) {
+	msgSerial, err := json.Marshal(msg)
 	if err != nil {
 		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
 		return "", err

@@ -80,7 +80,7 @@ func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.Ro
 	return actorName
 }
 
-func GetMethodName(msg *filTypes.Message, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
+func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
 	}
