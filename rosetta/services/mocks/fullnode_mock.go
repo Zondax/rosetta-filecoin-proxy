@@ -123,16 +123,6 @@ func (f *FullNodeMock) EthCall(ctx context.Context, tx ethtypes.EthCall, blkPara
 	panic("implement me")
 }
 
-func (f *FullNodeMock) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtypes.EthTraceBlock, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthTraceReplayBlockTransactions(ctx context.Context, blkNum string, traceTypes []string) ([]*ethtypes.EthTraceReplayBlockTransaction, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (f *FullNodeMock) EthAddressToFilecoinAddress(ctx context.Context, ethAddress ethtypes.EthAddress) (address.Address, error) {
 	//TODO implement me
 	panic("implement me")
