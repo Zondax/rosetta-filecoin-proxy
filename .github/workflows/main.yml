@@ -32,10 +32,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #          - network: mainnet
-          #            url: LOTUS_MAINNET_RPC_URL
-          #          - network: devnet
-          #            url: LOTUS_DEVNET_RPC_URL
+#          - network: mainnet
+#            url: LOTUS_MAINNET_RPC_URL
+#          - network: devnet
+#            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
             url: ${{ secrets.LOTUS_URL_CALIBNET }}
     timeout-minutes: 120
