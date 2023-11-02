@@ -37,7 +37,7 @@ jobs:
 #          - network: devnet
 #            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
-            url: LOTUS_URL_CALIBNET
+            url: LOTUS_CALIBRATION_RPC_URL
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v3
