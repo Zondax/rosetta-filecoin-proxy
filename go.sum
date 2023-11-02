@@ -234,8 +234,8 @@ github.com/filecoin-project/go-statestore v0.2.0 h1:cRRO0aPLrxKQCZ2UOQbzFGn4WDNd
 github.com/filecoin-project/go-statestore v0.2.0/go.mod h1:8sjBYbS35HwPzct7iT4lIXjLlYyPor80aU7t7a/Kspo=
 github.com/filecoin-project/kubo-api-client v0.0.1 h1:IR1b+sm+VYxSRvbgECVv9SbhIgygcXcSoN1Q7xsHDXg=
 github.com/filecoin-project/kubo-api-client v0.0.1/go.mod h1:c36PPMIVOkKfHDwDG5U05gUlPRY9wNuh/BePwo0e+6Y=
-github.com/filecoin-project/lotus v1.24.0-rc2 h1:hhaWKecBuOUs0LoT4OuHG2s5HJuWicvfu2Tjc8DSDfg=
-github.com/filecoin-project/lotus v1.24.0-rc2/go.mod h1:hKVsRPYzHjx8+8/hD+Yc3lRmLa6gTqGHLqJR8c9NEhg=
+github.com/filecoin-project/lotus v1.24.0-rc4 h1:gU9m/+nr1jbewAqG6yWXxOBxzpcD3Grej32r+BCJH7I=
+github.com/filecoin-project/lotus v1.24.0-rc4/go.mod h1:hKVsRPYzHjx8+8/hD+Yc3lRmLa6gTqGHLqJR8c9NEhg=
 github.com/filecoin-project/specs-actors v0.9.13/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
 github.com/filecoin-project/specs-actors v0.9.15-0.20220514164640-94e0d5e123bd/go.mod h1:pjGEe3QlWtK20ju/aFRsiArbMX6Cn8rqEhhsiCM9xYE=
 github.com/filecoin-project/specs-actors v0.9.15 h1:3VpKP5/KaDUHQKAMOg4s35g/syDaEBueKLws0vbsjMc=
@@ -1004,8 +1004,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-github.com/zondax/rosetta-filecoin-lib v1.2400.0-rc2 h1:psgiLhk0co7rfhEE3LKJq/2XIFcAW8hjmKRI0s7tw2A=
-github.com/zondax/rosetta-filecoin-lib v1.2400.0-rc2/go.mod h1:w3DjpRYhaMgAif627s/kulF12HC2XuLGXuZICna1Joo=
+github.com/zondax/rosetta-filecoin-lib v1.2400.0-rc4 h1:6JrxcsXuVOklkRlR1YpCkeNzZe2E7wW5xqS/+8IhNZ8=
+github.com/zondax/rosetta-filecoin-lib v1.2400.0-rc4/go.mod h1:Ed9A8CelGW83tb9+es2nY5rKT0Cc81w7dmUr2XYvtSI=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
