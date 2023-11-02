@@ -33,9 +33,11 @@ jobs:
       matrix:
         include:
 #          - network: mainnet
-#            url: LOTUS_URL_MAINNET
+#            url: LOTUS_MAINNET_RPC_URL
+#          - network: devnet
+#            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
-            url: LOTUS_URL_CALIBNET
+            url: LOTUS_CALIBRATION_RPC_URL
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v3
@@ -48,6 +50,6 @@ jobs:
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
-          LOTUS_RPC_URL: ${{ secrets.LOTUS_RPC_URL }}
+          LOTUS_RPC_URL: ${{ matrix.url }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
