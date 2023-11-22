@@ -14,7 +14,7 @@ require (
 	github.com/filecoin-project/specs-actors v0.9.15
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.3.0
-	github.com/ipfs/go-block-format v0.1.2
+	github.com/ipfs/go-block-format v0.2.0
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/libp2p/go-libp2p v0.30.0
