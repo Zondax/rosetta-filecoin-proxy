@@ -20,7 +20,7 @@ require (
 	github.com/libp2p/go-libp2p v0.30.0
 	github.com/libp2p/go-libp2p-core v0.20.1
 	github.com/multiformats/go-multihash v0.2.3
-	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
+	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.8.4
 	github.com/zondax/rosetta-filecoin-lib v1.2400.0
 	gotest.tools v2.2.0+incompatible
