@@ -61,7 +61,7 @@ jobs:
           git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
 
       - run: git submodule update --init --recursive
-      - run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
+      - run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools
       - run: make build_CI
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
