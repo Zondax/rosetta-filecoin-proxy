@@ -20,6 +20,12 @@ jobs:
         with:
           submodules: true
 
+      - name: Debugging - Print Working Directory
+        run: |
+          pwd
+          ls -la
+          git status
+
       - name: Configure Safe Directory
         run: |
           git config --local --add safe.directory $(pwd)
