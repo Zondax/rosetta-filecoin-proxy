@@ -48,7 +48,7 @@ jobs:
             url: LOTUS_CALIBRATION_RPC_URL
     timeout-minutes: 120
     steps:
-      - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools
+      - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools curl
       - uses: actions/checkout@v3
         with:
           submodules: true
