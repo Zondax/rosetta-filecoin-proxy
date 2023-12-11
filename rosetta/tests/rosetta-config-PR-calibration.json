@@ -29,9 +29,9 @@
       "balance_tracking_disabled": false,
       "coin_tracking_disabled": false,
       "status_port": 9090,
-      "start_index": 1164694,
+      "start_index": 1164696,
       "end_conditions": {
-        "index": 1165694
+        "index": 1165696
       }
     }
   }
