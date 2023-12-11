@@ -3,7 +3,7 @@
       "blockchain": "Filecoin",
       "network": "calibrationnet"
     },
-    "online_url": "http://localhost:8081",
+    "online_url": "http://[::1]:8081",
     "http_timeout": 120,
     "max_retries": 100000,
     "max_online_connections": 32,
