@@ -21,7 +21,9 @@ jobs:
           submodules: true
 
       - name: Configure Safe Directory
-        run: git config --local --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
+        run: |
+          git config --local --add safe.directory $(pwd)
+          git config --local --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
 
       - uses: actions/setup-go@v3
         with:
