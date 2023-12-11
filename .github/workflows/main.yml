@@ -67,7 +67,15 @@ jobs:
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
-      - name: Sleep for 2 seconds
-        run: sleep 2
+      - name: Sleep for 3 seconds
+        run: sleep 3
+
+##Debug
+      - name: Check open ports
+        run: netstat -tuln
+
+      - name: Show rosetta-filecoin-proxy logs
+        run: cat rosetta.log
+
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
