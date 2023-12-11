@@ -55,6 +55,11 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.21' # The Go version to download (if necessary) and use.
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Temporary Global Git Configuration
         run: |
           git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
