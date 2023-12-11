@@ -67,5 +67,7 @@ jobs:
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
+      - name: Sleep for 2 seconds
+        run: sleep 2
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
