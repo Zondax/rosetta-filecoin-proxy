@@ -24,9 +24,6 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
 
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.20'
       - name: Install dependencies
         run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
       - name: Test
