@@ -19,6 +19,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Configure Safe Directory
+        run: git config --local --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
+
       - uses: actions/setup-go@v3
         with:
           go-version: '1.20'
