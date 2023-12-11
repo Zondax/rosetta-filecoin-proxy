@@ -53,7 +53,7 @@ jobs:
         with:
           go-version: '1.21' # The Go version to download (if necessary) and use.
 
-      - run: apt update && apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools
+      - run: sudo apt update && apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools
       - name: Temporary Global Git Configuration
         run: |
           git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
