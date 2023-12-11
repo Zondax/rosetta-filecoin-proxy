@@ -74,8 +74,5 @@ jobs:
       - name: Check open ports
         run: netstat -tuln
 
-      - name: Show rosetta-filecoin-proxy logs
-        run: cat rosetta.log
-
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
