@@ -28,7 +28,7 @@ jobs:
         with:
           go-version: '1.20'
       - name: Install dependencies
-        run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools
+        run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
       - name: Test
         run: make test
 
@@ -48,7 +48,7 @@ jobs:
             url: LOTUS_CALIBRATION_RPC_URL
     timeout-minutes: 120
     steps:
-      - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev net-tools curl
+      - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -70,12 +70,5 @@ jobs:
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
-      - name: Sleep for 3 seconds
-        run: sleep 3
-
-##Debug
-      - name: Check open ports
-        run: netstat -tuln
-
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
