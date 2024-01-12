@@ -43,6 +43,16 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtypes.EthTraceBlock, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthTraceReplayBlockTransactions(ctx context.Context, blkNum string, traceTypes []string) ([]*ethtypes.EthTraceReplayBlockTransaction, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f *FullNodeMock) FilecoinAddressToEthAddress(ctx context.Context, filecoinAddress address.Address) (ethtypes.EthAddress, error) {
 	//TODO implement me
 	panic("implement me")
