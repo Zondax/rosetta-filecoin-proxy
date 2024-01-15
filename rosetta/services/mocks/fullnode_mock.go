@@ -43,6 +43,11 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) EthEstimateGas(ctx context.Context, p jsonrpc.RawParams) (ethtypes.EthUint64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f *FullNodeMock) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtypes.EthTraceBlock, error) {
 	//TODO implement me
 	panic("implement me")
@@ -239,11 +244,6 @@ func (f *FullNodeMock) EthFeeHistory(ctx context.Context, p jsonrpc.RawParams) (
 }
 
 func (f *FullNodeMock) EthMaxPriorityFeePerGas(ctx context.Context) (ethtypes.EthBigInt, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthEstimateGas(ctx context.Context, tx ethtypes.EthCall) (ethtypes.EthUint64, error) {
 	// TODO implement me
 	panic("implement me")
 }
