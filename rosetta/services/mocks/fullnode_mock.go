@@ -43,6 +43,46 @@ type FullNodeMock struct {
 	mock.Mock
 }
 
+func (f *FullNodeMock) StateGetAllocationIdForPendingDeal(ctx context.Context, dealId abi.DealID, tsk filTypes.TipSetKey) (verifreg2.AllocationId, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllAllocations(ctx context.Context, tsk filTypes.TipSetKey) (map[verifreg2.AllocationId]verifreg2.Allocation, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) StateGetAllClaims(ctx context.Context, tsk filTypes.TipSetKey) (map[verifreg2.ClaimId]verifreg2.Claim, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) GetActorEvents(ctx context.Context, filter *filTypes.ActorEventFilter) ([]*filTypes.ActorEvent, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) SubscribeActorEvents(ctx context.Context, filter *filTypes.ActorEventFilter) (<-chan *filTypes.ActorEvent, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthEstimateGas(ctx context.Context, p jsonrpc.RawParams) (ethtypes.EthUint64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtypes.EthTraceBlock, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FullNodeMock) EthTraceReplayBlockTransactions(ctx context.Context, blkNum string, traceTypes []string) ([]*ethtypes.EthTraceReplayBlockTransaction, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f *FullNodeMock) FilecoinAddressToEthAddress(ctx context.Context, filecoinAddress address.Address) (ethtypes.EthAddress, error) {
 	//TODO implement me
 	panic("implement me")
@@ -229,11 +269,6 @@ func (f *FullNodeMock) EthFeeHistory(ctx context.Context, p jsonrpc.RawParams) (
 }
 
 func (f *FullNodeMock) EthMaxPriorityFeePerGas(ctx context.Context) (ethtypes.EthBigInt, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (f *FullNodeMock) EthEstimateGas(ctx context.Context, tx ethtypes.EthCall) (ethtypes.EthUint64, error) {
 	// TODO implement me
 	panic("implement me")
 }
