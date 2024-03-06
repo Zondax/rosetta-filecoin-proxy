@@ -21,7 +21,7 @@ require (
 	github.com/libp2p/go-libp2p-core v0.20.1
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc1
 	gotest.tools v2.2.0+incompatible
 )
@@ -127,7 +127,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/urfave/cli/v2 v2.25.5 // indirect
