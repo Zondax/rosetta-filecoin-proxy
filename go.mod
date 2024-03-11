@@ -10,7 +10,7 @@ require (
 	github.com/filecoin-project/go-fil-markets v1.28.3
 	github.com/filecoin-project/go-jsonrpc v0.3.1
 	github.com/filecoin-project/go-state-types v0.13.0-rc.2
-	github.com/filecoin-project/lotus v1.26.0-rc1
+	github.com/filecoin-project/lotus v1.26.0-rc2
 	github.com/filecoin-project/specs-actors v0.9.15
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.3.0
@@ -21,8 +21,8 @@ require (
 	github.com/libp2p/go-libp2p-core v0.20.1
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/stretchr/testify v1.8.4
-	github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc1
+	github.com/stretchr/testify v1.9.0
+	github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc2
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -127,7 +127,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/urfave/cli/v2 v2.25.5 // indirect
@@ -142,7 +142,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/mod v0.12.0 // indirect
