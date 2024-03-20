@@ -230,6 +230,8 @@ github.com/filecoin-project/kubo-api-client v0.0.1 h1:IR1b+sm+VYxSRvbgECVv9SbhIg
 github.com/filecoin-project/kubo-api-client v0.0.1/go.mod h1:c36PPMIVOkKfHDwDG5U05gUlPRY9wNuh/BePwo0e+6Y=
 github.com/filecoin-project/lotus v1.26.0-rc2 h1:JPi1dofIGdN6s6kzdUSilhUCe5DIZd902TsUC7t0rog=
 github.com/filecoin-project/lotus v1.26.0-rc2/go.mod h1:6FC17T8tgqFKiTGXNAuy4HdsHcksuk0HyjWDF8my+aA=
+github.com/filecoin-project/lotus v1.26.0-rc3 h1:CynFw4VH6J2Vgpwp6/7o4kSlyQ8UQ4yAN2TCm8I6fp8=
+github.com/filecoin-project/lotus v1.26.0-rc3/go.mod h1:6FC17T8tgqFKiTGXNAuy4HdsHcksuk0HyjWDF8my+aA=
 github.com/filecoin-project/specs-actors v0.9.13/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
 github.com/filecoin-project/specs-actors v0.9.15-0.20220514164640-94e0d5e123bd/go.mod h1:pjGEe3QlWtK20ju/aFRsiArbMX6Cn8rqEhhsiCM9xYE=
 github.com/filecoin-project/specs-actors v0.9.15 h1:3VpKP5/KaDUHQKAMOg4s35g/syDaEBueKLws0vbsjMc=
@@ -980,6 +982,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc1 h1:7mo+HaCA0miwKUuqewdK+9kbbgF8wwFfsX7oAUg9tOk=
 github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc1/go.mod h1:Got5+dcW9v8giJdS6/xxz/mSvhfNzYXM259iEOCF+mg=
+github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc3 h1:4RBp8OeJZ5PhdAaqOJnKzq8VfGtw2yxkIKUkPxCrtH8=
+github.com/zondax/rosetta-filecoin-lib v1.2600.0-rc3/go.mod h1:tI2GSMxzEmYhYHxdySg8GwUEXSkq+IcqxU7u2BedXRA=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
