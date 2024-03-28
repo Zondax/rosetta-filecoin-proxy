@@ -244,8 +244,8 @@ github.com/filecoin-project/go-statestore v0.2.0 h1:cRRO0aPLrxKQCZ2UOQbzFGn4WDNd
 github.com/filecoin-project/go-statestore v0.2.0/go.mod h1:8sjBYbS35HwPzct7iT4lIXjLlYyPor80aU7t7a/Kspo=
 github.com/filecoin-project/kubo-api-client v0.27.0 h1:rQNbReJCCQ8L107VIQR0qjAlEqdDQRYOhDKYcKGcnPI=
 github.com/filecoin-project/kubo-api-client v0.27.0/go.mod h1:1+geFlaV8oJRJ4IlVTqL3QC3T1f5N0aGSptErrtcMQs=
-github.com/filecoin-project/lotus v1.26.0 h1:wK2PszP1zgVFvkZUQWHLvVddvTi+COOYhqFwJsXqJUA=
-github.com/filecoin-project/lotus v1.26.0/go.mod h1:uTwgtAKXUCi2p8JGz5ycHeMkb8tPAdhnoUce5vJFNj4=
+github.com/filecoin-project/lotus v1.26.1 h1:l5My+fCvoEawcpTd9xo5BMPvIafPfBNchLUTsiEn6qs=
+github.com/filecoin-project/lotus v1.26.1/go.mod h1:uTwgtAKXUCi2p8JGz5ycHeMkb8tPAdhnoUce5vJFNj4=
 github.com/filecoin-project/specs-actors v0.9.13/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
 github.com/filecoin-project/specs-actors v0.9.15-0.20220514164640-94e0d5e123bd/go.mod h1:pjGEe3QlWtK20ju/aFRsiArbMX6Cn8rqEhhsiCM9xYE=
 github.com/filecoin-project/specs-actors v0.9.15 h1:3VpKP5/KaDUHQKAMOg4s35g/syDaEBueKLws0vbsjMc=
