@@ -358,9 +358,9 @@ func buildMockTargetTipSet(epoch int64) *filTypes.TipSet {
 	return mockTargetTipSet
 }
 
-func setupMockForScenario(scn int) *mocks.FullNodeMock {
+func setupMockForScenario(scn int) *mocks.FullNode {
 
-	nodeMock := mocks.FullNodeMock{}
+	nodeMock := mocks.FullNode{}
 
 	mockTargetTipSet1 := buildMockTargetTipSet(100)
 	mockTargetTipSet2 := buildMockTargetTipSet(200)
