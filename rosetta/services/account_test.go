@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 
 func TestAccountAPIService_AccountBalance(t *testing.T) {
 
-	nodeMock := mocks.FullNodeMock{}
+	nodeMock := mocks.FullNode{}
 
 	type fields struct {
 		network *types.NetworkIdentifier
