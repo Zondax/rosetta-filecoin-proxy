@@ -27,10 +27,11 @@ jobs:
       - name: Install dependencies
         run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
 
-      - name: Install Rust and Cargo
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
       - name: Test
         run: make test
@@ -58,11 +59,6 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.21' # The Go version to download (if necessary) and use.
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
       - name: Temporary Global Git Configuration
         run: |
           git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
