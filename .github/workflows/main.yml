@@ -26,6 +26,13 @@ jobs:
 
       - name: Install dependencies
         run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
       - name: Test
         run: make test
 
