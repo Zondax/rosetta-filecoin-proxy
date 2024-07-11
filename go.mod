@@ -11,7 +11,7 @@ require (
 	github.com/filecoin-project/go-f3 v0.0.3-0.20240702063402-d48771055cf4
 	github.com/filecoin-project/go-jsonrpc v0.5.0
 	github.com/filecoin-project/go-state-types v0.14.0-rc5
-	github.com/filecoin-project/lotus v1.28.0-rc4
+	github.com/filecoin-project/lotus v1.28.0-rc5
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.0
