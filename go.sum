@@ -220,8 +220,8 @@ github.com/filecoin-project/go-state-types v0.0.0-20200928172055-2df22083d8ab/go
 github.com/filecoin-project/go-state-types v0.0.0-20201102161440-c8033295a1fc/go.mod h1:ezYnPf0bNkTsDibL/psSz5dy4B5awOJ/E7P2Saeep8g=
 github.com/filecoin-project/go-state-types v0.1.0/go.mod h1:ezYnPf0bNkTsDibL/psSz5dy4B5awOJ/E7P2Saeep8g=
 github.com/filecoin-project/go-state-types v0.1.6/go.mod h1:UwGVoMsULoCK+bWjEdd/xLCvLAQFBC7EDT477SKml+Q=
-github.com/filecoin-project/go-state-types v0.14.0-rc5 h1:c8jo2mRx02u8smiCZsSDt1dsOGSu4gwfvHRqSKAl8Lc=
-github.com/filecoin-project/go-state-types v0.14.0-rc5/go.mod h1:cHpOPup9H1g2T29dKHAjC2sc7/Ef5ypjuW9A3I+e9yY=
+github.com/filecoin-project/go-state-types v0.14.0 h1:JFw8r/LA0/Hvu865Yn2Gz3R5e2woItKeHTgbT4VsXoU=
+github.com/filecoin-project/go-state-types v0.14.0/go.mod h1:cDbxwjbmVtV+uNi5D/cFtxKlsRqibnQNlz7xQA1EqYg=
 github.com/filecoin-project/lotus v1.28.0-rc5 h1:iYHriH32tyLixBIBaGb/UcpyacQbUCWnn5wGlMhPg9w=
 github.com/filecoin-project/lotus v1.28.0-rc5/go.mod h1:VnrjAa0NAciJNwhTwOklGXoIP4sRndS892uPe+eT/qk=
 github.com/filecoin-project/specs-actors v0.9.13/go.mod h1:TS1AW/7LbG+615j4NsjMK1qlpAwaFsG9w0V2tg2gSao=
