@@ -38,6 +38,8 @@ import (
 
 	go_state_typesnetwork "github.com/filecoin-project/go-state-types/network"
 
+	gpbft "github.com/filecoin-project/go-f3/gpbft"
+
 	json "encoding/json"
 
 	jsonrpc "github.com/filecoin-project/go-jsonrpc"
@@ -2152,6 +2154,66 @@ func (_m *FullNode) F3GetCertificate(ctx context.Context, instance uint64) (*cer
 	return r0, r1
 }
 
+// F3GetECPowerTable provides a mock function with given fields: ctx, tsk
+func (_m *FullNode) F3GetECPowerTable(ctx context.Context, tsk types.TipSetKey) (gpbft.PowerEntries, error) {
+	ret := _m.Called(ctx, tsk)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3GetECPowerTable")
+	}
+
+	var r0 gpbft.PowerEntries
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, types.TipSetKey) (gpbft.PowerEntries, error)); ok {
+		return rf(ctx, tsk)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, types.TipSetKey) gpbft.PowerEntries); ok {
+		r0 = rf(ctx, tsk)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(gpbft.PowerEntries)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, types.TipSetKey) error); ok {
+		r1 = rf(ctx, tsk)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// F3GetF3PowerTable provides a mock function with given fields: ctx, tsk
+func (_m *FullNode) F3GetF3PowerTable(ctx context.Context, tsk types.TipSetKey) (gpbft.PowerEntries, error) {
+	ret := _m.Called(ctx, tsk)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3GetF3PowerTable")
+	}
+
+	var r0 gpbft.PowerEntries
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, types.TipSetKey) (gpbft.PowerEntries, error)); ok {
+		return rf(ctx, tsk)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, types.TipSetKey) gpbft.PowerEntries); ok {
+		r0 = rf(ctx, tsk)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(gpbft.PowerEntries)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, types.TipSetKey) error); ok {
+		r1 = rf(ctx, tsk)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // F3GetLatestCertificate provides a mock function with given fields: ctx
 func (_m *FullNode) F3GetLatestCertificate(ctx context.Context) (*certs.FinalityCertificate, error) {
 	ret := _m.Called(ctx)
@@ -2182,29 +2244,27 @@ func (_m *FullNode) F3GetLatestCertificate(ctx context.Context) (*certs.Finality
 	return r0, r1
 }
 
-// F3Participate provides a mock function with given fields: ctx, minerID
-func (_m *FullNode) F3Participate(ctx context.Context, minerID address.Address) (<-chan string, error) {
-	ret := _m.Called(ctx, minerID)
+// F3Participate provides a mock function with given fields: ctx, minerID, newLeaseExpiration, oldLeaseExpiration
+func (_m *FullNode) F3Participate(ctx context.Context, minerID address.Address, newLeaseExpiration time.Time, oldLeaseExpiration time.Time) (bool, error) {
+	ret := _m.Called(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
 
 	if len(ret) == 0 {
 		panic("no return value specified for F3Participate")
 	}
 
-	var r0 <-chan string
+	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address) (<-chan string, error)); ok {
-		return rf(ctx, minerID)
+	if rf, ok := ret.Get(0).(func(context.Context, address.Address, time.Time, time.Time) (bool, error)); ok {
+		return rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address) <-chan string); ok {
-		r0 = rf(ctx, minerID)
+	if rf, ok := ret.Get(0).(func(context.Context, address.Address, time.Time, time.Time) bool); ok {
+		r0 = rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan string)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, address.Address) error); ok {
-		r1 = rf(ctx, minerID)
+	if rf, ok := ret.Get(1).(func(context.Context, address.Address, time.Time, time.Time) error); ok {
+		r1 = rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
 	} else {
 		r1 = ret.Error(1)
 	}
