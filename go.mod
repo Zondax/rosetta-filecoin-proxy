@@ -8,10 +8,10 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.7.2
 	github.com/filecoin-project/go-address v1.1.0
 	github.com/filecoin-project/go-bitfield v0.2.4
-	github.com/filecoin-project/go-f3 v0.0.7
+	github.com/filecoin-project/go-f3 v0.2.0
 	github.com/filecoin-project/go-jsonrpc v0.6.0
 	github.com/filecoin-project/go-state-types v0.14.0
-	github.com/filecoin-project/lotus v1.28.1
+	github.com/filecoin-project/lotus v1.28.2
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.0
@@ -85,7 +85,7 @@ require (
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/libp2p/go-flow-metrics v0.1.0 // indirect
