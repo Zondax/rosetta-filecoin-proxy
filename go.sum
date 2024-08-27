@@ -981,8 +981,8 @@ github.com/whyrusleeping/cbor-gen v0.0.0-20200806213330-63aa96ca5488/go.mod h1:f
 github.com/whyrusleeping/cbor-gen v0.0.0-20200810223238-211df3b9e24c/go.mod h1:fgkXqYy7bV2cFeIEOkVTZS/WjXARfBqSH6Q2qHL33hQ=
 github.com/whyrusleeping/cbor-gen v0.0.0-20200812213548-958ddffe352c/go.mod h1:fgkXqYy7bV2cFeIEOkVTZS/WjXARfBqSH6Q2qHL33hQ=
 github.com/whyrusleeping/cbor-gen v0.0.0-20210118024343-169e9d70c0c2/go.mod h1:fgkXqYy7bV2cFeIEOkVTZS/WjXARfBqSH6Q2qHL33hQ=
-github.com/whyrusleeping/cbor-gen v0.1.1 h1:eKfcJIoxivjMtwfCfmJAqSF56MHcWqyIScXwaC1VBgw=
-github.com/whyrusleeping/cbor-gen v0.1.1/go.mod h1:pM99HXyEbSQHcosHc0iW7YFmwnscr+t9Te4ibko05so=
+github.com/whyrusleeping/cbor-gen v0.1.2 h1:WQFlrPhpcQl+M2/3dP5cvlTLWPVsL6LGBb9jJt6l/cA=
+github.com/whyrusleeping/cbor-gen v0.1.2/go.mod h1:pM99HXyEbSQHcosHc0iW7YFmwnscr+t9Te4ibko05so=
 github.com/whyrusleeping/chunker v0.0.0-20181014151217-fe64bd25879f/go.mod h1:p9UJB6dDgdPgMJZs7UjUOdulKyRr9fqkS+6JKAInPy8=
 github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1/go.mod h1:8UvriyWtv5Q5EOgjHaSseUEdkQfvwFv1I/In/O2M9gc=
 github.com/whyrusleeping/go-logging v0.0.0-20170515211332-0457bb6b88fc/go.mod h1:bopw91TMyo8J3tvftk8xmU2kPmlrt4nScJQZU2hE5EM=
@@ -1002,8 +1002,8 @@ github.com/ybbus/jsonrpc v2.1.2+incompatible/go.mod h1:XJrh1eMSzdIYFbM08flv0wp5G
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-github.com/zondax/rosetta-filecoin-lib v1.2801.0 h1:RzmMU5QGa7BHjhpakvjSVKDwpffIxP7zOBCfuAWKGeU=
-github.com/zondax/rosetta-filecoin-lib v1.2801.0/go.mod h1:EXV3mbOZEJauYMMlx091kZ3UskDpN8LXD9TLoH2aI8w=
+github.com/zondax/rosetta-filecoin-lib v1.2802.0 h1:f+lRk+kO0qWnkbTWDH+iUrZi3jAC/S3wHNTZfP3kvpk=
+github.com/zondax/rosetta-filecoin-lib v1.2802.0/go.mod h1:j71q/20oBYw9AZW145/bGMLqgKocqM5bRR/Wa8f6f7g=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
