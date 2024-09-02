@@ -12,7 +12,7 @@ require (
 	github.com/filecoin-project/go-f3 v0.2.0
 	github.com/filecoin-project/go-jsonrpc v0.6.0
 	github.com/filecoin-project/go-state-types v0.14.0
-	github.com/filecoin-project/lotus v1.28.2
+	github.com/filecoin-project/lotus v1.29.0
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.0
@@ -43,7 +43,7 @@ require (
 	github.com/filecoin-project/go-crypto v0.0.1 // indirect
 	github.com/filecoin-project/go-hamt-ipld v0.1.5 // indirect
 	github.com/filecoin-project/go-hamt-ipld/v2 v2.0.0 // indirect
-	github.com/filecoin-project/go-hamt-ipld/v3 v3.1.0 // indirect
+	github.com/filecoin-project/go-hamt-ipld/v3 v3.4.0 // indirect
 	github.com/filecoin-project/specs-actors v0.9.15 // indirect
 	github.com/filecoin-project/specs-actors/v2 v2.3.6 // indirect
 	github.com/filecoin-project/specs-actors/v3 v3.1.2 // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/libp2p/go-flow-metrics v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-pubsub v0.11.0 // indirect
@@ -132,14 +132,14 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
-	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
+	golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
