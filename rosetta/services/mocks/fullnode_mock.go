@@ -2008,6 +2008,36 @@ func (_m *FullNode) EthTraceBlock(ctx context.Context, blkNum string) ([]*ethtyp
 	return r0, r1
 }
 
+// EthTraceFilter provides a mock function with given fields: ctx, filter
+func (_m *FullNode) EthTraceFilter(ctx context.Context, filter ethtypes.EthTraceFilterCriteria) ([]*ethtypes.EthTraceFilterResult, error) {
+	ret := _m.Called(ctx, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EthTraceFilter")
+	}
+
+	var r0 []*ethtypes.EthTraceFilterResult
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthTraceFilterCriteria) ([]*ethtypes.EthTraceFilterResult, error)); ok {
+		return rf(ctx, filter)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthTraceFilterCriteria) []*ethtypes.EthTraceFilterResult); ok {
+		r0 = rf(ctx, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ethtypes.EthTraceFilterResult)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthTraceFilterCriteria) error); ok {
+		r1 = rf(ctx, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // EthTraceReplayBlockTransactions provides a mock function with given fields: ctx, blkNum, traceTypes
 func (_m *FullNode) EthTraceReplayBlockTransactions(ctx context.Context, blkNum string, traceTypes []string) ([]*ethtypes.EthTraceReplayBlockTransaction, error) {
 	ret := _m.Called(ctx, blkNum, traceTypes)
@@ -2272,9 +2302,9 @@ func (_m *FullNode) F3Participate(ctx context.Context, minerID address.Address, 
 	return r0, r1
 }
 
-// FilecoinAddressToEthAddress provides a mock function with given fields: ctx, filecoinAddress
-func (_m *FullNode) FilecoinAddressToEthAddress(ctx context.Context, filecoinAddress address.Address) (ethtypes.EthAddress, error) {
-	ret := _m.Called(ctx, filecoinAddress)
+// FilecoinAddressToEthAddress provides a mock function with given fields: ctx, p
+func (_m *FullNode) FilecoinAddressToEthAddress(ctx context.Context, p jsonrpc.RawParams) (ethtypes.EthAddress, error) {
+	ret := _m.Called(ctx, p)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FilecoinAddressToEthAddress")
@@ -2282,19 +2312,19 @@ func (_m *FullNode) FilecoinAddressToEthAddress(ctx context.Context, filecoinAdd
 
 	var r0 ethtypes.EthAddress
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address) (ethtypes.EthAddress, error)); ok {
-		return rf(ctx, filecoinAddress)
+	if rf, ok := ret.Get(0).(func(context.Context, jsonrpc.RawParams) (ethtypes.EthAddress, error)); ok {
+		return rf(ctx, p)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address) ethtypes.EthAddress); ok {
-		r0 = rf(ctx, filecoinAddress)
+	if rf, ok := ret.Get(0).(func(context.Context, jsonrpc.RawParams) ethtypes.EthAddress); ok {
+		r0 = rf(ctx, p)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(ethtypes.EthAddress)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, address.Address) error); ok {
-		r1 = rf(ctx, filecoinAddress)
+	if rf, ok := ret.Get(1).(func(context.Context, jsonrpc.RawParams) error); ok {
+		r1 = rf(ctx, p)
 	} else {
 		r1 = ret.Error(1)
 	}
