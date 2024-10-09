@@ -12,17 +12,17 @@ require (
 	github.com/filecoin-project/go-f3 v0.2.0
 	github.com/filecoin-project/go-jsonrpc v0.6.0
 	github.com/filecoin-project/go-state-types v0.14.0
-	github.com/filecoin-project/lotus v1.29.1
+	github.com/filecoin-project/lotus v1.29.2
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.0
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-log v1.0.5
-	github.com/libp2p/go-libp2p v0.35.4
+	github.com/libp2p/go-libp2p v0.35.5
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.9.0
-	github.com/zondax/rosetta-filecoin-lib v1.2901.0
+	github.com/zondax/rosetta-filecoin-lib v1.2902.0
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -101,8 +101,8 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect
-	github.com/multiformats/go-multiaddr v0.12.4 // indirect
-	github.com/multiformats/go-multiaddr-dns v0.3.1 // indirect
+	github.com/multiformats/go-multiaddr v0.13.0 // indirect
+	github.com/multiformats/go-multiaddr-dns v0.4.0 // indirect
 	github.com/multiformats/go-multiaddr-fmt v0.1.0 // indirect
 	github.com/multiformats/go-multibase v0.2.0 // indirect
 	github.com/multiformats/go-multicodec v0.9.0 // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/whyrusleeping/bencher v0.0.0-20190829221104-bb6607aa8bba // indirect
-	github.com/whyrusleeping/cbor-gen v0.1.2 // indirect
+	github.com/whyrusleeping/cbor-gen v0.2.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	gitlab.com/yawning/secp256k1-voi v0.0.0-20230925100816-f2616030848b // indirect
 	gitlab.com/yawning/tuplehash v0.0.0-20230713102510-df83abbf9a02 // indirect
