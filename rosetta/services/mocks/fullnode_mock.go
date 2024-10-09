@@ -1274,6 +1274,66 @@ func (_m *FullNode) EthGetBlockByNumber(ctx context.Context, blkNum string, full
 	return r0, r1
 }
 
+// EthGetBlockReceipts provides a mock function with given fields: ctx, blkParam
+func (_m *FullNode) EthGetBlockReceipts(ctx context.Context, blkParam ethtypes.EthBlockNumberOrHash) ([]*api.EthTxReceipt, error) {
+	ret := _m.Called(ctx, blkParam)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EthGetBlockReceipts")
+	}
+
+	var r0 []*api.EthTxReceipt
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBlockNumberOrHash) ([]*api.EthTxReceipt, error)); ok {
+		return rf(ctx, blkParam)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBlockNumberOrHash) []*api.EthTxReceipt); ok {
+		r0 = rf(ctx, blkParam)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*api.EthTxReceipt)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthBlockNumberOrHash) error); ok {
+		r1 = rf(ctx, blkParam)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// EthGetBlockReceiptsLimited provides a mock function with given fields: ctx, blkParam, limit
+func (_m *FullNode) EthGetBlockReceiptsLimited(ctx context.Context, blkParam ethtypes.EthBlockNumberOrHash, limit abi.ChainEpoch) ([]*api.EthTxReceipt, error) {
+	ret := _m.Called(ctx, blkParam, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EthGetBlockReceiptsLimited")
+	}
+
+	var r0 []*api.EthTxReceipt
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBlockNumberOrHash, abi.ChainEpoch) ([]*api.EthTxReceipt, error)); ok {
+		return rf(ctx, blkParam, limit)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBlockNumberOrHash, abi.ChainEpoch) []*api.EthTxReceipt); ok {
+		r0 = rf(ctx, blkParam, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*api.EthTxReceipt)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthBlockNumberOrHash, abi.ChainEpoch) error); ok {
+		r1 = rf(ctx, blkParam, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // EthGetBlockTransactionCountByHash provides a mock function with given fields: ctx, blkHash
 func (_m *FullNode) EthGetBlockTransactionCountByHash(ctx context.Context, blkHash ethtypes.EthHash) (ethtypes.EthUint64, error) {
 	ret := _m.Called(ctx, blkHash)
