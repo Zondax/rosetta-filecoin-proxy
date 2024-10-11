@@ -44,6 +44,8 @@ import (
 
 	jsonrpc "github.com/filecoin-project/go-jsonrpc"
 
+	manifest "github.com/filecoin-project/go-f3/manifest"
+
 	metrics "github.com/libp2p/go-libp2p/core/metrics"
 
 	miner "github.com/filecoin-project/go-state-types/builtin/v13/miner"
@@ -1247,22 +1249,24 @@ func (_m *FullNode) EthGetBlockByHash(ctx context.Context, blkHash ethtypes.EthH
 }
 
 // EthGetBlockByNumber provides a mock function with given fields: ctx, blkNum, fullTxInfo
-func (_m *FullNode) EthGetBlockByNumber(ctx context.Context, blkNum string, fullTxInfo bool) (ethtypes.EthBlock, error) {
+func (_m *FullNode) EthGetBlockByNumber(ctx context.Context, blkNum string, fullTxInfo bool) (*ethtypes.EthBlock, error) {
 	ret := _m.Called(ctx, blkNum, fullTxInfo)
 
 	if len(ret) == 0 {
 		panic("no return value specified for EthGetBlockByNumber")
 	}
 
-	var r0 ethtypes.EthBlock
+	var r0 *ethtypes.EthBlock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, bool) (ethtypes.EthBlock, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) (*ethtypes.EthBlock, error)); ok {
 		return rf(ctx, blkNum, fullTxInfo)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, bool) ethtypes.EthBlock); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *ethtypes.EthBlock); ok {
 		r0 = rf(ctx, blkNum, fullTxInfo)
 	} else {
-		r0 = ret.Get(0).(ethtypes.EthBlock)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethtypes.EthBlock)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
@@ -1980,6 +1984,36 @@ func (_m *FullNode) EthSendRawTransaction(ctx context.Context, rawTx ethtypes.Et
 	return r0, r1
 }
 
+// EthSendRawTransactionUntrusted provides a mock function with given fields: ctx, rawTx
+func (_m *FullNode) EthSendRawTransactionUntrusted(ctx context.Context, rawTx ethtypes.EthBytes) (ethtypes.EthHash, error) {
+	ret := _m.Called(ctx, rawTx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EthSendRawTransactionUntrusted")
+	}
+
+	var r0 ethtypes.EthHash
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBytes) (ethtypes.EthHash, error)); ok {
+		return rf(ctx, rawTx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthBytes) ethtypes.EthHash); ok {
+		r0 = rf(ctx, rawTx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(ethtypes.EthHash)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthBytes) error); ok {
+		r1 = rf(ctx, rawTx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // EthSubscribe provides a mock function with given fields: ctx, params
 func (_m *FullNode) EthSubscribe(ctx context.Context, params jsonrpc.RawParams) (ethtypes.EthSubscriptionID, error) {
 	ret := _m.Called(ctx, params)
@@ -2334,27 +2368,143 @@ func (_m *FullNode) F3GetLatestCertificate(ctx context.Context) (*certs.Finality
 	return r0, r1
 }
 
-// F3Participate provides a mock function with given fields: ctx, minerID, newLeaseExpiration, oldLeaseExpiration
-func (_m *FullNode) F3Participate(ctx context.Context, minerID address.Address, newLeaseExpiration time.Time, oldLeaseExpiration time.Time) (bool, error) {
-	ret := _m.Called(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
+// F3GetManifest provides a mock function with given fields: ctx
+func (_m *FullNode) F3GetManifest(ctx context.Context) (*manifest.Manifest, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3GetManifest")
+	}
+
+	var r0 *manifest.Manifest
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*manifest.Manifest, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *manifest.Manifest); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*manifest.Manifest)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// F3GetOrRenewParticipationTicket provides a mock function with given fields: ctx, minerID, previous, instances
+func (_m *FullNode) F3GetOrRenewParticipationTicket(ctx context.Context, minerID address.Address, previous api.F3ParticipationTicket, instances uint64) (api.F3ParticipationTicket, error) {
+	ret := _m.Called(ctx, minerID, previous, instances)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3GetOrRenewParticipationTicket")
+	}
+
+	var r0 api.F3ParticipationTicket
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, address.Address, api.F3ParticipationTicket, uint64) (api.F3ParticipationTicket, error)); ok {
+		return rf(ctx, minerID, previous, instances)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, address.Address, api.F3ParticipationTicket, uint64) api.F3ParticipationTicket); ok {
+		r0 = rf(ctx, minerID, previous, instances)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(api.F3ParticipationTicket)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, address.Address, api.F3ParticipationTicket, uint64) error); ok {
+		r1 = rf(ctx, minerID, previous, instances)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// F3GetProgress provides a mock function with given fields: ctx
+func (_m *FullNode) F3GetProgress(ctx context.Context) (gpbft.Instant, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3GetProgress")
+	}
+
+	var r0 gpbft.Instant
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (gpbft.Instant, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) gpbft.Instant); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(gpbft.Instant)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// F3IsRunning provides a mock function with given fields: ctx
+func (_m *FullNode) F3IsRunning(ctx context.Context) (bool, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for F3IsRunning")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// F3Participate provides a mock function with given fields: ctx, ticket
+func (_m *FullNode) F3Participate(ctx context.Context, ticket api.F3ParticipationTicket) (api.F3ParticipationLease, error) {
+	ret := _m.Called(ctx, ticket)
 
 	if len(ret) == 0 {
 		panic("no return value specified for F3Participate")
 	}
 
-	var r0 bool
+	var r0 api.F3ParticipationLease
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address, time.Time, time.Time) (bool, error)); ok {
-		return rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
+	if rf, ok := ret.Get(0).(func(context.Context, api.F3ParticipationTicket) (api.F3ParticipationLease, error)); ok {
+		return rf(ctx, ticket)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, address.Address, time.Time, time.Time) bool); ok {
-		r0 = rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
+	if rf, ok := ret.Get(0).(func(context.Context, api.F3ParticipationTicket) api.F3ParticipationLease); ok {
+		r0 = rf(ctx, ticket)
 	} else {
-		r0 = ret.Get(0).(bool)
+		r0 = ret.Get(0).(api.F3ParticipationLease)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, address.Address, time.Time, time.Time) error); ok {
-		r1 = rf(ctx, minerID, newLeaseExpiration, oldLeaseExpiration)
+	if rf, ok := ret.Get(1).(func(context.Context, api.F3ParticipationTicket) error); ok {
+		r1 = rf(ctx, ticket)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -6273,6 +6423,34 @@ func (_m *FullNode) StateMinerInitialPledgeCollateral(_a0 context.Context, _a1 a
 
 	if rf, ok := ret.Get(1).(func(context.Context, address.Address, v9miner.SectorPreCommitInfo, types.TipSetKey) error); ok {
 		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// StateMinerInitialPledgeForSector provides a mock function with given fields: ctx, sectorDuration, sectorSize, verifiedSize, tsk
+func (_m *FullNode) StateMinerInitialPledgeForSector(ctx context.Context, sectorDuration abi.ChainEpoch, sectorSize abi.SectorSize, verifiedSize uint64, tsk types.TipSetKey) (big.Int, error) {
+	ret := _m.Called(ctx, sectorDuration, sectorSize, verifiedSize, tsk)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StateMinerInitialPledgeForSector")
+	}
+
+	var r0 big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, abi.ChainEpoch, abi.SectorSize, uint64, types.TipSetKey) (big.Int, error)); ok {
+		return rf(ctx, sectorDuration, sectorSize, verifiedSize, tsk)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, abi.ChainEpoch, abi.SectorSize, uint64, types.TipSetKey) big.Int); ok {
+		r0 = rf(ctx, sectorDuration, sectorSize, verifiedSize, tsk)
+	} else {
+		r0 = ret.Get(0).(big.Int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, abi.ChainEpoch, abi.SectorSize, uint64, types.TipSetKey) error); ok {
+		r1 = rf(ctx, sectorDuration, sectorSize, verifiedSize, tsk)
 	} else {
 		r1 = ret.Error(1)
 	}
