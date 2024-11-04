@@ -10,7 +10,7 @@ require (
 	github.com/filecoin-project/go-address v1.2.0
 	github.com/filecoin-project/go-bitfield v0.2.4
 	github.com/filecoin-project/go-f3 v0.7.1
-	github.com/filecoin-project/go-jsonrpc v0.6.0
+	github.com/filecoin-project/go-jsonrpc v0.7.0
 	github.com/filecoin-project/go-state-types v0.15.0-rc1
 	github.com/filecoin-project/lotus v1.30.0-rc3
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
