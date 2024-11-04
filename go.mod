@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.23.0
 
 require (
-	github.com/coinbase/rosetta-sdk-go v0.8.5
+	github.com/coinbase/rosetta-sdk-go v0.8.6
 	github.com/coinbase/rosetta-sdk-go/types v1.0.0
 	github.com/filecoin-project/go-address v1.2.0
 	github.com/filecoin-project/go-bitfield v0.2.4
