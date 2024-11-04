@@ -22,7 +22,7 @@ require (
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.9.0
-	github.com/zondax/rosetta-filecoin-lib v1.3000.2-rc1
+	github.com/zondax/rosetta-filecoin-lib v1.3000.0-rc3
 	gotest.tools v2.2.0+incompatible
 )
 
