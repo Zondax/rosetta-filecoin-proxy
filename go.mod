@@ -21,7 +21,7 @@ require (
 	github.com/libp2p/go-libp2p v0.35.5
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/zondax/rosetta-filecoin-lib v1.3000.0
 	gotest.tools v2.2.0+incompatible
 )
