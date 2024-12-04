@@ -886,6 +886,36 @@ func (_m *FullNode) ChainTipSetWeight(_a0 context.Context, _a1 types.TipSetKey) 
 	return r0, r1
 }
 
+// ChainValidateIndex provides a mock function with given fields: ctx, epoch, backfill
+func (_m *FullNode) ChainValidateIndex(ctx context.Context, epoch abi.ChainEpoch, backfill bool) (*types.IndexValidation, error) {
+	ret := _m.Called(ctx, epoch, backfill)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ChainValidateIndex")
+	}
+
+	var r0 *types.IndexValidation
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, abi.ChainEpoch, bool) (*types.IndexValidation, error)); ok {
+		return rf(ctx, epoch, backfill)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, abi.ChainEpoch, bool) *types.IndexValidation); ok {
+		r0 = rf(ctx, epoch, backfill)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.IndexValidation)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, abi.ChainEpoch, bool) error); ok {
+		r1 = rf(ctx, epoch, backfill)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Closing provides a mock function with given fields: _a0
 func (_m *FullNode) Closing(_a0 context.Context) (<-chan struct{}, error) {
 	ret := _m.Called(_a0)
@@ -1573,22 +1603,24 @@ func (_m *FullNode) EthGetStorageAt(ctx context.Context, _a1 ethtypes.EthAddress
 }
 
 // EthGetTransactionByBlockHashAndIndex provides a mock function with given fields: ctx, blkHash, txIndex
-func (_m *FullNode) EthGetTransactionByBlockHashAndIndex(ctx context.Context, blkHash ethtypes.EthHash, txIndex ethtypes.EthUint64) (ethtypes.EthTx, error) {
+func (_m *FullNode) EthGetTransactionByBlockHashAndIndex(ctx context.Context, blkHash ethtypes.EthHash, txIndex ethtypes.EthUint64) (*ethtypes.EthTx, error) {
 	ret := _m.Called(ctx, blkHash, txIndex)
 
 	if len(ret) == 0 {
 		panic("no return value specified for EthGetTransactionByBlockHashAndIndex")
 	}
 
-	var r0 ethtypes.EthTx
+	var r0 *ethtypes.EthTx
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthHash, ethtypes.EthUint64) (ethtypes.EthTx, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthHash, ethtypes.EthUint64) (*ethtypes.EthTx, error)); ok {
 		return rf(ctx, blkHash, txIndex)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthHash, ethtypes.EthUint64) ethtypes.EthTx); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthHash, ethtypes.EthUint64) *ethtypes.EthTx); ok {
 		r0 = rf(ctx, blkHash, txIndex)
 	} else {
-		r0 = ret.Get(0).(ethtypes.EthTx)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethtypes.EthTx)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthHash, ethtypes.EthUint64) error); ok {
@@ -1601,25 +1633,27 @@ func (_m *FullNode) EthGetTransactionByBlockHashAndIndex(ctx context.Context, bl
 }
 
 // EthGetTransactionByBlockNumberAndIndex provides a mock function with given fields: ctx, blkNum, txIndex
-func (_m *FullNode) EthGetTransactionByBlockNumberAndIndex(ctx context.Context, blkNum ethtypes.EthUint64, txIndex ethtypes.EthUint64) (ethtypes.EthTx, error) {
+func (_m *FullNode) EthGetTransactionByBlockNumberAndIndex(ctx context.Context, blkNum string, txIndex ethtypes.EthUint64) (*ethtypes.EthTx, error) {
 	ret := _m.Called(ctx, blkNum, txIndex)
 
 	if len(ret) == 0 {
 		panic("no return value specified for EthGetTransactionByBlockNumberAndIndex")
 	}
 
-	var r0 ethtypes.EthTx
+	var r0 *ethtypes.EthTx
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthUint64, ethtypes.EthUint64) (ethtypes.EthTx, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, ethtypes.EthUint64) (*ethtypes.EthTx, error)); ok {
 		return rf(ctx, blkNum, txIndex)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, ethtypes.EthUint64, ethtypes.EthUint64) ethtypes.EthTx); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, ethtypes.EthUint64) *ethtypes.EthTx); ok {
 		r0 = rf(ctx, blkNum, txIndex)
 	} else {
-		r0 = ret.Get(0).(ethtypes.EthTx)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethtypes.EthTx)
+		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, ethtypes.EthUint64, ethtypes.EthUint64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, ethtypes.EthUint64) error); ok {
 		r1 = rf(ctx, blkNum, txIndex)
 	} else {
 		r1 = ret.Error(1)
