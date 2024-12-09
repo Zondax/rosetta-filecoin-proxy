@@ -6260,6 +6260,34 @@ func (_m *FullNode) StateMarketParticipants(_a0 context.Context, _a1 types.TipSe
 	return r0, r1
 }
 
+// StateMarketProposalPending provides a mock function with given fields: ctx, proposalCid, tsk
+func (_m *FullNode) StateMarketProposalPending(ctx context.Context, proposalCid cid.Cid, tsk types.TipSetKey) (bool, error) {
+	ret := _m.Called(ctx, proposalCid, tsk)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StateMarketProposalPending")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, cid.Cid, types.TipSetKey) (bool, error)); ok {
+		return rf(ctx, proposalCid, tsk)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, cid.Cid, types.TipSetKey) bool); ok {
+		r0 = rf(ctx, proposalCid, tsk)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, cid.Cid, types.TipSetKey) error); ok {
+		r1 = rf(ctx, proposalCid, tsk)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // StateMarketStorageDeal provides a mock function with given fields: _a0, _a1, _a2
 func (_m *FullNode) StateMarketStorageDeal(_a0 context.Context, _a1 abi.DealID, _a2 types.TipSetKey) (*api.MarketDeal, error) {
 	ret := _m.Called(_a0, _a1, _a2)
