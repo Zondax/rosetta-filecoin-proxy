@@ -9,10 +9,10 @@ require (
 	github.com/coinbase/rosetta-sdk-go/types v1.0.0
 	github.com/filecoin-project/go-address v1.2.0
 	github.com/filecoin-project/go-bitfield v0.2.4
-	github.com/filecoin-project/go-f3 v0.7.2
+	github.com/filecoin-project/go-f3 v0.7.3
 	github.com/filecoin-project/go-jsonrpc v0.7.0
-	github.com/filecoin-project/go-state-types v0.15.0
-	github.com/filecoin-project/lotus v1.31.0
+	github.com/filecoin-project/go-state-types v0.16.0-rc2
+	github.com/filecoin-project/lotus v1.31.1-rc1
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.0
@@ -22,7 +22,7 @@ require (
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.10.0
-	github.com/zondax/rosetta-filecoin-lib v1.3100.0
+	github.com/zondax/rosetta-filecoin-lib v1.3101.0-rc1
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -134,12 +134,12 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
