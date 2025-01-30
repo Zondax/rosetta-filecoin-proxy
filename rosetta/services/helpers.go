@@ -118,6 +118,11 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	actorName := GetActorNameFromAddress(msg.To, lib)
 	method := GetMethodByActorName(actorName)
 
+	// If method is unknown check for fallback behavior
+	if method == actors.UnknownStr && isAccountActorFallback(actorName, msg.Method) {
+		return METHOD_FALLBACK, nil
+	}
+
 	val := reflect.Indirect(reflect.ValueOf(method))
 	for i := 0; i < val.Type().NumField(); i++ {
 		field := val.Field(i)
@@ -126,11 +131,6 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 			methodName := val.Type().Field(i).Name
 			return methodName, nil
 		}
-	}
-
-	// If method is unknown check for fallback behavior
-	if method == actors.UnknownStr && isAccountActorFallback(actorName, msg.Method) {
-		return METHOD_FALLBACK, nil
 	}
 
 	return actors.UnknownStr, nil
