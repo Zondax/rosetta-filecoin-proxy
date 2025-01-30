@@ -100,6 +100,47 @@ func isAccountActorFallback(actorName string, method abi.MethodNum) bool {
 		method >= FIRST_EXPORTED_METHOD_NUMBER
 }
 
+func findMethodInType(methodNum uint64, actorType interface{}) string {
+	val := reflect.Indirect(reflect.ValueOf(actorType))
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		if field.Uint() == methodNum {
+			return val.Type().Field(i).Name
+		}
+	}
+	return actors.UnknownStr
+}
+
+// FindMethodNameInAllActors searches for a method number in all actor types and returns its name
+func FindMethodNameInAllActors(methodNum uint64) string {
+	methods := []interface{}{
+		builtin.MethodsInit,
+		builtin.MethodsCron,
+		builtin.MethodsAccount,
+		builtin.MethodsPower,
+		builtin.MethodsMiner,
+		builtin.MethodsMarket,
+		builtin.MethodsPaych,
+		builtin.MethodsMultisig,
+		builtin.MethodsReward,
+		builtin.MethodsVerifiedRegistry,
+		builtin.MethodsEVM,
+		builtin.MethodsEAM,
+		builtin.MethodsDatacap,
+		builtin.MethodsPlaceholder,
+		builtin.MethodsEthAccount,
+	}
+
+	// Try to find the method in each actor
+	for _, method := range methods {
+		if methodName := findMethodInType(methodNum, method); methodName != actors.UnknownStr {
+			return methodName
+		}
+	}
+
+	return actors.UnknownStr
+}
+
 func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
@@ -120,6 +161,12 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 
 	// If method is unknown check for fallback behavior
 	if method == actors.UnknownStr && isAccountActorFallback(actorName, msg.Method) {
+		// Try to find the method in all known actors
+		if methodName := FindMethodNameInAllActors(uint64(msg.Method)); methodName != actors.UnknownStr {
+			return methodName, nil
+		}
+
+		// If not found and it's an actor with fallback behavior, return METHOD_FALLBACK
 		return METHOD_FALLBACK, nil
 	}
 
