@@ -98,6 +98,30 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	actorName := GetActorNameFromAddress(msg.To, lib)
 
 	var method interface{}
+	method = GetMethodByActorName(actorName)
+	if method == actors.UnknownStr {
+		// apply fallback for eth
+		actorName = GetActorNameFromAddress(msg.From, lib)
+		method = GetMethodByActorName(actorName)
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(method))
+
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		methodNum := field.Uint()
+		if methodNum == uint64(msg.Method) {
+			methodName := val.Type().Field(i).Name
+			return methodName, nil
+		}
+	}
+
+	return actors.UnknownStr, nil
+}
+
+func GetMethodByActorName(actorName string) interface{} {
+	var method interface{}
+
 	switch actorName {
 	case "init":
 		method = builtin.MethodsInit
@@ -130,21 +154,10 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	case "ethaccount":
 		method = builtin.MethodsEthAccount
 	default:
-		return actors.UnknownStr, nil
+		method = actors.UnknownStr
 	}
 
-	val := reflect.Indirect(reflect.ValueOf(method))
-
-	for i := 0; i < val.Type().NumField(); i++ {
-		field := val.Field(i)
-		methodNum := field.Uint()
-		if methodNum == uint64(msg.Method) {
-			methodName := val.Type().Field(i).Name
-			return methodName, nil
-		}
-	}
-
-	return actors.UnknownStr, nil
+	return method
 }
 
 func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
