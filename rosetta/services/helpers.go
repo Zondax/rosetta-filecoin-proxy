@@ -3,19 +3,33 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"reflect"
+	"strings"
+	"time"
+
 	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/builtin"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
-	"reflect"
-	"time"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
+)
+
+const (
+	ACCOUNT_ACTOR_NAME    = "account"
+	ETHACCOUNT_ACTOR_NAME = "ethaccount"
+	METHOD_SEND           = "Send"
+	METHOD_FALLBACK       = "Send"
+
+	// FIRST_EXPORTED_METHOD_NUMBER is the first valid method number for actor methods
+	// This matches the Rust implementation: https://github.com/filecoin-project/builtin-actors/blob/5aad41bfa29d8eab78f91eb5c82a03466c6062d2/runtime/src/builtin/shared.rs#L58
+	FIRST_EXPORTED_METHOD_NUMBER = 1 << 24
 )
 
 func TimeTrack(start time.Time, name string) {
@@ -80,6 +94,53 @@ func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.Ro
 	return actorName
 }
 
+func isAccountActorFallback(actorName string, method abi.MethodNum) bool {
+	return (strings.EqualFold(actorName, ACCOUNT_ACTOR_NAME) ||
+		strings.EqualFold(actorName, ETHACCOUNT_ACTOR_NAME)) &&
+		method >= FIRST_EXPORTED_METHOD_NUMBER
+}
+
+func findMethodInType(methodNum uint64, actorType interface{}) string {
+	val := reflect.Indirect(reflect.ValueOf(actorType))
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		if field.Uint() == methodNum {
+			return val.Type().Field(i).Name
+		}
+	}
+	return actors.UnknownStr
+}
+
+// FindMethodNameInAllActors searches for a method number in all actor types and returns its name
+func FindMethodNameInAllActors(methodNum uint64) string {
+	methods := []interface{}{
+		builtin.MethodsInit,
+		builtin.MethodsCron,
+		builtin.MethodsAccount,
+		builtin.MethodsPower,
+		builtin.MethodsMiner,
+		builtin.MethodsMarket,
+		builtin.MethodsPaych,
+		builtin.MethodsMultisig,
+		builtin.MethodsReward,
+		builtin.MethodsVerifiedRegistry,
+		builtin.MethodsEVM,
+		builtin.MethodsEAM,
+		builtin.MethodsDatacap,
+		builtin.MethodsPlaceholder,
+		builtin.MethodsEthAccount,
+	}
+
+	// Try to find the method in each actor
+	for _, method := range methods {
+		if methodName := findMethodInType(methodNum, method); methodName != actors.UnknownStr {
+			return methodName
+		}
+	}
+
+	return actors.UnknownStr
+}
+
 func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
@@ -87,7 +148,7 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 
 	// Shortcut 1 - Method "0" corresponds to "MethodSend"
 	if msg.Method == 0 {
-		return "Send", nil
+		return METHOD_SEND, nil
 	}
 
 	// Shortcut 2 - Method "1" corresponds to "MethodConstructor"
@@ -96,8 +157,35 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	}
 
 	actorName := GetActorNameFromAddress(msg.To, lib)
+	method := GetMethodByActorName(actorName)
 
+	// If method is unknown check for fallback behavior
+	if method == actors.UnknownStr && isAccountActorFallback(actorName, msg.Method) {
+		// Try to find the method in all known actors
+		if methodName := FindMethodNameInAllActors(uint64(msg.Method)); methodName != actors.UnknownStr {
+			return methodName, nil
+		}
+
+		// If not found and it's an actor with fallback behavior, return METHOD_FALLBACK
+		return METHOD_FALLBACK, nil
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(method))
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Field(i)
+		methodNum := field.Uint()
+		if methodNum == uint64(msg.Method) {
+			methodName := val.Type().Field(i).Name
+			return methodName, nil
+		}
+	}
+
+	return actors.UnknownStr, nil
+}
+
+func GetMethodByActorName(actorName string) interface{} {
 	var method interface{}
+
 	switch actorName {
 	case "init":
 		method = builtin.MethodsInit
@@ -130,21 +218,10 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	case "ethaccount":
 		method = builtin.MethodsEthAccount
 	default:
-		return actors.UnknownStr, nil
+		method = actors.UnknownStr
 	}
 
-	val := reflect.Indirect(reflect.ValueOf(method))
-
-	for i := 0; i < val.Type().NumField(); i++ {
-		field := val.Field(i)
-		methodNum := field.Uint()
-		if methodNum == uint64(msg.Method) {
-			methodName := val.Type().Field(i).Name
-			return methodName, nil
-		}
-	}
-
-	return actors.UnknownStr, nil
+	return method
 }
 
 func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
