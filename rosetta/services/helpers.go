@@ -176,6 +176,11 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
+
+	if val.Kind() != reflect.Struct {
+		return actors.UnknownStr, nil
+	}
+
 	for i := 0; i < val.Type().NumField(); i++ {
 		field := val.Field(i)
 		methodNum := field.Uint()
