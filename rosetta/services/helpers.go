@@ -100,8 +100,13 @@ func isAccountActorFallback(actorName string, method abi.MethodNum) bool {
 		method >= FIRST_EXPORTED_METHOD_NUMBER
 }
 
-func findMethodInType(methodNum uint64, actorType interface{}) string {
+func FindMethodInType(methodNum uint64, actorType interface{}) string {
 	val := reflect.Indirect(reflect.ValueOf(actorType))
+
+	if val.Kind() != reflect.Struct {
+		return actors.UnknownStr
+	}
+
 	for i := 0; i < val.Type().NumField(); i++ {
 		field := val.Field(i)
 		if field.Uint() == methodNum {
@@ -133,7 +138,7 @@ func FindMethodNameInAllActors(methodNum uint64) string {
 
 	// Try to find the method in each actor
 	for _, method := range methods {
-		if methodName := findMethodInType(methodNum, method); methodName != actors.UnknownStr {
+		if methodName := FindMethodInType(methodNum, method); methodName != actors.UnknownStr {
 			return methodName
 		}
 	}
@@ -171,6 +176,11 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(method))
+
+	if val.Kind() != reflect.Struct {
+		return actors.UnknownStr, nil
+	}
+
 	for i := 0; i < val.Type().NumField(); i++ {
 		field := val.Field(i)
 		methodNum := field.Uint()
