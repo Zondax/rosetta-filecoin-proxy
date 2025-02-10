@@ -18,7 +18,7 @@ type MemPoolAPIService struct {
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
-// NewBlockAPIService creates a new instance of a BlockAPIService.
+// NewMemPoolAPIService creates a new instance of a MempoolAPIService.
 func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.MempoolAPIServicer {
 	return &MemPoolAPIService{
 		network:    network,
