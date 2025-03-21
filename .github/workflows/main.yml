@@ -73,7 +73,6 @@ jobs:
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
-          # LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
-          LOTUS_RPC_URL: "https://node-fil-calibration-next-light.zondax.dev/rpc/v1"
+          LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
