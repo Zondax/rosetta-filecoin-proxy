@@ -5,6 +5,8 @@ LOTUSVER := $(shell go list -m all | grep github.com/filecoin-project/lotus | aw
 RETRYNUM := 10
 ROSETTAPORT_CI := 8081
 APPNAME := rosetta-filecoin-proxy
+LOTUS_DIR ?= ""
+LOTUS_VERSION ?= ""
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Darwin)
@@ -56,4 +58,19 @@ gitclean:
 test_calibration_macos: build
 	LOTUS_RPC_URL=https://node-fil-calibration-light.zondax.dev/rpc/v1  ./rosetta-filecoin-proxy &
 
-
+generate_mocks:
+	@if [ -z "$(LOTUS_DIR)" ]; then \
+		echo "Error: LOTUS_DIR is required. Use: make generate_mocks LOTUS_DIR=/path/to/lotus LOTUS_VERSION=v1.32.0-rc3"; \
+		exit 1; \
+	fi
+	@if [ -z "$(LOTUS_VERSION)" ]; then \
+		echo "Error: LOTUS_VERSION is required. Use: make generate_mocks LOTUS_DIR=/path/to/lotus LOTUS_VERSION=v1.32.0-rc3"; \
+		exit 1; \
+	fi
+	cd $(LOTUS_DIR) && \
+	git fetch --all && \
+	git checkout $(LOTUS_VERSION) && \
+	go mod tidy && \
+	cd - && \
+	go install github.com/vektra/mockery/v3@latest && \
+	mockery --config .mockery.yaml
