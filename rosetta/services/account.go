@@ -21,7 +21,7 @@ type AccountAPIService struct {
 	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 }
 
-// NewBlockAPIService creates a new instance of a BlockAPIService.
+// NewAccountAPIService creates a new instance of a BlockAPIService.
 func NewAccountAPIService(network *types.NetworkIdentifier, node *api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
 	return &AccountAPIService{
 		network:    network,
