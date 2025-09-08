@@ -50,6 +50,7 @@ jobs:
 #            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
             url: LOTUS_CALIBRATION_RPC_URL
+            token: LOTUS_CALIBRATION_RPC_TOKEN
     timeout-minutes: 120
     steps:
       - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
@@ -74,5 +75,6 @@ jobs:
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
+          LOTUS_RPC_TOKEN: ${{ secrets[matrix.token] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
