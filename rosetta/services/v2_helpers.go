@@ -81,14 +81,6 @@ func GetFinalityTagFromNetworkIdentifier(networkIdentifier *types.NetworkIdentif
 	return GetFinalityTagFromMetadata(networkIdentifier.SubNetworkIdentifier.Metadata)
 }
 
-// GetFinalityTagFromNetworkRequest extracts finality tag from NetworkRequest's network identifier
-func GetFinalityTagFromNetworkRequest(request *types.NetworkRequest) (FinalityTag, error) {
-	if request == nil {
-		return "", fmt.Errorf("network request is nil")
-	}
-	return GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
-}
-
 // CreateTagSelector creates a V2 TipSetSelector for the given finality tag
 func CreateTagSelector(tag FinalityTag) filTypes.TipSetSelector {
 	var tipsetTag filTypes.TipSetTag

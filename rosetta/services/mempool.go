@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/ipfs/go-cid"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
@@ -9,20 +10,23 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 )
 
-// BlockAPIService implements the server.BlockAPIServicer interface.
+// MemPoolAPIService implements the server.MempoolAPIServicer interface.
 type MemPoolAPIService struct {
 	network    *types.NetworkIdentifier
-	node       api.FullNode
+	v1Node     api.FullNode
+	v2Node     v2api.FullNode
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
-// NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.MempoolAPIServicer {
+// NewMemPoolAPIService creates a new instance of a MemPoolAPIService.
+func NewMemPoolAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.MempoolAPIServicer {
 	return &MemPoolAPIService{
 		network:    network,
-		node:       *api,
+		v1Node:     *v1API,
+		v2Node:     v2API,
 		rosettaLib: r,
 	}
 }
@@ -33,13 +37,13 @@ func (m *MemPoolAPIService) Mempool(
 	request *types.NetworkRequest,
 ) (*types.MempoolResponse, *types.Error) {
 
-	errNet := ValidateNetworkId(ctx, &m.node, request.NetworkIdentifier)
+	errNet := ValidateNetworkId(ctx, &m.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &m.node)
+	status, syncErr := CheckSyncStatus(ctx, &m.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -48,13 +52,19 @@ func (m *MemPoolAPIService) Mempool(
 		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil, true)
 	}
 
-	// Get head TipSet
-	headTipSet, err := m.node.ChainHead(ctx)
+	// Extract finality tag from request's network identifier
+	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+	}
+
+	// Get head TipSet using V2-aware helper
+	headTipSet, err := ChainGetTipSetWithFallback(ctx, m.v1Node, m.v2Node, finalityTag)
 	if err != nil || headTipSet == nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
-	pendingMsg, err := m.node.MpoolPending(ctx, headTipSet.Key())
+	pendingMsg, err := m.v1Node.MpoolPending(ctx, headTipSet.Key())
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTxns, err, true)
 	}
@@ -79,13 +89,13 @@ func (m MemPoolAPIService) MempoolTransaction(
 	request *types.MempoolTransactionRequest,
 ) (*types.MempoolTransactionResponse, *types.Error) {
 
-	errNet := ValidateNetworkId(ctx, &m.node, request.NetworkIdentifier)
+	errNet := ValidateNetworkId(ctx, &m.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &m.node)
+	status, syncErr := CheckSyncStatus(ctx, &m.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -103,13 +113,19 @@ func (m MemPoolAPIService) MempoolTransaction(
 		return nil, BuildError(ErrMalformedValue, err, true)
 	}
 
-	// Get head TipSet
-	headTipSet, err := m.node.ChainHead(ctx)
+	// Extract finality tag from request's network identifier
+	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+	}
+
+	// Get head TipSet using V2-aware helper
+	headTipSet, err := ChainGetTipSetWithFallback(ctx, m.v1Node, m.v2Node, finalityTag)
 	if err != nil || headTipSet == nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
-	pendingMsg, err := m.node.MpoolPending(ctx, headTipSet.Key())
+	pendingMsg, err := m.v1Node.MpoolPending(ctx, headTipSet.Key())
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTxns, err, true)
 	}
