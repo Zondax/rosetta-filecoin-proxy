@@ -12,6 +12,9 @@ var (
 	// Other configs
 	RetryConnectAttempts = "1000000"
 
+	// V2 API Configuration
+	EnableLotusV2APIs = "true" // Set to "true" to enable V2 F3-aware APIs
+
 	// Network name (read from api in main)
 	NetworkName = ""
 )
@@ -19,6 +22,9 @@ var (
 const (
 	// Network
 	BlockChainName = "Filecoin"
+
+	// SubNetwork for F3 finality
+	SubNetworkF3 = "f3"
 
 	// Currency
 	CurrencySymbol   = "FIL"
@@ -36,6 +42,14 @@ const (
 	VestingStartEpochKey     = "StartEpoch"
 	VestingUnlockDurationKey = "UnlockDuration"
 	VestingInitialBalanceKey = "InitialBalance"
+
+	// V2 API Finality Tags
+	FinalityTagLatest    = "latest"
+	FinalityTagSafe      = "safe"
+	FinalityTagFinalized = "finalized"
+
+	// Metadata keys for V2 API
+	MetadataFinalityTag = "finality_tag"
 
 	// Misc
 	ProxyLoggerName = "rosetta-filecoin-proxy"
