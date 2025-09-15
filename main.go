@@ -108,7 +108,7 @@ func newBlockchainRouter(
 		asserter,
 	)
 
-	blockAPIService := srv.NewBlockAPIService(network, &v1API, rosettaLib)
+	blockAPIService := srv.NewBlockAPIService(network, &v1API, v2API, rosettaLib)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,

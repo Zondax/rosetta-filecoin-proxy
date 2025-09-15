@@ -12,6 +12,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	initActor "github.com/filecoin-project/specs-actors/v8/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
@@ -28,15 +29,17 @@ const BlockCIDsKey = "blockCIDs"
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
 	network    *types.NetworkIdentifier
-	node       api.FullNode
+	v1Node     api.FullNode
+	v2Node     v2api.FullNode
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
+func NewBlockAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
 		network:    network,
-		node:       *api,
+		v1Node:     *v1API,
+		v2Node:     v2API,
 		rosettaLib: r,
 	}
 }
@@ -55,7 +58,7 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 	}
 
-	errNet := ValidateNetworkId(ctx, &s.node, request.NetworkIdentifier)
+	errNet := ValidateNetworkId(ctx, &s.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
@@ -66,7 +69,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &s.node)
+	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -78,19 +81,35 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
 	}
 
-	var tipSet *filTypes.TipSet
-	var err error
-	impl := func() {
-		tipSet, err = s.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-	}
-
-	errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
-	if errTimeOut != nil {
-		return nil, ErrLotusCallTimedOut
-	}
-
+	// Extract finality tag from request's network identifier
+	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
 	if err != nil {
-		return nil, BuildError(ErrUnableToGetTipset, err, true)
+		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+	}
+
+	var tipSet *filTypes.TipSet
+	
+	// If requesting the latest block (height == -1 or 0) and finality tag is specified, use ChainGetTipSetWithFallback
+	if requestedHeight <= 0 && finalityTag != "" {
+		tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
+		if err != nil {
+			return nil, BuildError(ErrUnableToGetTipset, err, true)
+		}
+		requestedHeight = int64(tipSet.Height())
+	} else {
+		// For specific heights, use regular ChainGetTipSetByHeight
+		impl := func() {
+			tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+		}
+
+		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
+		if errTimeOut != nil {
+			return nil, ErrLotusCallTimedOut
+		}
+
+		if err != nil {
+			return nil, BuildError(ErrUnableToGetTipset, err, true)
+		}
 	}
 
 	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
@@ -116,10 +135,10 @@ func (s *BlockAPIService) Block(
 		if tipSet.Parents().IsEmpty() {
 			return nil, BuildError(ErrUnableToGetParentBlk, nil, true)
 		}
-		impl = func() {
-			parentTipSet, err = s.node.ChainGetTipSet(ctx, tipSet.Parents())
+		impl := func() {
+			parentTipSet, err = s.v1Node.ChainGetTipSet(ctx, tipSet.Parents())
 		}
-		errTimeOut = tools.WrapWithTimeout(impl, LotusCallTimeOut)
+		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
 		if errTimeOut != nil {
 			return nil, ErrLotusCallTimedOut
 		}
@@ -135,7 +154,7 @@ func (s *BlockAPIService) Block(
 	// Build transactions data
 	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
-		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
+		states, err := getLotusStateCompute(ctx, &s.v1Node, tipSet)
 		if err != nil {
 			return nil, err
 		}
