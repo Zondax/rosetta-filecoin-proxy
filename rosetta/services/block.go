@@ -50,22 +50,21 @@ func (s *BlockAPIService) Block(
 	request *types.BlockRequest,
 ) (*types.BlockResponse, *types.Error) {
 
-	if request.BlockIdentifier == nil {
-		return nil, BuildError(ErrMalformedValue, nil, true)
-	}
-
-	if request.BlockIdentifier == nil && request.BlockIdentifier.Hash == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
-	}
+	// BlockIdentifier can be nil (to get latest/finalized) or have Index/Hash
+	// We'll handle nil BlockIdentifier as requesting the latest
 
 	errNet := ValidateNetworkId(ctx, &s.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
-	requestedHeight := *request.BlockIdentifier.Index
-	if requestedHeight < 0 {
-		return nil, BuildError(ErrMalformedValue, nil, true)
+	// Handle block identifier - can be specific height or not set (use -1 for not set)
+	var requestedHeight int64 = -1
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
+		requestedHeight = *request.BlockIdentifier.Index
+		if requestedHeight < 0 && requestedHeight != -1 {
+			return nil, BuildError(ErrMalformedValue, nil, true)
+		}
 	}
 
 	// Check sync status
@@ -77,10 +76,6 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil, true)
 	}
 
-	if request.BlockIdentifier.Index == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
-	}
-
 	// Extract finality tag from request's network identifier
 	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
 	if err != nil {
@@ -89,37 +84,79 @@ func (s *BlockAPIService) Block(
 
 	var tipSet *filTypes.TipSet
 	
-	// If requesting the latest block (height == -1 or 0) and finality tag is specified, use ChainGetTipSetWithFallback
-	if requestedHeight <= 0 && finalityTag != "" {
-		tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
+	// Decision logic based on the table:
+	// 1. If no block_identifier (requestedHeight == -1): use finality tag or chain head
+	// 2. If block_identifier is set and finality tag is set: return min(requested, finality_based)
+	// 3. If block_identifier is set and no finality tag: return requested block
+	
+	if requestedHeight == -1 {
+		// No block_identifier specified - use finality tag or chain head
+		if finalityTag != "" {
+			// Use finality-based tipset
+			tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetTipset, err, true)
+			}
+		} else {
+			// Use chain head (latest)
+			tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, "")
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetTipset, err, true)
+			}
+		}
+		requestedHeight = int64(tipSet.Height())
+	} else if finalityTag != "" {
+		// Both block_identifier and finality tag are set
+		// Get the finality-based tipset first
+		finalityTipSet, err := ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
 		if err != nil {
 			return nil, BuildError(ErrUnableToGetTipset, err, true)
 		}
-		requestedHeight = int64(tipSet.Height())
+		finalityHeight := int64(finalityTipSet.Height())
+		
+		// Return the minimum between requested and finality-based height
+		if requestedHeight <= finalityHeight {
+			// Requested block is already finalized, return it
+			impl := func() {
+				tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+			}
+			errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
+			if errTimeOut != nil {
+				return nil, ErrLotusCallTimedOut
+			}
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetTipset, err, true)
+			}
+		} else {
+			// Requested block is not finalized, return the finality-based block
+			tipSet = finalityTipSet
+			requestedHeight = finalityHeight
+		}
 	} else {
-		// For specific heights, use regular ChainGetTipSetByHeight
+		// Only block_identifier is set, no finality tag
 		impl := func() {
 			tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
 		}
-
 		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
 		if errTimeOut != nil {
 			return nil, ErrLotusCallTimedOut
 		}
-
 		if err != nil {
 			return nil, BuildError(ErrUnableToGetTipset, err, true)
 		}
 	}
 
 	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
-	// Check if the retrieved TipSet is actually the requested one
+	// Check if the retrieved TipSet is actually the requested one (only when specific height was requested)
 	// details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
-	if int64(tipSet.Height()) != requestedHeight {
-		return &types.BlockResponse{}, nil
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
+		if int64(tipSet.Height()) != requestedHeight {
+			return &types.BlockResponse{}, nil
+		}
 	}
 
-	if request.BlockIdentifier.Hash != nil {
+	// Verify hash if provided
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
 			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)
