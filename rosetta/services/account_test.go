@@ -14,6 +14,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 	mocks "github.com/zondax/rosetta-filecoin-proxy/rosetta/services/mocks"
 )
 
@@ -29,7 +30,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 
 	type fields struct {
 		network *types.NetworkIdentifier
-		node    api.FullNode
+		v1Node  api.FullNode
+		v2Node  v2api.FullNode
 	}
 	type args struct {
 		ctx     context.Context
@@ -106,7 +108,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 			name: "AvailableBalanceOfMultiSig",
 			fields: fields{
 				network: NetworkID,
-				node:    &nodeMock,
+				v1Node:  &nodeMock,
+				v2Node:  nil,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -141,7 +144,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 			name: "LockedBalanceOfMultiSig",
 			fields: fields{
 				network: NetworkID,
-				node:    &nodeMock,
+				v1Node:  &nodeMock,
+				v2Node:  nil,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -180,7 +184,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 			name: "VestingSchedule",
 			fields: fields{
 				network: NetworkID,
-				node:    &nodeMock,
+				v1Node:  &nodeMock,
+				v2Node:  nil,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -219,7 +224,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			a := AccountAPIService{
 				network: tt.fields.network,
-				node:    tt.fields.node,
+				v1Node:  tt.fields.v1Node,
+				v2Node:  tt.fields.v2Node,
 			}
 			got, got1 := a.AccountBalance(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -235,7 +241,8 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 func TestNewAccountAPIService(t *testing.T) {
 	type args struct {
 		network *types.NetworkIdentifier
-		node    *api.FullNode
+		v1Node  *api.FullNode
+		v2Node  v2api.FullNode
 	}
 	tests := []struct {
 		name string
@@ -246,7 +253,7 @@ func TestNewAccountAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAccountAPIService(tt.args.network, tt.args.node, rosettaLib); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAccountAPIService(tt.args.network, tt.args.v1Node, tt.args.v2Node, rosettaLib); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAccountAPIService() = %v, want %v", got, tt.want)
 			}
 		})
