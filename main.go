@@ -96,7 +96,7 @@ func newBlockchainRouter(
 	v2API v2api.FullNode,
 	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin,
 ) http.Handler {
-	accountAPIService := srv.NewAccountAPIService(network, &v1API, rosettaLib)
+	accountAPIService := srv.NewAccountAPIService(network, &v1API, v2API, rosettaLib)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
