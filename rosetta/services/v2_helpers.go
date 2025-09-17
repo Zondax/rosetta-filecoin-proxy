@@ -33,6 +33,33 @@ func IsV2EnabledForService() bool {
 	return enabled
 }
 
+// IsForceSafeF3FinalityEnabled checks if safe F3 finality should be forced when V2 APIs are enabled
+func IsForceSafeF3FinalityEnabled() bool {
+	enabled, err := strconv.ParseBool(ForceSafeF3Finality)
+	if err != nil {
+		return false // Default to false on parse error
+	}
+	return enabled
+}
+
+// shouldUseV2API determines if V2 API should be used based on configuration and availability
+func shouldUseV2API(v2Node v2api.FullNode, finalityTag FinalityTag) bool {
+	return IsV2EnabledForService() && v2Node != nil && finalityTag != ""
+}
+
+// getEffectiveFinalityTag returns the finality tag to use, applying force safe logic if needed
+func getEffectiveFinalityTag(requestedTag FinalityTag, v2Node v2api.FullNode) FinalityTag {
+	if requestedTag != "" {
+		return requestedTag
+	}
+
+	if IsV2EnabledForService() && IsForceSafeF3FinalityEnabled() && v2Node != nil {
+		return FinalitySafe
+	}
+
+	return ""
+}
+
 // GetFinalityTagFromMetadata extracts finality tag from Rosetta request metadata
 func GetFinalityTagFromMetadata(metadata map[string]interface{}) (FinalityTag, error) {
 	if metadata == nil {
@@ -104,42 +131,46 @@ func CreateTagSelector(tag FinalityTag) filTypes.TipSetSelector {
 // ChainGetTipSetWithFallback is a wrapper that uses V2 ChainGetTipSet if enabled,
 // otherwise falls back to V1 ChainHead
 func ChainGetTipSetWithFallback(ctx context.Context, v1Node api.FullNode, v2Node v2api.FullNode, tag FinalityTag) (*filTypes.TipSet, error) {
-	if IsV2EnabledForService() && v2Node != nil && tag != "" {
-		// Use V2 API - ChainGetTipSet with tag selector
-		selector := CreateTagSelector(tag)
+	effectiveTag := getEffectiveFinalityTag(tag, v2Node)
+
+	if shouldUseV2API(v2Node, effectiveTag) {
+		selector := CreateTagSelector(effectiveTag)
 		tipSet, err := v2Node.ChainGetTipSet(ctx, selector)
 		if err != nil {
 			v2Logger.Errorf("failed to get tipset with v2: %v", err)
 			return nil, fmt.Errorf("v2 ChainGetTipSet failed: %w", err)
 		}
 		return tipSet, nil
-	} else {
-		// If finality tag is specified but V2 is not enabled/available, return error
-		if tag != "" {
-			return nil, fmt.Errorf("finality_tag '%s' requires V2 APIs to be enabled", tag)
-		}
-		// Only use V1 API when no finality tag is specified
-		return v1Node.ChainHead(ctx)
 	}
+
+	// If finality tag is specified but V2 is not enabled/available, return error
+	if tag != "" {
+		return nil, fmt.Errorf("finality_tag '%s' requires V2 APIs to be enabled", tag)
+	}
+
+	// Use V1 API when no finality tag is specified
+	return v1Node.ChainHead(ctx)
 }
 
 // StateGetActorWithFallback is a wrapper that uses V2 StateGetActor if enabled,
 // otherwise falls back to V1 StateGetActor with EmptyTSK only if no finality tag is specified
 func StateGetActorWithFallback(ctx context.Context, v1Node api.FullNode, v2Node v2api.FullNode, addr address.Address, tag FinalityTag) (*filTypes.Actor, error) {
-	if IsV2EnabledForService() && v2Node != nil && tag != "" {
-		// Use V2 API - StateGetActor with tag selector
-		selector := CreateTagSelector(tag)
+	effectiveTag := getEffectiveFinalityTag(tag, v2Node)
+
+	if shouldUseV2API(v2Node, effectiveTag) {
+		selector := CreateTagSelector(effectiveTag)
 		actor, err := v2Node.StateGetActor(ctx, addr, selector)
 		if err != nil {
 			return nil, fmt.Errorf("v2 StateGetActor failed: %w", err)
 		}
 		return actor, nil
-	} else {
-		// If finality tag is specified but V2 is not enabled/available, return error
-		if tag != "" {
-			return nil, fmt.Errorf("finality_tag '%s' requires V2 APIs to be enabled", tag)
-		}
-		// Only use V1 API when no finality tag is specified
-		return v1Node.StateGetActor(ctx, addr, filTypes.EmptyTSK)
 	}
+
+	// If finality tag is specified but V2 is not enabled/available, return error
+	if tag != "" {
+		return nil, fmt.Errorf("finality_tag '%s' requires V2 APIs to be enabled", tag)
+	}
+
+	// Use V1 API when no finality tag is specified
+	return v1Node.StateGetActor(ctx, addr, filTypes.EmptyTSK)
 }

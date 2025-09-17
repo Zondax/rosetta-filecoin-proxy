@@ -52,24 +52,39 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, js
 		headers.Add("Authorization", "Bearer "+token)
 	}
 
+	// Determine the V1 and V2 endpoints based on the provided address
+	var v1Addr, v2Addr string
+
+	if strings.HasSuffix(addr, "/rpc") {
+		// New format: base URL ends with /rpc
+		// Append /v1 and /v2 to create specific endpoints
+		v1Addr = addr + "/v1"
+		v2Addr = addr + "/v2"
+		srv.Logger.Infof("Using base /rpc endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
+	} else if strings.Contains(addr, "/rpc/v1") {
+		// Legacy format: already has /rpc/v1
+		v1Addr = addr
+		v2Addr = strings.Replace(addr, "/rpc/v1", "/rpc/v2", 1)
+		srv.Logger.Infof("Using legacy /rpc/v1 endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
+	} else if strings.Contains(addr, "/rpc/v2") {
+		// If someone provides v2 endpoint directly, derive v1 from it
+		v1Addr = strings.Replace(addr, "/rpc/v2", "/rpc/v1", 1)
+		v2Addr = addr
+		srv.Logger.Infof("Using /rpc/v2 endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
+	} else {
+		// Unrecognized format - return error
+		return nil, nil, nil, fmt.Errorf("unrecognized RPC endpoint format: %s. Expected format ending with /rpc, /rpc/v1, or /rpc/v2", addr)
+	}
+
 	// Always create V1 client
-	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), addr, headers)
+	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), v1Addr, headers)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
 	}
 
 	// Check if V2 APIs should be created
 	useV2, _ := strconv.ParseBool(srv.EnableLotusV2APIs)
 	if useV2 {
-		// Derive V2 endpoint from V1 endpoint by replacing /rpc/v1 with /rpc/v2
-		v2Addr := addr
-		if strings.Contains(addr, "/rpc/v1") {
-			v2Addr = strings.Replace(addr, "/rpc/v1", "/rpc/v2", 1)
-			srv.Logger.Infof("Using V2 endpoint: %s", v2Addr)
-		} else {
-			srv.Logger.Warnf("V1 endpoint doesn't contain '/rpc/v1', using same endpoint for V2: %s", addr)
-		}
-
 		// Try to create V2 client
 		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), v2Addr, headers)
 		if err != nil {
@@ -102,7 +117,7 @@ func newBlockchainRouter(
 		asserter,
 	)
 
-	networkAPIService := srv.NewNetworkAPIService(network, &v1API, srv.GetSupportedOpList())
+	networkAPIService := srv.NewNetworkAPIService(network, &v1API, v2API, srv.GetSupportedOpList())
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
