@@ -83,12 +83,12 @@ func (s *BlockAPIService) Block(
 	}
 
 	var tipSet *filTypes.TipSet
-	
+
 	// Decision logic based on the table:
 	// 1. If no block_identifier (requestedHeight == -1): use finality tag or chain head
 	// 2. If block_identifier is set and finality tag is set: return min(requested, finality_based)
 	// 3. If block_identifier is set and no finality tag: return requested block
-	
+
 	if requestedHeight == -1 {
 		// No block_identifier specified - use finality tag or chain head
 		if finalityTag != "" {
@@ -113,7 +113,7 @@ func (s *BlockAPIService) Block(
 			return nil, BuildError(ErrUnableToGetTipset, err, true)
 		}
 		finalityHeight := int64(finalityTipSet.Height())
-		
+
 		// Return the minimum between requested and finality-based height
 		if requestedHeight <= finalityHeight {
 			// Requested block is already finalized, return it

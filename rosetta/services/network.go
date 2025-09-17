@@ -6,6 +6,7 @@ import (
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
@@ -13,15 +14,17 @@ import (
 type NetworkAPIService struct {
 	response     *types.NetworkStatusResponse
 	network      *types.NetworkIdentifier
-	node         api.FullNode
+	v1Node       api.FullNode
+	v2Node       v2api.FullNode
 	supportedOps []string
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
-func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode, supportedOps []string) server.NetworkAPIServicer {
+func NewNetworkAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, supportedOps []string) server.NetworkAPIServicer {
 	return &NetworkAPIService{
 		network:      network,
-		node:         *node,
+		v1Node:       *v1API,
+		v2Node:       v2API,
 		supportedOps: supportedOps,
 	}
 }
@@ -31,7 +34,7 @@ func (s *NetworkAPIService) NetworkList(
 	ctx context.Context,
 	request *types.MetadataRequest,
 ) (*types.NetworkListResponse, *types.Error) {
-	networkName, err := s.node.StateNetworkName(ctx)
+	networkName, err := s.v1Node.StateNetworkName(ctx)
 	if err != nil {
 		return nil, ErrUnableToGetChainID
 	}
@@ -41,6 +44,13 @@ func (s *NetworkAPIService) NetworkList(
 			{
 				Blockchain: BlockChainName,
 				Network:    string(networkName),
+			},
+			{
+				Blockchain: BlockChainName,
+				Network:    string(networkName),
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: SubNetworkF3,
+				},
 			},
 		},
 	}
@@ -60,8 +70,14 @@ func (s *NetworkAPIService) NetworkStatus(
 		useGenesisTipSet = false
 	)
 
+	// Extract finality tag from network identifier if F3 sub-network is requested
+	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
+	if err != nil {
+		return nil, BuildError(ErrMalformedValue, err, false)
+	}
+
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &s.node)
+	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -81,11 +97,18 @@ func (s *NetworkAPIService) NetworkStatus(
 		useGenesisTipSet = true
 	}
 
-	// Get head TipSet
-	headTipSet, err = s.node.ChainHead(ctx)
-
-	if err != nil || headTipSet == nil {
-		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+	// Get head TipSet using v2 API with finality tag if requested
+	if !useGenesisTipSet {
+		headTipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
+		if err != nil {
+			return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+		}
+	} else {
+		// When syncing, always use v1 ChainHead
+		headTipSet, err = s.v1Node.ChainHead(ctx)
+		if err != nil || headTipSet == nil {
+			return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
+		}
 	}
 
 	hashHeadTipSet, err := BuildTipSetKeyHash(headTipSet.Key())
@@ -94,7 +117,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	// Get genesis TipSet
-	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
+	genesisTipSet, err := s.v1Node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
 		return nil, BuildError(ErrUnableToGetGenesisBlk, err, true)
 	}
@@ -105,7 +128,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	// Get peers data
-	peersFil, err := s.node.NetPeers(ctx)
+	peersFil, err := s.v1Node.NetPeers(ctx)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetPeers, err, true)
 	}
@@ -156,7 +179,7 @@ func (s *NetworkAPIService) NetworkOptions(
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
 
-	version, err := s.node.Version(ctx)
+	version, err := s.v1Node.Version(ctx)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetNodeInfo, err, false)
 	}
