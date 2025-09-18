@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -39,20 +40,29 @@ func (s *NetworkAPIService) NetworkList(
 		return nil, ErrUnableToGetChainID
 	}
 
-	resp := &types.NetworkListResponse{
-		NetworkIdentifiers: []*types.NetworkIdentifier{
-			{
-				Blockchain: BlockChainName,
-				Network:    string(networkName),
-			},
+	f3NetworkIdentifier := []*types.NetworkIdentifier{}
+	if IsV2EnabledForService() {
+		f3NetworkIdentifier = []*types.NetworkIdentifier{
 			{
 				Blockchain: BlockChainName,
 				Network:    string(networkName),
 				SubNetworkIdentifier: &types.SubNetworkIdentifier{
 					Network: SubNetworkF3,
+					Metadata: map[string]interface{}{
+						MetadataFinalityTag: fmt.Sprintf("%s/%s/%s", FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized),
+					},
 				},
 			},
-		},
+		}
+	}
+
+	resp := &types.NetworkListResponse{
+		NetworkIdentifiers: append([]*types.NetworkIdentifier{
+			{
+				Blockchain: BlockChainName,
+				Network:    string(networkName),
+			},
+		}, f3NetworkIdentifier...),
 	}
 
 	return resp, nil
@@ -86,12 +96,15 @@ func (s *NetworkAPIService) NetworkStatus(
 	targetIndex := status.GetTargetIndex()
 
 	stage := status.globalSyncState.String()
+	synced := status.IsSynced()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
 		CurrentIndex: &currentIndex,
 		TargetIndex:  targetIndex,
+		Synced:       &synced,
 	}
-	if !status.IsSynced() {
+
+	if !synced {
 		// Cannot retrieve any TipSet while node is syncing
 		// use Genesis TipSet instead
 		useGenesisTipSet = true
@@ -168,7 +181,42 @@ func (s *NetworkAPIService) NetworkStatus(
 
 	// Always update Peers and SyncStatus
 	s.response.Peers = peers
-	s.response.SyncStatus = syncStatus
+
+	// Enhance SyncStatus with F3 finality information
+	enhancedSyncStatus := &types.SyncStatus{
+		Stage:        syncStatus.Stage,
+		CurrentIndex: syncStatus.CurrentIndex,
+		TargetIndex:  syncStatus.TargetIndex,
+		Synced:       syncStatus.Synced,
+	}
+
+	// Add F3 metadata to sync status
+	if IsV2EnabledForService() {
+		// Create stage info that includes F3 status
+		f3Stage := ""
+		if syncStatus.Stage != nil {
+			f3Stage = *syncStatus.Stage
+		}
+
+		f3Info := fmt.Sprintf("%s (F3: enabled", f3Stage)
+		if finalityTag != "" {
+			f3Info += fmt.Sprintf(", finality: %s", finalityTag)
+		}
+		if IsForceSafeF3FinalityEnabled() {
+			f3Info += fmt.Sprintf(", force_f3: true, default_f3_finality: %s)", FinalityTagSafe)
+		}
+		enhancedSyncStatus.Stage = &f3Info
+	} else {
+		// Indicate F3 is disabled
+		f3Stage := ""
+		if syncStatus.Stage != nil {
+			f3Stage = *syncStatus.Stage
+		}
+		f3Info := fmt.Sprintf("%s (F3: disabled)", f3Stage)
+		enhancedSyncStatus.Stage = &f3Info
+	}
+
+	s.response.SyncStatus = enhancedSyncStatus
 
 	return s.response, nil
 }
@@ -184,10 +232,31 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, BuildError(ErrUnableToGetNodeInfo, err, false)
 	}
 
+	// Create version metadata with F3 information
+	versionMetadata := map[string]interface{}{}
+
+	if IsV2EnabledForService() {
+		versionMetadata["f3_enabled"] = true
+		versionMetadata["f3_supported_finality_tags"] = []string{
+			FinalityTagLatest,
+			FinalityTagSafe,
+			FinalityTagFinalized,
+		}
+		versionMetadata["f3_sub_network"] = SubNetworkF3
+		if IsForceSafeF3FinalityEnabled() {
+			versionMetadata["force_f3"] = true
+			versionMetadata["default_f3_finality_tag"] = FinalityTagSafe
+		}
+	} else {
+		versionMetadata["f3_enabled"] = false
+		versionMetadata["f3_reason"] = "V2 APIs disabled"
+	}
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
 			NodeVersion:    version.Version,
+			Metadata:       versionMetadata,
 		},
 		Allow: &types.Allow{
 			HistoricalBalanceLookup: true,

@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"strconv"
+
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"github.com/zondax/rosetta-filecoin-lib/actors"
-	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -79,7 +80,7 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	// Decision logic based on the table:
 	// 1. If no block_identifier (requestedHeight == -1): use finality tag or chain head
-	// 2. If block_identifier is set and finality tag is set: return min(requested, finality_based)
+	// 2. If block_identifier is set and finality tag is set: return max(requested, finality_based)
 	// 3. If block_identifier is set and no finality tag: return requested block
 
 	if requestedHeight == -1 {
@@ -107,8 +108,8 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 		finalityHeight := int64(finalityTipSet.Height())
 
-		// Return the minimum between requested and finality-based height
-		if requestedHeight <= finalityHeight {
+		// Return the maximum between requested and finality-based height
+		if requestedHeight >= finalityHeight {
 			// Requested block is already finalized, return it
 			tipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
 			if filErr != nil {
