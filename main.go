@@ -153,12 +153,26 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	}
 
 	// Create network identifier with f3 sub-network for finality support
-	networkWithF3 := &types.NetworkIdentifier{
-		Blockchain: BlockchainName,
-		Network:    string(netName),
-		SubNetworkIdentifier: &types.SubNetworkIdentifier{
-			Network: srv.SubNetworkF3,
-		},
+	createNetworkIdentifierWithF3 := func(tag srv.FinalityTag) *types.NetworkIdentifier {
+		return &types.NetworkIdentifier{
+			Blockchain: BlockchainName,
+			Network:    string(netName),
+			SubNetworkIdentifier: &types.SubNetworkIdentifier{
+				Network: srv.SubNetworkF3,
+				Metadata: map[string]interface{}{
+					srv.MetadataFinalityTag: string(tag),
+				},
+			},
+		}
+	}
+
+	f3NetworkIdentifiers := []*types.NetworkIdentifier{}
+	if srv.IsV2EnabledForService() {
+		f3NetworkIdentifiers = []*types.NetworkIdentifier{
+			createNetworkIdentifierWithF3(srv.FinalityTagLatest),
+			createNetworkIdentifierWithF3(srv.FinalityTagSafe),
+			createNetworkIdentifierWithF3(srv.FinalityTagFinalized),
+		}
 	}
 
 	// The asserter automatically rejects incorrectly formatted
@@ -166,7 +180,7 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	asserter, err := rosettaAsserter.NewServer(
 		srv.GetSupportedOpList(),
 		true,
-		[]*types.NetworkIdentifier{network, networkWithF3},
+		append([]*types.NetworkIdentifier{network}, f3NetworkIdentifiers...),
 		nil,
 		false,
 		"",
@@ -222,11 +236,7 @@ func connectAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrp
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	if v2API != nil {
-		srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: enabled", version.String(), srv.NetworkName)
-	} else {
-		srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: disabled", version.String(), srv.NetworkName)
-	}
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Force Safe F3 Finality: %v", version.String(), srv.NetworkName, v2API != nil, srv.ForceSafeF3Finality != "false")
 
 	return v1API, v2API, clientCloser, nil
 }
@@ -247,6 +257,10 @@ func main() {
 	// Configure V2 API usage
 	if enableV2 := os.Getenv("ENABLE_LOTUS_V2_APIS"); enableV2 != "" {
 		srv.EnableLotusV2APIs = enableV2
+	}
+
+	if forceSafeF3Finality := os.Getenv("FORCE_SAFE_F3_FINALITY"); forceSafeF3Finality != "" {
+		srv.ForceSafeF3Finality = forceSafeF3Finality
 	}
 
 	srv.Logger.Info("Starting Rosetta Proxy")

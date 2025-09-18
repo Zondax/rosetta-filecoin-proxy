@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"time"
+
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -50,22 +51,29 @@ func (s *BlockAPIService) Block(
 	request *types.BlockRequest,
 ) (*types.BlockResponse, *types.Error) {
 
-	// BlockIdentifier can be nil (to get latest/finalized) or have Index/Hash
-	// We'll handle nil BlockIdentifier as requesting the latest
+	// BlockIdentifier is always present and contains either Index or Hash (or both)
 
 	errNet := ValidateNetworkId(ctx, &s.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
-	// Handle block identifier - can be specific height or not set (use -1 for not set)
-	var requestedHeight int64 = -1
-	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
-		requestedHeight = *request.BlockIdentifier.Index
-		if requestedHeight < 0 && requestedHeight != -1 {
-			return nil, BuildError(ErrMalformedValue, nil, true)
-		}
+	// Validate that BlockIdentifier is present
+	if request.BlockIdentifier == nil {
+		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier is required"), false)
 	}
+
+	// Handle block identifier - index is required, hash is optional for validation
+	if request.BlockIdentifier.Index == nil {
+		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier.index is required"), false)
+	}
+
+	requestedHeight := *request.BlockIdentifier.Index
+	if requestedHeight < 0 {
+		return nil, BuildError(ErrMalformedValue, nil, true)
+	}
+
+	// Hash is optional and only used for validation later
 
 	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
@@ -84,39 +92,21 @@ func (s *BlockAPIService) Block(
 
 	var tipSet *filTypes.TipSet
 
-	// Decision logic based on the table:
-	// 1. If no block_identifier (requestedHeight == -1): use finality tag or chain head
-	// 2. If block_identifier is set and finality tag is set: return min(requested, finality_based)
-	// 3. If block_identifier is set and no finality tag: return requested block
+	// Decision logic:
+	// 1. If finality tag is present: return max(requested_height, finality_height)
+	// 2. If no finality tag: return the requested block
 
-	if requestedHeight == -1 {
-		// No block_identifier specified - use finality tag or chain head
-		if finalityTag != "" {
-			// Use finality-based tipset
-			tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetTipset, err, true)
-			}
-		} else {
-			// Use chain head (latest)
-			tipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, "")
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetTipset, err, true)
-			}
-		}
-		requestedHeight = int64(tipSet.Height())
-	} else if finalityTag != "" {
-		// Both block_identifier and finality tag are set
-		// Get the finality-based tipset first
+	if finalityTag != "" {
+		// Get the finality-based tipset
 		finalityTipSet, err := ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
 		if err != nil {
 			return nil, BuildError(ErrUnableToGetTipset, err, true)
 		}
 		finalityHeight := int64(finalityTipSet.Height())
 
-		// Return the minimum between requested and finality-based height
-		if requestedHeight <= finalityHeight {
-			// Requested block is already finalized, return it
+		// Return the maximum between requested and finality-based height
+		if requestedHeight >= finalityHeight {
+			// Requested block is already at or beyond finality height, return it
 			impl := func() {
 				tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
 			}
@@ -128,12 +118,12 @@ func (s *BlockAPIService) Block(
 				return nil, BuildError(ErrUnableToGetTipset, err, true)
 			}
 		} else {
-			// Requested block is not finalized, return the finality-based block
+			// Requested block is before finality, return the finality-based block
 			tipSet = finalityTipSet
 			requestedHeight = finalityHeight
 		}
 	} else {
-		// Only block_identifier is set, no finality tag
+		// No finality tag - return the requested block
 		impl := func() {
 			tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
 		}
@@ -147,12 +137,12 @@ func (s *BlockAPIService) Block(
 	}
 
 	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
-	// Check if the retrieved TipSet is actually the requested one (only when specific height was requested)
+	// Check if the retrieved TipSet is actually the requested one (only when no finality override occurred)
 	// details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
-	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
-		if int64(tipSet.Height()) != requestedHeight {
-			return &types.BlockResponse{}, nil
-		}
+	originalRequestedHeight := *request.BlockIdentifier.Index
+	if finalityTag == "" && int64(tipSet.Height()) != originalRequestedHeight {
+		// No finality tag but height doesn't match - return empty response for missing block
+		return &types.BlockResponse{}, nil
 	}
 
 	// Verify hash if provided
