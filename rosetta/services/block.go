@@ -5,13 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/zondax/rosetta-filecoin-lib/actors"
 	"time"
+
+	"github.com/zondax/rosetta-filecoin-lib/actors"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	initActor "github.com/filecoin-project/specs-actors/v8/actors/builtin/init"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
@@ -28,15 +30,17 @@ const BlockCIDsKey = "blockCIDs"
 // BlockAPIService implements the server.BlockAPIServicer interface.
 type BlockAPIService struct {
 	network    *types.NetworkIdentifier
-	node       api.FullNode
+	v1Node     api.FullNode
+	v2Node     v2api.FullNode
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewBlockAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
+func NewBlockAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
 		network:    network,
-		node:       *api,
+		v1Node:     *v1API,
+		v2Node:     v2API,
 		rosettaLib: r,
 	}
 }
@@ -47,17 +51,21 @@ func (s *BlockAPIService) Block(
 	request *types.BlockRequest,
 ) (*types.BlockResponse, *types.Error) {
 
-	if request.BlockIdentifier == nil {
-		return nil, BuildError(ErrMalformedValue, nil, true)
-	}
+	// BlockIdentifier is always present and contains either Index or Hash (or both)
 
-	if request.BlockIdentifier == nil && request.BlockIdentifier.Hash == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
-	}
-
-	errNet := ValidateNetworkId(ctx, &s.node, request.NetworkIdentifier)
+	errNet := ValidateNetworkId(ctx, &s.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
+	}
+
+	// Validate that BlockIdentifier is present
+	if request.BlockIdentifier == nil {
+		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier is required"), false)
+	}
+
+	// Handle block identifier - index is required, hash is optional for validation
+	if request.BlockIdentifier.Index == nil {
+		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier.index is required"), false)
 	}
 
 	requestedHeight := *request.BlockIdentifier.Index
@@ -65,8 +73,10 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrMalformedValue, nil, true)
 	}
 
+	// Hash is optional and only used for validation later
+
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &s.node)
+	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -74,33 +84,69 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil, true)
 	}
 
-	if request.BlockIdentifier.Index == nil {
-		return nil, BuildError(ErrInsufficientQueryInputs, nil, true)
+	// Extract finality tag from request's network identifier
+	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
 	var tipSet *filTypes.TipSet
-	var err error
-	impl := func() {
-		tipSet, err = s.node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-	}
 
-	errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
-	if errTimeOut != nil {
-		return nil, ErrLotusCallTimedOut
-	}
+	// Decision logic:
+	// 1. If finality tag is present: return max(requested_height, finality_height)
+	// 2. If no finality tag: return the requested block
 
-	if err != nil {
-		return nil, BuildError(ErrUnableToGetTipset, err, true)
+	if finalityTag != "" {
+		// Get the finality-based tipset
+		finalityTipSet, err := ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
+		if err != nil {
+			return nil, BuildError(ErrUnableToGetTipset, err, true)
+		}
+		finalityHeight := int64(finalityTipSet.Height())
+
+		// Return the maximum between requested and finality-based height
+		if requestedHeight >= finalityHeight {
+			// Requested block is already at or beyond finality height, return it
+			impl := func() {
+				tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+			}
+			errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
+			if errTimeOut != nil {
+				return nil, ErrLotusCallTimedOut
+			}
+			if err != nil {
+				return nil, BuildError(ErrUnableToGetTipset, err, true)
+			}
+		} else {
+			// Requested block is before finality, return the finality-based block
+			tipSet = finalityTipSet
+			requestedHeight = finalityHeight
+		}
+	} else {
+		// No finality tag - return the requested block
+		impl := func() {
+			tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+		}
+		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
+		if errTimeOut != nil {
+			return nil, ErrLotusCallTimedOut
+		}
+		if err != nil {
+			return nil, BuildError(ErrUnableToGetTipset, err, true)
+		}
 	}
 
 	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
-	// Check if the retrieved TipSet is actually the requested one
+	// Check if the retrieved TipSet is actually the requested one (only when no finality override occurred)
 	// details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
-	if int64(tipSet.Height()) != requestedHeight {
+	originalRequestedHeight := *request.BlockIdentifier.Index
+	if finalityTag == "" && int64(tipSet.Height()) != originalRequestedHeight {
+		// No finality tag but height doesn't match - return empty response for missing block
 		return &types.BlockResponse{}, nil
 	}
 
-	if request.BlockIdentifier.Hash != nil {
+	// Verify hash if provided
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
 			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)
@@ -116,10 +162,10 @@ func (s *BlockAPIService) Block(
 		if tipSet.Parents().IsEmpty() {
 			return nil, BuildError(ErrUnableToGetParentBlk, nil, true)
 		}
-		impl = func() {
-			parentTipSet, err = s.node.ChainGetTipSet(ctx, tipSet.Parents())
+		impl := func() {
+			parentTipSet, err = s.v1Node.ChainGetTipSet(ctx, tipSet.Parents())
 		}
-		errTimeOut = tools.WrapWithTimeout(impl, LotusCallTimeOut)
+		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
 		if errTimeOut != nil {
 			return nil, ErrLotusCallTimedOut
 		}
@@ -135,7 +181,7 @@ func (s *BlockAPIService) Block(
 	// Build transactions data
 	var transactions *[]*types.Transaction
 	if requestedHeight > 1 {
-		states, err := getLotusStateCompute(ctx, &s.node, tipSet)
+		states, err := getLotusStateCompute(ctx, &s.v1Node, tipSet)
 		if err != nil {
 			return nil, err
 		}

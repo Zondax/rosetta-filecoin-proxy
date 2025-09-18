@@ -66,6 +66,18 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 		return BuildError(ErrInvalidNetwork, nil, true)
 	}
 
+	// Validate sub-network identifier if present
+	if networkId.SubNetworkIdentifier != nil {
+		// Currently only F3 sub-network is supported
+		if networkId.SubNetworkIdentifier.Network != SubNetworkF3 {
+			return BuildError(ErrInvalidNetwork, nil, true)
+		}
+		// If F3 sub-network is requested, metadata with finality_tag is required
+		if networkId.SubNetworkIdentifier.Metadata == nil {
+			return BuildError(ErrMalformedValue, nil, false)
+		}
+	}
+
 	return nil
 }
 

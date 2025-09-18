@@ -11,6 +11,7 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/ipfs/go-cid"
@@ -89,7 +90,8 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	type fields struct {
 		network *types.NetworkIdentifier
-		node    api.FullNode
+		v1Node  api.FullNode
+		v2Node  v2api.FullNode
 	}
 
 	type args struct {
@@ -107,7 +109,8 @@ func TestBlockAPIService_Block(t *testing.T) {
 			name: "RetrieveGenesisTipSet",
 			fields: fields{
 				network: NetworkID,
-				node:    &nodeMock,
+				v1Node:  &nodeMock,
+				v2Node:  nil,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -127,7 +130,8 @@ func TestBlockAPIService_Block(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &BlockAPIService{
 				network: tt.fields.network,
-				node:    tt.fields.node,
+				v1Node:  tt.fields.v1Node,
+				v2Node:  tt.fields.v2Node,
 			}
 			got, got1 := s.Block(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -143,7 +147,8 @@ func TestBlockAPIService_Block(t *testing.T) {
 func TestBlockAPIService_BlockTransaction(t *testing.T) {
 	type fields struct {
 		network *types.NetworkIdentifier
-		node    api.FullNode
+		v1Node  api.FullNode
+		v2Node  v2api.FullNode
 	}
 	type args struct {
 		ctx     context.Context
@@ -162,7 +167,8 @@ func TestBlockAPIService_BlockTransaction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &BlockAPIService{
 				network: tt.fields.network,
-				node:    tt.fields.node,
+				v1Node:  tt.fields.v1Node,
+				v2Node:  tt.fields.v2Node,
 			}
 			got, got1 := s.BlockTransaction(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -178,7 +184,8 @@ func TestBlockAPIService_BlockTransaction(t *testing.T) {
 func TestNewBlockAPIService(t *testing.T) {
 	type args struct {
 		network *types.NetworkIdentifier
-		api     *api.FullNode
+		v1API   *api.FullNode
+		v2API   v2api.FullNode
 	}
 	tests := []struct {
 		name string
@@ -189,7 +196,7 @@ func TestNewBlockAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBlockAPIService(tt.args.network, tt.args.api, rosettaLib); !reflect.DeepEqual(got, tt.want) {
+			if got := NewBlockAPIService(tt.args.network, tt.args.v1API, tt.args.v2API, rosettaLib); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewBlockAPIService() = %v, want %v", got, tt.want)
 			}
 		})
