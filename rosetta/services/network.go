@@ -2,12 +2,10 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
-	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 )
 
@@ -15,17 +13,15 @@ import (
 type NetworkAPIService struct {
 	response     *types.NetworkStatusResponse
 	network      *types.NetworkIdentifier
-	v1Node       api.FullNode
-	v2Node       v2api.FullNode
+	node         api.FullNode
 	supportedOps []string
 }
 
 // NewNetworkAPIService creates a new instance of a NetworkAPIService.
-func NewNetworkAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, supportedOps []string) server.NetworkAPIServicer {
+func NewNetworkAPIService(network *types.NetworkIdentifier, node *api.FullNode, supportedOps []string) server.NetworkAPIServicer {
 	return &NetworkAPIService{
 		network:      network,
-		v1Node:       *v1API,
-		v2Node:       v2API,
+		node:         *node,
 		supportedOps: supportedOps,
 	}
 }
@@ -35,34 +31,18 @@ func (s *NetworkAPIService) NetworkList(
 	ctx context.Context,
 	request *types.MetadataRequest,
 ) (*types.NetworkListResponse, *types.Error) {
-	networkName, err := s.v1Node.StateNetworkName(ctx)
+	networkName, err := s.node.StateNetworkName(ctx)
 	if err != nil {
 		return nil, ErrUnableToGetChainID
 	}
 
-	f3NetworkIdentifier := []*types.NetworkIdentifier{}
-	if IsV2EnabledForService() {
-		f3NetworkIdentifier = []*types.NetworkIdentifier{
-			{
-				Blockchain: BlockChainName,
-				Network:    string(networkName),
-				SubNetworkIdentifier: &types.SubNetworkIdentifier{
-					Network: SubNetworkF3,
-					Metadata: map[string]interface{}{
-						MetadataFinalityTag: fmt.Sprintf("%s/%s/%s", FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized),
-					},
-				},
-			},
-		}
-	}
-
 	resp := &types.NetworkListResponse{
-		NetworkIdentifiers: append([]*types.NetworkIdentifier{
+		NetworkIdentifiers: []*types.NetworkIdentifier{
 			{
 				Blockchain: BlockChainName,
 				Network:    string(networkName),
 			},
-		}, f3NetworkIdentifier...),
+		},
 	}
 
 	return resp, nil
@@ -80,14 +60,8 @@ func (s *NetworkAPIService) NetworkStatus(
 		useGenesisTipSet = false
 	)
 
-	// Extract finality tag from network identifier if F3 sub-network is requested
-	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
-	if err != nil {
-		return nil, BuildError(ErrMalformedValue, err, false)
-	}
-
 	// Check sync status
-	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
+	status, syncErr := CheckSyncStatus(ctx, &s.node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
@@ -96,32 +70,22 @@ func (s *NetworkAPIService) NetworkStatus(
 	targetIndex := status.GetTargetIndex()
 
 	stage := status.globalSyncState.String()
-	synced := status.IsSynced()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
 		CurrentIndex: &currentIndex,
 		TargetIndex:  targetIndex,
-		Synced:       &synced,
 	}
-
-	if !synced {
+	if !status.IsSynced() {
 		// Cannot retrieve any TipSet while node is syncing
 		// use Genesis TipSet instead
 		useGenesisTipSet = true
 	}
 
-	// Get head TipSet using v2 API with finality tag if requested
-	if !useGenesisTipSet {
-		headTipSet, err = ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
-		if err != nil {
-			return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
-		}
-	} else {
-		// When syncing, always use v1 ChainHead
-		headTipSet, err = s.v1Node.ChainHead(ctx)
-		if err != nil || headTipSet == nil {
-			return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
-		}
+	// Get head TipSet
+	headTipSet, err = s.node.ChainHead(ctx)
+
+	if err != nil || headTipSet == nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
 	hashHeadTipSet, err := BuildTipSetKeyHash(headTipSet.Key())
@@ -130,7 +94,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	// Get genesis TipSet
-	genesisTipSet, err := s.v1Node.ChainGetGenesis(ctx)
+	genesisTipSet, err := s.node.ChainGetGenesis(ctx)
 	if err != nil || genesisTipSet == nil {
 		return nil, BuildError(ErrUnableToGetGenesisBlk, err, true)
 	}
@@ -141,7 +105,7 @@ func (s *NetworkAPIService) NetworkStatus(
 	}
 
 	// Get peers data
-	peersFil, err := s.v1Node.NetPeers(ctx)
+	peersFil, err := s.node.NetPeers(ctx)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetPeers, err, true)
 	}
@@ -181,40 +145,7 @@ func (s *NetworkAPIService) NetworkStatus(
 
 	// Always update Peers and SyncStatus
 	s.response.Peers = peers
-
-	// Enhance SyncStatus with F3 finality information
-	enhancedSyncStatus := &types.SyncStatus{
-		Stage:        syncStatus.Stage,
-		CurrentIndex: syncStatus.CurrentIndex,
-		TargetIndex:  syncStatus.TargetIndex,
-		Synced:       syncStatus.Synced,
-	}
-
-	// Add F3 metadata to sync status
-	if IsV2EnabledForService() {
-		// Create stage info that includes F3 status
-		f3Stage := ""
-		if syncStatus.Stage != nil {
-			f3Stage = *syncStatus.Stage
-		}
-
-		f3Info := fmt.Sprintf("%s (F3: enabled", f3Stage)
-		if finalityTag != "" {
-			f3Info += fmt.Sprintf(", finality: %s", finalityTag)
-		}
-		f3Info += ")"
-		enhancedSyncStatus.Stage = &f3Info
-	} else {
-		// Indicate F3 is disabled
-		f3Stage := ""
-		if syncStatus.Stage != nil {
-			f3Stage = *syncStatus.Stage
-		}
-		f3Info := fmt.Sprintf("%s (F3: disabled)", f3Stage)
-		enhancedSyncStatus.Stage = &f3Info
-	}
-
-	s.response.SyncStatus = enhancedSyncStatus
+	s.response.SyncStatus = syncStatus
 
 	return s.response, nil
 }
@@ -225,39 +156,15 @@ func (s *NetworkAPIService) NetworkOptions(
 	request *types.NetworkRequest,
 ) (*types.NetworkOptionsResponse, *types.Error) {
 
-	version, err := s.v1Node.Version(ctx)
+	version, err := s.node.Version(ctx)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetNodeInfo, err, false)
-	}
-
-	// Create version metadata with F3 information
-	versionMetadata := map[string]interface{}{}
-
-	if IsV2EnabledForService() {
-		versionMetadata["f3_enabled"] = true
-		versionMetadata["f3_supported_finality_tags"] = []string{
-			FinalityTagLatest,
-			FinalityTagSafe,
-			FinalityTagFinalized,
-		}
-		versionMetadata["f3_sub_network"] = SubNetworkF3
-		// Expose anchor mode configuration
-		versionMetadata["f3_anchor_mode_enabled"] = IsFinalityAnchorEnabled()
-		if IsFinalityAnchorEnabled() {
-			versionMetadata["f3_anchor_mode"] = "chain_anchoring"
-		} else {
-			versionMetadata["f3_anchor_mode"] = "height_comparison"
-		}
-	} else {
-		versionMetadata["f3_enabled"] = false
-		versionMetadata["f3_reason"] = "V2 APIs disabled"
 	}
 
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
 			NodeVersion:    version.Version,
-			Metadata:       versionMetadata,
 		},
 		Allow: &types.Allow{
 			HistoricalBalanceLookup: true,
