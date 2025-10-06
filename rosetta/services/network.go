@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -36,16 +37,27 @@ func (s *NetworkAPIService) NetworkList(
 		return nil, ErrUnableToGetChainID
 	}
 
-	resp := &types.NetworkListResponse{
-		NetworkIdentifiers: []*types.NetworkIdentifier{
-			{
-				Blockchain: BlockChainName,
-				Network:    string(networkName),
-			},
+	networks := []*types.NetworkIdentifier{
+		{
+			Blockchain: BlockChainName,
+			Network:    string(networkName),
 		},
 	}
 
-	return resp, nil
+	if IsV2EnabledForService() {
+		networks = append(networks, &types.NetworkIdentifier{
+			Blockchain: BlockChainName,
+			Network:    string(networkName),
+			SubNetworkIdentifier: &types.SubNetworkIdentifier{
+				Network: SubNetworkF3,
+				Metadata: map[string]interface{}{
+					MetadataFinalityTag: fmt.Sprintf("%s/%s/%s", FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized),
+				},
+			},
+		})
+	}
+
+	return &types.NetworkListResponse{NetworkIdentifiers: networks}, nil
 }
 
 // NetworkStatus implements the /network/status endpoint.
@@ -161,10 +173,20 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, BuildError(ErrUnableToGetNodeInfo, err, false)
 	}
 
+	metadata := map[string]interface{}{}
+	if IsV2EnabledForService() {
+		metadata["f3"] = map[string]interface{}{
+			"enabled": true,
+			"tags":    []string{FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized},
+			"mode":    map[string]bool{"anchor": IsFinalityAnchorEnabled()},
+		}
+	}
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
 			NodeVersion:    version.Version,
+			Metadata:       metadata,
 		},
 		Allow: &types.Allow{
 			HistoricalBalanceLookup: true,
