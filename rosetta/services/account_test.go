@@ -2,14 +2,15 @@ package services
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/filecoin-project/go-state-types/abi"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
-	"reflect"
-	"testing"
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -242,7 +243,7 @@ func TestNewAccountAPIService(t *testing.T) {
 	type args struct {
 		network *types.NetworkIdentifier
 		v1Node  *api.FullNode
-		v2Node  v2api.FullNode
+		v2Node  *v2api.FullNode
 	}
 	tests := []struct {
 		name string

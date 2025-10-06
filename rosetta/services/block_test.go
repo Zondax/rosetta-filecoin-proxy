@@ -185,7 +185,7 @@ func TestNewBlockAPIService(t *testing.T) {
 	type args struct {
 		network *types.NetworkIdentifier
 		v1API   *api.FullNode
-		v2API   v2api.FullNode
+		v2API   *v2api.FullNode
 	}
 	tests := []struct {
 		name string

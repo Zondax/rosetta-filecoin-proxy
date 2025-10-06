@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
@@ -52,46 +51,24 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, js
 		headers.Add("Authorization", "Bearer "+token)
 	}
 
-	// Determine the V1 and V2 endpoints based on the provided address
-	var v1Addr, v2Addr string
-
-	if strings.HasSuffix(addr, "/rpc") {
-		// New format: base URL ends with /rpc
-		// Append /v1 and /v2 to create specific endpoints
-		v1Addr = addr + "/v1"
-		v2Addr = addr + "/v2"
-		srv.Logger.Infof("Using base /rpc endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
-	} else if strings.Contains(addr, "/rpc/v1") {
-		// Legacy format: already has /rpc/v1
-		v1Addr = addr
-		v2Addr = strings.Replace(addr, "/rpc/v1", "/rpc/v2", 1)
-		srv.Logger.Infof("Using legacy /rpc/v1 endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
-	} else if strings.Contains(addr, "/rpc/v2") {
-		// If someone provides v2 endpoint directly, derive v1 from it
-		v1Addr = strings.Replace(addr, "/rpc/v2", "/rpc/v1", 1)
-		v2Addr = addr
-		srv.Logger.Infof("Using /rpc/v2 endpoint - V1: %s, V2: %s", v1Addr, v2Addr)
-	} else {
-		// Unrecognized format - return error
-		return nil, nil, nil, fmt.Errorf("unrecognized RPC endpoint format: %s. Expected format ending with /rpc, /rpc/v1, or /rpc/v2", addr)
+	endpoints, err := srv.ResolveRPCEndpoints(addr)
+	if err != nil {
+		return nil, nil, nil, err
 	}
+	srv.Logger.Infof("Resolved RPC endpoints - V1: %s, V2: %s", endpoints.V1, endpoints.V2)
 
-	// Always create V1 client
-	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), v1Addr, headers)
+	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), endpoints.V1, headers)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
 	}
 
-	// Check if V2 APIs should be created
 	useV2, _ := strconv.ParseBool(srv.EnableLotusV2APIs)
 	if useV2 {
-		// Try to create V2 client
-		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), v2Addr, headers)
+		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers)
 		if err != nil {
-			srv.Logger.Warnf("V2 APIs enabled but failed to create V2 client: %v. Will use V1 only", err)
-			return v1Client, nil, v1Closer, nil
+			v1Closer()
+			return nil, nil, nil, fmt.Errorf("V2 APIs enabled but failed to create V2 client: %w", err)
 		}
-		// Return both clients, but use combined closer
 		combinedCloser := func() {
 			v1Closer()
 			v2Closer()
@@ -111,19 +88,19 @@ func newBlockchainRouter(
 	v2API v2api.FullNode,
 	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin,
 ) http.Handler {
-	accountAPIService := srv.NewAccountAPIService(network, &v1API, v2API, rosettaLib)
+	accountAPIService := srv.NewAccountAPIService(network, &v1API, &v2API, rosettaLib)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
 	)
 
-	networkAPIService := srv.NewNetworkAPIService(network, &v1API, v2API, srv.GetSupportedOpList())
+	networkAPIService := srv.NewNetworkAPIService(network, &v1API, srv.GetSupportedOpList())
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
 	)
 
-	blockAPIService := srv.NewBlockAPIService(network, &v1API, v2API, rosettaLib)
+	blockAPIService := srv.NewBlockAPIService(network, &v1API, &v2API, rosettaLib)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,

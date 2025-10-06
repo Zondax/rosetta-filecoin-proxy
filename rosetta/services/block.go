@@ -35,11 +35,11 @@ type BlockAPIService struct {
 }
 
 // NewBlockAPIService creates a new instance of a BlockAPIService.
-func NewBlockAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
+func NewBlockAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API *v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
 		network:    network,
 		v1Node:     *v1API,
-		v2Node:     v2API,
+		v2Node:     *v2API,
 		rosettaLib: r,
 	}
 }

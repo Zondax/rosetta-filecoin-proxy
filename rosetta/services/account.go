@@ -25,11 +25,11 @@ type AccountAPIService struct {
 }
 
 // NewAccountAPIService creates a new instance of an AccountAPIService.
-func NewAccountAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API v2api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
+func NewAccountAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API *v2api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
 	return &AccountAPIService{
 		network:    network,
 		v1Node:     *v1API,
-		v2Node:     v2API,
+		v2Node:     *v2API,
 		rosettaLib: r,
 	}
 }
