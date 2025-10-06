@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
@@ -33,9 +33,9 @@ func IsV2EnabledForService() bool {
 	return enabled
 }
 
-// IsForceSafeF3FinalityEnabled checks if safe F3 finality should be forced when V2 APIs are enabled
-func IsForceSafeF3FinalityEnabled() bool {
-	enabled, err := strconv.ParseBool(ForceSafeF3Finality)
+// IsFinalityAnchorEnabled checks if finality anchor mode is enabled
+func IsFinalityAnchorEnabled() bool {
+	enabled, err := strconv.ParseBool(EnableFinalityAnchor)
 	if err != nil {
 		return false // Default to false on parse error
 	}
@@ -45,19 +45,6 @@ func IsForceSafeF3FinalityEnabled() bool {
 // shouldUseV2API determines if V2 API should be used based on configuration and availability
 func shouldUseV2API(v2Node v2api.FullNode, finalityTag FinalityTag) bool {
 	return IsV2EnabledForService() && v2Node != nil && finalityTag != ""
-}
-
-// getEffectiveFinalityTag returns the finality tag to use, applying force safe logic if needed
-func getEffectiveFinalityTag(requestedTag FinalityTag, v2Node v2api.FullNode) FinalityTag {
-	if requestedTag != "" {
-		return requestedTag
-	}
-
-	if IsV2EnabledForService() && IsForceSafeF3FinalityEnabled() && v2Node != nil {
-		return FinalitySafe
-	}
-
-	return ""
 }
 
 // GetFinalityTagFromMetadata extracts finality tag from Rosetta request metadata
@@ -131,10 +118,8 @@ func CreateTagSelector(tag FinalityTag) filTypes.TipSetSelector {
 // ChainGetTipSetWithFallback is a wrapper that uses V2 ChainGetTipSet if enabled,
 // otherwise falls back to V1 ChainHead
 func ChainGetTipSetWithFallback(ctx context.Context, v1Node api.FullNode, v2Node v2api.FullNode, tag FinalityTag) (*filTypes.TipSet, error) {
-	effectiveTag := getEffectiveFinalityTag(tag, v2Node)
-
-	if shouldUseV2API(v2Node, effectiveTag) {
-		selector := CreateTagSelector(effectiveTag)
+	if shouldUseV2API(v2Node, tag) {
+		selector := CreateTagSelector(tag)
 		tipSet, err := v2Node.ChainGetTipSet(ctx, selector)
 		if err != nil {
 			v2Logger.Errorf("failed to get tipset with v2: %v", err)
@@ -152,25 +137,154 @@ func ChainGetTipSetWithFallback(ctx context.Context, v1Node api.FullNode, v2Node
 	return v1Node.ChainHead(ctx)
 }
 
-// StateGetActorWithFallback is a wrapper that uses V2 StateGetActor if enabled,
-// otherwise falls back to V1 StateGetActor with EmptyTSK only if no finality tag is specified
-func StateGetActorWithFallback(ctx context.Context, v1Node api.FullNode, v2Node v2api.FullNode, addr address.Address, tag FinalityTag) (*filTypes.Actor, error) {
-	effectiveTag := getEffectiveFinalityTag(tag, v2Node)
+// TipSetResolution contains the result of tipset resolution
+type TipSetResolution struct {
+	TipSet       *filTypes.TipSet
+	Height       int64
+	IsNullTipSet bool
+}
 
-	if shouldUseV2API(v2Node, effectiveTag) {
-		selector := CreateTagSelector(effectiveTag)
-		actor, err := v2Node.StateGetActor(ctx, addr, selector)
+// ResolveTipSetForFinality resolves which tipset to use based on requested height, finality tag, and anchor mode.
+// This is the central function that implements both Height Comparison Mode and Finality Anchor Mode.
+//
+// Parameters:
+//   - ctx: context
+//   - v1Node: Lotus V1 API node
+//   - v2Node: Lotus V2 API node
+//   - requestedHeight: the requested height (-1 means not specified, 0 means current finality height)
+//   - finalityTag: the finality tag (empty string means no finality requested)
+//
+// Returns:
+//   - TipSetResolution with the resolved tipset, actual height, and null tipset flag
+//   - error if resolution fails
+//
+// Behavior:
+//
+// When requestedHeight == -1 (no block_identifier):
+//   - Returns finality tipset if finalityTag is set
+//   - Returns chain head if no finalityTag
+//
+// When requestedHeight == 0 with finalityTag:
+//   - Returns current finality height (special case per design)
+//
+// When requestedHeight > 0 with finalityTag:
+//   - Height Comparison Mode (EnableFinalityAnchor=false): Returns max(requestedHeight, finality_height)
+//   - Anchor Mode (EnableFinalityAnchor=true): Returns tipset at requestedHeight from finality chain
+//   - Error if requestedHeight > finality_height (height not yet on finality chain)
+//   - Sets IsNullTipSet=true if returned height != requested (null tipset on chain)
+//
+// When requestedHeight >= 0 with no finalityTag:
+//   - Returns tipset at requestedHeight using V1 API
+func ResolveTipSetForFinality(
+	ctx context.Context,
+	v1Node api.FullNode,
+	v2Node v2api.FullNode,
+	requestedHeight int64,
+	finalityTag FinalityTag,
+) (*TipSetResolution, error) {
+	// Case 1: No block_identifier specified (requestedHeight == -1)
+	// TODO: What happens when no finality tag is specified?
+	if requestedHeight == -1 {
+		tipSet, err := ChainGetTipSetWithFallback(ctx, v1Node, v2Node, finalityTag)
 		if err != nil {
-			return nil, fmt.Errorf("v2 StateGetActor failed: %w", err)
+			return nil, err
 		}
-		return actor, nil
+		return &TipSetResolution{
+			TipSet:       tipSet,
+			Height:       int64(tipSet.Height()),
+			IsNullTipSet: false,
+		}, nil
 	}
 
-	// If finality tag is specified but V2 is not enabled/available, return error
-	if tag != "" {
-		return nil, fmt.Errorf("finality_tag '%s' requires V2 APIs to be enabled", tag)
+	// Case 2: No finality tag - return requested block using V1
+	if finalityTag == "" {
+		tipSet, err := v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+		if err != nil {
+			return nil, err
+		}
+		// Check if this is a null tipset (returned height doesn't match requested)
+		isNull := int64(tipSet.Height()) != requestedHeight
+		return &TipSetResolution{
+			TipSet:       tipSet,
+			Height:       int64(tipSet.Height()),
+			IsNullTipSet: isNull,
+		}, nil
 	}
 
-	// Use V1 API when no finality tag is specified
-	return v1Node.StateGetActor(ctx, addr, filTypes.EmptyTSK)
+	// Case 3: Special case - height=0 with finality_tag returns current finality height
+	if requestedHeight == 0 {
+		tipSet, err := ChainGetTipSetWithFallback(ctx, v1Node, v2Node, finalityTag)
+		if err != nil {
+			return nil, err
+		}
+		return &TipSetResolution{
+			TipSet:       tipSet,
+			Height:       int64(tipSet.Height()),
+			IsNullTipSet: false,
+		}, nil
+	}
+
+	// Case 4: Both requestedHeight > 0 and finalityTag are set
+	// Get the finality-based tipset
+	finalityTipSet, err := ChainGetTipSetWithFallback(ctx, v1Node, v2Node, finalityTag)
+	if err != nil {
+		return nil, err
+	}
+	finalityHeight := int64(finalityTipSet.Height())
+
+	if IsFinalityAnchorEnabled() {
+		// Finality Anchor Mode: Query finality chain at exact height using V2 API
+		if requestedHeight > finalityHeight {
+			return nil, fmt.Errorf("height %d not yet on finality chain (current finality: %d)", requestedHeight, finalityHeight)
+		}
+
+		// Use V2 API with TipSetSelector that anchors to the finality chain
+		// Build selector with height at requested epoch, anchored to finality tag
+		epoch := abi.ChainEpoch(requestedHeight)
+		tipsetTag := filTypes.TipSetTag(finalityTag)
+		selector := filTypes.TipSetSelector{
+			Height: &filTypes.TipSetHeight{
+				At:       &epoch,
+				Previous: false,
+				Anchor: &filTypes.TipSetAnchor{
+					Tag: &tipsetTag,
+				},
+			},
+		}
+
+		tipSet, err := v2Node.ChainGetTipSet(ctx, selector)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get tipset at height %d from finality chain: %w", requestedHeight, err)
+		}
+
+		// Check if this is a null tipset on the finality chain
+		isNull := int64(tipSet.Height()) != requestedHeight
+
+		return &TipSetResolution{
+			TipSet:       tipSet,
+			Height:       int64(tipSet.Height()),
+			IsNullTipSet: isNull,
+		}, nil
+	}
+
+	// Height Comparison Mode: Return max(requestedHeight, finalityHeight)
+	if requestedHeight >= finalityHeight {
+		// Requested height is at or beyond finality - return requested block
+		tipSet, err := v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
+		if err != nil {
+			return nil, err
+		}
+		return &TipSetResolution{
+			TipSet:       tipSet,
+			Height:       int64(tipSet.Height()),
+			IsNullTipSet: false,
+		}, nil
+	}
+
+	// Requested height is before finality - return finality block
+	return &TipSetResolution{
+		TipSet:       finalityTipSet,
+		Height:       finalityHeight,
+		IsNullTipSet: false,
+	}, nil
 }
