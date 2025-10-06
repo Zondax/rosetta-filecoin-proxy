@@ -2,19 +2,18 @@ package services
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
-	"github.com/filecoin-project/lotus/api/v2api"
-	"reflect"
-	"testing"
 )
 
 func TestMemPoolAPIService_Mempool(t *testing.T) {
 	type fields struct {
 		network *types.NetworkIdentifier
-		v1Node  api.FullNode
-		v2Node  v2api.FullNode
+		node    api.FullNode
 	}
 	type args struct {
 		ctx     context.Context
@@ -33,8 +32,7 @@ func TestMemPoolAPIService_Mempool(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &MemPoolAPIService{
 				network: tt.fields.network,
-				v1Node:  tt.fields.v1Node,
-				v2Node:  tt.fields.v2Node,
+				node:    tt.fields.node,
 			}
 			got, got1 := m.Mempool(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -50,8 +48,7 @@ func TestMemPoolAPIService_Mempool(t *testing.T) {
 func TestMemPoolAPIService_MempoolTransaction(t *testing.T) {
 	type fields struct {
 		network *types.NetworkIdentifier
-		v1Node  api.FullNode
-		v2Node  v2api.FullNode
+		node    api.FullNode
 	}
 	type args struct {
 		ctx     context.Context
@@ -70,8 +67,7 @@ func TestMemPoolAPIService_MempoolTransaction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := MemPoolAPIService{
 				network: tt.fields.network,
-				v1Node:  tt.fields.v1Node,
-				v2Node:  tt.fields.v2Node,
+				node:    tt.fields.node,
 			}
 			got, got1 := m.MempoolTransaction(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -87,8 +83,7 @@ func TestMemPoolAPIService_MempoolTransaction(t *testing.T) {
 func TestNewMemPoolAPIService(t *testing.T) {
 	type args struct {
 		network *types.NetworkIdentifier
-		v1API   *api.FullNode
-		v2API   v2api.FullNode
+		api     *api.FullNode
 	}
 	tests := []struct {
 		name string
@@ -99,7 +94,7 @@ func TestNewMemPoolAPIService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMemPoolAPIService(tt.args.network, tt.args.v1API, tt.args.v2API, rosettaLib); !reflect.DeepEqual(got, tt.want) {
+			if got := NewMemPoolAPIService(tt.args.network, tt.args.api, rosettaLib); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMemPoolAPIService() = %v, want %v", got, tt.want)
 			}
 		})
