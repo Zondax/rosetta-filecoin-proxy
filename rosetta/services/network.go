@@ -202,9 +202,7 @@ func (s *NetworkAPIService) NetworkStatus(
 		if finalityTag != "" {
 			f3Info += fmt.Sprintf(", finality: %s", finalityTag)
 		}
-		if IsForceSafeF3FinalityEnabled() {
-			f3Info += fmt.Sprintf(", force_f3: true, default_f3_finality: %s)", FinalityTagSafe)
-		}
+		f3Info += ")"
 		enhancedSyncStatus.Stage = &f3Info
 	} else {
 		// Indicate F3 is disabled
@@ -243,9 +241,12 @@ func (s *NetworkAPIService) NetworkOptions(
 			FinalityTagFinalized,
 		}
 		versionMetadata["f3_sub_network"] = SubNetworkF3
-		if IsForceSafeF3FinalityEnabled() {
-			versionMetadata["force_f3"] = true
-			versionMetadata["default_f3_finality_tag"] = FinalityTagSafe
+		// Expose anchor mode configuration
+		versionMetadata["f3_anchor_mode_enabled"] = IsFinalityAnchorEnabled()
+		if IsFinalityAnchorEnabled() {
+			versionMetadata["f3_anchor_mode"] = "chain_anchoring"
+		} else {
+			versionMetadata["f3_anchor_mode"] = "height_comparison"
 		}
 	} else {
 		versionMetadata["f3_enabled"] = false

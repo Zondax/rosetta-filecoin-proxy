@@ -11,7 +11,6 @@ import (
 
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
-	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/api/v2api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
@@ -90,60 +89,26 @@ func (s *BlockAPIService) Block(
 		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
-	var tipSet *filTypes.TipSet
-
-	// Decision logic:
-	// 1. If finality tag is present: return max(requested_height, finality_height)
-	// 2. If no finality tag: return the requested block
-
-	if finalityTag != "" {
-		// Get the finality-based tipset
-		finalityTipSet, err := ChainGetTipSetWithFallback(ctx, s.v1Node, s.v2Node, finalityTag)
-		if err != nil {
-			return nil, BuildError(ErrUnableToGetTipset, err, true)
-		}
-		finalityHeight := int64(finalityTipSet.Height())
-
-		// Return the maximum between requested and finality-based height
-		if requestedHeight >= finalityHeight {
-			// Requested block is already at or beyond finality height, return it
-			impl := func() {
-				tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-			}
-			errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
-			if errTimeOut != nil {
-				return nil, ErrLotusCallTimedOut
-			}
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetTipset, err, true)
-			}
-		} else {
-			// Requested block is before finality, return the finality-based block
-			tipSet = finalityTipSet
-			requestedHeight = finalityHeight
-		}
-	} else {
-		// No finality tag - return the requested block
-		impl := func() {
-			tipSet, err = s.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-		}
-		errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
-		if errTimeOut != nil {
-			return nil, ErrLotusCallTimedOut
-		}
-		if err != nil {
-			return nil, BuildError(ErrUnableToGetTipset, err, true)
-		}
+	// Resolve tipset using centralized logic
+	var resolution *TipSetResolution
+	impl := func() {
+		resolution, err = ResolveTipSetForFinality(ctx, s.v1Node, s.v2Node, requestedHeight, finalityTag)
+	}
+	errTimeOut := tools.WrapWithTimeout(impl, LotusCallTimeOut)
+	if errTimeOut != nil {
+		return nil, ErrLotusCallTimedOut
+	}
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetTipset, err, true)
 	}
 
-	// If a TipSet has empty blocks, lotus api will return a TipSet at a different epoch
-	// Check if the retrieved TipSet is actually the requested one (only when no finality override occurred)
-	// details on: https://github.com/filecoin-project/lotus/blob/49d64f7f7e22973ca0cfbaaf337fcfb3c2d47707/api/api_full.go#L65-L67
-	originalRequestedHeight := *request.BlockIdentifier.Index
-	if finalityTag == "" && int64(tipSet.Height()) != originalRequestedHeight {
-		// No finality tag but height doesn't match - return empty response for missing block
+	// Handle null tipsets: in anchor mode or when no finality tag, return empty block response
+	if resolution.IsNullTipSet && (IsFinalityAnchorEnabled() || finalityTag == "") {
 		return &types.BlockResponse{}, nil
 	}
+
+	tipSet := resolution.TipSet
+	requestedHeight = resolution.Height
 
 	// Verify hash if provided
 	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil {

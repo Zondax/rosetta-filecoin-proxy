@@ -129,7 +129,7 @@ func newBlockchainRouter(
 		asserter,
 	)
 
-	mempoolAPIService := srv.NewMemPoolAPIService(network, &v1API, v2API, rosettaLib)
+	mempoolAPIService := srv.NewMemPoolAPIService(network, &v1API, rosettaLib)
 	mempoolAPIController := server.NewMempoolAPIController(
 		mempoolAPIService,
 		asserter,
@@ -236,7 +236,7 @@ func connectAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrp
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Force Safe F3 Finality: %v", version.String(), srv.NetworkName, v2API != nil, srv.ForceSafeF3Finality != "false")
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Finality Anchor Mode: %v", version.String(), srv.NetworkName, v2API != nil, srv.EnableFinalityAnchor != "false")
 
 	return v1API, v2API, clientCloser, nil
 }
@@ -259,8 +259,8 @@ func main() {
 		srv.EnableLotusV2APIs = enableV2
 	}
 
-	if forceSafeF3Finality := os.Getenv("FORCE_SAFE_F3_FINALITY"); forceSafeF3Finality != "" {
-		srv.ForceSafeF3Finality = forceSafeF3Finality
+	if enableFinalityAnchor := os.Getenv("ENABLE_FINALITY_ANCHOR"); enableFinalityAnchor != "" {
+		srv.EnableFinalityAnchor = enableFinalityAnchor
 	}
 
 	srv.Logger.Info("Starting Rosetta Proxy")

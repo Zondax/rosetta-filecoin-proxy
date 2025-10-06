@@ -74,59 +74,17 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, BuildError(ErrNodeNotSynced, nil, true)
 	}
 
-	var tipSet *filTypes.TipSet
+	// Resolve tipset using centralized logic
+	resolution, err := ResolveTipSetForFinality(ctx, a.v1Node, a.v2Node, requestedHeight, finalityTag)
+	if err != nil {
+		return nil, BuildError(ErrUnableToGetTipset, err, true)
+	}
+
+	tipSet := resolution.TipSet
+	requestedHeight = resolution.Height
+
 	var queryTipSet *filTypes.TipSet    // TipSet to use on StateGetActor
 	var responseTipSet *filTypes.TipSet // TipSet to get queryTipSetHeight and queryTipSetHash values for response
-
-	// Decision logic based on the table:
-	// 1. If no block_identifier (requestedHeight == -1): use finality tag or chain head
-	// 2. If block_identifier is set and finality tag is set: return max(requested, finality_based)
-	// 3. If block_identifier is set and no finality tag: return requested block
-
-	if requestedHeight == -1 {
-		// No block_identifier specified - use finality tag or chain head
-		if finalityTag != "" {
-			// Use finality-based tipset
-			tipSet, err = ChainGetTipSetWithFallback(ctx, a.v1Node, a.v2Node, finalityTag)
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetTipset, err, true)
-			}
-		} else {
-			// Use chain head (latest)
-			tipSet, err = ChainGetTipSetWithFallback(ctx, a.v1Node, a.v2Node, "")
-			if err != nil {
-				return nil, BuildError(ErrUnableToGetTipset, err, true)
-			}
-		}
-		requestedHeight = int64(tipSet.Height())
-	} else if finalityTag != "" {
-		// Both block_identifier and finality tag are set
-		// Get the finality-based tipset first
-		finalityTipSet, err := ChainGetTipSetWithFallback(ctx, a.v1Node, a.v2Node, finalityTag)
-		if err != nil {
-			return nil, BuildError(ErrUnableToGetTipset, err, true)
-		}
-		finalityHeight := int64(finalityTipSet.Height())
-
-		// Return the maximum between requested and finality-based height
-		if requestedHeight >= finalityHeight {
-			// Requested block is already finalized, return it
-			tipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-			if filErr != nil {
-				return nil, BuildError(ErrUnableToGetTipset, filErr, true)
-			}
-		} else {
-			// Requested block is not finalized, return the finality-based block
-			tipSet = finalityTipSet
-			requestedHeight = finalityHeight
-		}
-	} else {
-		// Only block_identifier is set, no finality tag
-		tipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight), filTypes.EmptyTSK)
-		if filErr != nil {
-			return nil, BuildError(ErrUnableToGetTipset, filErr, true)
-		}
-	}
 
 	// Now we need to get the appropriate query tipset for StateGetActor
 	// StateGetActor computes the state at parent's tipSet, so we need to query at (height + 1)
