@@ -19,9 +19,6 @@ import (
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
 )
 
-// LotusCallTimeOut TimeOut for RPC Lotus calls
-const LotusCallTimeOut = 60 * 4 * time.Second
-
 // BlockCIDsKey is the name of the key in the Metadata map inside a
 // BlockResponse that specifies blocks' CIDs inside a TipSet.
 const BlockCIDsKey = "blockCIDs"
@@ -34,7 +31,6 @@ type BlockAPIService struct {
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
-// NewBlockAPIService creates a new instance of a BlockAPIService.
 func NewBlockAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API *v2api.FullNode, r *filLib.RosettaConstructionFilecoin) server.BlockAPIServicer {
 	return &BlockAPIService{
 		network:    network,
@@ -50,46 +46,30 @@ func (s *BlockAPIService) Block(
 	request *types.BlockRequest,
 ) (*types.BlockResponse, *types.Error) {
 
-	// BlockIdentifier is always present and contains either Index or Hash (or both)
+	// BlockIdentifier is always present and contains Index (hash isn't supported)
 
 	errNet := ValidateNetworkId(ctx, &s.v1Node, request.NetworkIdentifier)
 	if errNet != nil {
 		return nil, errNet
 	}
 
-	// Validate that BlockIdentifier is present
-	if request.BlockIdentifier == nil {
-		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier is required"), false)
-	}
-
-	// Handle block identifier - index is required, hash is optional for validation
-	if request.BlockIdentifier.Index == nil {
-		return nil, BuildError(ErrMalformedValue, fmt.Errorf("block_identifier.index is required"), false)
-	}
-
-	requestedHeight := *request.BlockIdentifier.Index
-	if requestedHeight < 0 {
-		return nil, BuildError(ErrMalformedValue, nil, true)
-	}
-
-	// Hash is optional and only used for validation later
-
-	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &s.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
-	if requestedHeight > 0 && !status.IsSynced() {
+
+	if !status.IsSynced() {
 		return nil, BuildError(ErrUnableToGetUnsyncedBlock, nil, true)
 	}
 
-	// Extract finality tag from request's network identifier
 	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
-	// Resolve tipset using centralized logic
+	// skip validation because done in asserter
+	requestedHeight := *request.BlockIdentifier.Index
+
 	var resolution *TipSetResolution
 	impl := func() {
 		resolution, err = ResolveTipSetForFinality(ctx, s.v1Node, s.v2Node, requestedHeight, finalityTag)
@@ -110,8 +90,8 @@ func (s *BlockAPIService) Block(
 	tipSet := resolution.TipSet
 	requestedHeight = resolution.Height
 
-	// Verify hash if provided
-	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil {
+	// Hash is optional and only used for validation later
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil && (IsFinalityAnchorEnabled() || finalityTag == "") {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
 			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)

@@ -1,5 +1,7 @@
 package services
 
+import "time"
+
 var (
 	// Versions info to be injected on build time
 	RosettaSDKVersion = "Unknown"
@@ -13,8 +15,8 @@ var (
 	RetryConnectAttempts = "1000000"
 
 	// V2 API Configuration
-	EnableLotusV2APIs    = "true"  // Set to "true" to enable V2 F3-aware APIs
-	EnableFinalityAnchor = "false" // Set to "true" to enable finality anchor mode (chain anchoring instead of height comparison)
+	EnableLotusV2APIs    = "true"
+	EnableFinalityAnchor = "false"
 
 	// Network name (read from api in main)
 	NetworkName = ""
@@ -54,6 +56,9 @@ const (
 
 	// Misc
 	ProxyLoggerName = "rosetta-filecoin-proxy"
+
+	// LotusCallTimeOut TimeOut for RPC Lotus calls
+	LotusCallTimeOut = 60 * 4 * time.Second
 )
 
 // Supported operations

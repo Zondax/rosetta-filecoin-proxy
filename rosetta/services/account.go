@@ -24,7 +24,6 @@ type AccountAPIService struct {
 	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 }
 
-// NewAccountAPIService creates a new instance of an AccountAPIService.
 func NewAccountAPIService(network *types.NetworkIdentifier, v1API *api.FullNode, v2API *v2api.FullNode, r *rosettaFilecoinLib.RosettaConstructionFilecoin) server.AccountAPIServicer {
 	return &AccountAPIService{
 		network:    network,
@@ -48,33 +47,25 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		return nil, BuildError(ErrInvalidAccountAddress, nil, true)
 	}
 
-	// Check sync status
 	status, syncErr := CheckSyncStatus(ctx, &a.v1Node)
 	if syncErr != nil {
 		return nil, syncErr
 	}
 
-	// Extract finality tag from request's network identifier
+	if !status.IsSynced() {
+		return nil, BuildError(ErrNodeNotSynced, nil, true)
+	}
+
+	var requestedHeight int64 = -1
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
+		requestedHeight = *request.BlockIdentifier.Index
+	}
+
 	finalityTag, err := GetFinalityTagFromNetworkIdentifier(request.NetworkIdentifier)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetLatestBlk, err, true)
 	}
 
-	// Handle block identifier - can be specific height or not set (use -1 for not set)
-	var requestedHeight int64 = -1
-	if request.BlockIdentifier != nil && request.BlockIdentifier.Index != nil {
-		requestedHeight = *request.BlockIdentifier.Index
-		if requestedHeight < 0 && requestedHeight != -1 {
-			return nil, BuildError(ErrMalformedValue, nil, true)
-		}
-	}
-
-	// Check if request is for unsynced block
-	if requestedHeight > 0 && !status.IsSynced() {
-		return nil, BuildError(ErrNodeNotSynced, nil, true)
-	}
-
-	// Resolve tipset using centralized logic
 	resolution, err := ResolveTipSetForFinality(ctx, a.v1Node, a.v2Node, requestedHeight, finalityTag)
 	if err != nil {
 		return nil, BuildError(ErrUnableToGetTipset, err, true)
@@ -83,8 +74,8 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	tipSet := resolution.TipSet
 	requestedHeight = resolution.Height
 
-	var queryTipSet *filTypes.TipSet    // TipSet to use on StateGetActor
-	var responseTipSet *filTypes.TipSet // TipSet to get queryTipSetHeight and queryTipSetHash values for response
+	var queryTipSet *filTypes.TipSet
+	var responseTipSet *filTypes.TipSet
 
 	// Now we need to get the appropriate query tipset for StateGetActor
 	// StateGetActor computes the state at parent's tipSet, so we need to query at (height + 1)

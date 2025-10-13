@@ -123,7 +123,11 @@ func newBlockchainRouter(
 }
 
 func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode) error {
-	netName, _ := v1API.StateNetworkName(ctx)
+	netName, err := v1API.StateNetworkName(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get network name: %w", err)
+	}
+
 	network := &types.NetworkIdentifier{
 		Blockchain: BlockchainName,
 		Network:    string(netName),
@@ -248,7 +252,11 @@ func main() {
 	var clientCloser jsonrpc.ClientCloser
 	var err error
 
-	retryAttempts, _ := strconv.Atoi(srv.RetryConnectAttempts)
+	retryAttempts, err := strconv.Atoi(srv.RetryConnectAttempts)
+	if err != nil {
+		srv.Logger.Errorf("Error %s\n", err)
+		return
+	}
 
 	for i := 1; i <= retryAttempts; i++ {
 		lotusV1API, lotusV2API, clientCloser, err = connectAPI(addr, token)
