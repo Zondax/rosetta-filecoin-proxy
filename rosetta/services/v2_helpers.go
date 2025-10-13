@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
@@ -24,24 +23,8 @@ const (
 	FinalityFinalized FinalityTag = FinalityTagFinalized
 )
 
-func IsV2EnabledForService() bool {
-	enabled, err := strconv.ParseBool(EnableLotusV2APIs)
-	if err != nil {
-		return false
-	}
-	return enabled
-}
-
-func IsFinalityAnchorEnabled() bool {
-	enabled, err := strconv.ParseBool(EnableFinalityAnchor)
-	if err != nil {
-		return false
-	}
-	return enabled
-}
-
 func shouldUseV2API(v2Node v2api.FullNode, finalityTag FinalityTag) bool {
-	return IsV2EnabledForService() && v2Node != nil && finalityTag != ""
+	return EnableLotusV2APIs && v2Node != nil && finalityTag != ""
 }
 
 func GetFinalityTagFromMetadata(metadata map[string]interface{}) (FinalityTag, error) {
@@ -179,7 +162,7 @@ func ResolveTipSetForFinality(
 	}
 
 	// Anchor Mode: Query exact height from finality chain using V2 API
-	if IsFinalityAnchorEnabled() {
+	if EnableFinalityAnchor {
 		epoch := abi.ChainEpoch(requestedHeight)
 		tipsetTag := filTypes.TipSetTag(finalityTag)
 		selector := filTypes.TipSetSelector{

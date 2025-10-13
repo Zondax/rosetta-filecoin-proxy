@@ -15,8 +15,8 @@ var (
 	RetryConnectAttempts = "1000000"
 
 	// V2 API Configuration
-	EnableLotusV2APIs    = "true"
-	EnableFinalityAnchor = "false"
+	EnableLotusV2APIs    = true
+	EnableFinalityAnchor = false
 
 	// Network name (read from api in main)
 	NetworkName = ""

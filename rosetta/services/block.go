@@ -83,7 +83,7 @@ func (s *BlockAPIService) Block(
 	}
 
 	// Handle null tipsets: in anchor mode or when no finality tag, return empty block response
-	if resolution.IsNullTipSet && (IsFinalityAnchorEnabled() || finalityTag == "") {
+	if resolution.IsNullTipSet && (EnableFinalityAnchor || finalityTag == "") {
 		return &types.BlockResponse{}, nil
 	}
 
@@ -91,7 +91,7 @@ func (s *BlockAPIService) Block(
 	requestedHeight = resolution.Height
 
 	// Hash is optional and only used for validation later
-	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil && (IsFinalityAnchorEnabled() || finalityTag == "") {
+	if request.BlockIdentifier != nil && request.BlockIdentifier.Hash != nil && (EnableFinalityAnchor || finalityTag == "") {
 		tipSetKeyHash, encErr := BuildTipSetKeyHash(tipSet.Key())
 		if encErr != nil {
 			return nil, BuildError(ErrUnableToBuildTipSetHash, encErr, true)

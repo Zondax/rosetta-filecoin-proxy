@@ -62,12 +62,7 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, js
 		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
 	}
 
-	useV2, err := strconv.ParseBool(srv.EnableLotusV2APIs)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse ENABLE_LOTUS_V2_APIS: %w", err)
-	}
-
-	if useV2 {
+	if srv.EnableLotusV2APIs {
 		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers)
 		if err != nil {
 			v1Closer()
@@ -152,7 +147,7 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	}
 
 	f3NetworkIdentifiers := []*types.NetworkIdentifier{}
-	if srv.IsV2EnabledForService() {
+	if srv.EnableLotusV2APIs {
 		f3NetworkIdentifiers = []*types.NetworkIdentifier{
 			createNetworkIdentifierWithF3(srv.FinalityTagLatest),
 			createNetworkIdentifierWithF3(srv.FinalityTagSafe),
@@ -221,7 +216,7 @@ func connectAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrp
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Finality Anchor Mode: %v", version.String(), srv.NetworkName, v2API != nil, srv.EnableFinalityAnchor != "false")
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Finality Anchor Mode: %v", version.String(), srv.NetworkName, v2API != nil, srv.EnableFinalityAnchor)
 
 	return v1API, v2API, clientCloser, nil
 }
@@ -241,11 +236,25 @@ func main() {
 
 	// Configure V2 API usage
 	if enableV2 := os.Getenv("ENABLE_LOTUS_V2_APIS"); enableV2 != "" {
-		srv.EnableLotusV2APIs = enableV2
+		v2Enabled, err := strconv.ParseBool(enableV2)
+		if err != nil {
+			srv.Logger.Errorf("Error %s\n", err)
+			return
+		}
+		srv.EnableLotusV2APIs = v2Enabled
 	}
 
 	if enableFinalityAnchor := os.Getenv("ENABLE_FINALITY_ANCHOR"); enableFinalityAnchor != "" {
-		srv.EnableFinalityAnchor = enableFinalityAnchor
+		finalityAnchorEnabled, err := strconv.ParseBool(enableFinalityAnchor)
+		if err != nil {
+			srv.Logger.Errorf("Error %s\n", err)
+			return
+		}
+		if srv.EnableLotusV2APIs {
+			srv.EnableFinalityAnchor = finalityAnchorEnabled
+		} else {
+			srv.Logger.Fatalf("Finality anchor mode is not supported for Lotus V1 APIs, enable v2 apis to use anchor mode")
+		}
 	}
 
 	srv.Logger.Info("Starting Rosetta Proxy")

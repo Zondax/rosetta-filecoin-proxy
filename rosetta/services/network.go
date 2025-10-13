@@ -44,7 +44,7 @@ func (s *NetworkAPIService) NetworkList(
 		},
 	}
 
-	if IsV2EnabledForService() {
+	if EnableLotusV2APIs {
 		networks = append(networks, &types.NetworkIdentifier{
 			Blockchain: BlockChainName,
 			Network:    string(networkName),
@@ -176,11 +176,11 @@ func (s *NetworkAPIService) NetworkOptions(
 	}
 
 	metadata := map[string]interface{}{}
-	if IsV2EnabledForService() {
+	if EnableLotusV2APIs {
 		metadata["f3"] = map[string]interface{}{
 			"enabled": true,
 			"tags":    []string{FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized},
-			"mode":    map[string]bool{"anchor": IsFinalityAnchorEnabled()},
+			"mode":    map[string]bool{"anchor": EnableFinalityAnchor},
 		}
 	}
 
