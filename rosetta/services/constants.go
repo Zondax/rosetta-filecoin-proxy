@@ -60,5 +60,6 @@ var SupportedOperations = map[string]bool{
 	"RepayDebt":              true, // MethodsMiner
 	"InvokeContract":         true, // MethodsEVM
 	"InvokeContractDelegate": true, // MethodsEVM
+	"EVM_CALL":               true, // MethodsEVM
 	"unknown":                true, // For all other kinds of transactions
 }

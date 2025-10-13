@@ -25,7 +25,7 @@ var NetworkID = &types.NetworkIdentifier{
 
 func TestBlockAPIService_Block(t *testing.T) {
 
-	nodeMock := mocks.FullNodeMock{}
+	nodeMock := mocks.FullNode{}
 
 	// Mock needed input arguments
 	var requestedIndex int64 = 0

@@ -1,0 +1,15 @@
+with-expecter: false
+force-file-write: true
+packages:
+  github.com/filecoin-project/lotus/api:
+    interfaces:
+      FullNode:
+        configs:
+          - filename: "full_node_mock.go"
+            dir: "tests/mocks"
+            outpkg: mocks
+            mockname: "FullNode"
+          - filename: "full_node_mock.go"
+            dir: "rosetta/services/mocks"
+            outpkg: mocks
+            mockname: "FullNode"

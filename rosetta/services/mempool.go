@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/ipfs/go-cid"
 	filLib "github.com/zondax/rosetta-filecoin-lib"
 
@@ -127,7 +128,13 @@ func (m MemPoolAPIService) MempoolTransaction(
 			Operations: []*types.Operation{},
 		}
 
-		opType, err := GetMethodName(&msg.Message, m.rosettaLib)
+		opType, err := GetMethodName(&filTypes.MessageTrace{
+			From:   msg.Message.From,
+			To:     msg.Message.To,
+			Value:  msg.Message.Value,
+			Method: msg.Message.Method,
+			Params: msg.Message.Params,
+		}, m.rosettaLib)
 		if err != nil {
 			return nil, err
 		}

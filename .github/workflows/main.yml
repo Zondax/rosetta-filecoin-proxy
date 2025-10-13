@@ -10,42 +10,71 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: zondax-runners
+    container:
+      image: golang:1.23.10
+      options: --tty
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-go@v3
+
+      - name: Temporary Global Git Configuration
+        run: |
+          git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
+
+      - name: Install dependencies
+        run: apt update && apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
+
+      - uses: actions-rs/toolchain@v1
         with:
-          go-version: '1.19'
+          profile: minimal
+          toolchain: stable
+          override: true
+
       - name: Test
         run: make test
 
   rosetta_cli:
     name: Rosetta CLI integration tests
-    runs-on: [self-hosted, linux, x64]
+    runs-on: zondax-runners
     needs: [ build ]
     strategy:
       fail-fast: false
       matrix:
         include:
 #          - network: mainnet
-#            url: LOTUS_URL_MAINNET
+#            url: LOTUS_MAINNET_RPC_URL
+#          - network: devnet
+#            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
-            url: LOTUS_URL_CALIBNET
+            url: LOTUS_CALIBRATION_RPC_URL
+            token: LOTUS_CALIBRATION_RPC_TOKEN
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
+      - uses: actions/checkout@v4
         with:
-          go-version: '1.19' # The Go version to download (if necessary) and use.
+          submodules: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.10' # The Go version to download (if necessary) and use.
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Temporary Global Git Configuration
+        run: |
+          git config --global --add safe.directory /__w/rosetta-filecoin-proxy/rosetta-filecoin-proxy
+
       - run: git submodule update --init --recursive
-      - run: sudo apt update && sudo apt install -yy build-essential bzr jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev
       - run: make build_CI
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
+          LOTUS_RPC_TOKEN: ${{ secrets[matrix.token] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests
