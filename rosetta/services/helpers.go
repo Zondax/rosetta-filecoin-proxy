@@ -359,14 +359,14 @@ func ResolveRPCEndpoints(addr string) (*RPCEndpoints, error) {
 		}, nil
 	}
 
-	if strings.Contains(addr, "/rpc/v1") {
+	if strings.HasSuffix(addr, "/rpc/v1") {
 		return &RPCEndpoints{
 			V1: addr,
 			V2: strings.Replace(addr, "/rpc/v1", "/rpc/v2", 1),
 		}, nil
 	}
 
-	if strings.Contains(addr, "/rpc/v2") {
+	if strings.HasSuffix(addr, "/rpc/v2") {
 		return &RPCEndpoints{
 			V1: strings.Replace(addr, "/rpc/v2", "/rpc/v1", 1),
 			V2: addr,

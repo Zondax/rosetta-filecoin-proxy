@@ -18,9 +18,9 @@ var v2Logger = logging.Logger("v2-helpers")
 type FinalityTag string
 
 const (
-	FinalityLatest    FinalityTag = FinalityTagLatest
-	FinalitySafe      FinalityTag = FinalityTagSafe
-	FinalityFinalized FinalityTag = FinalityTagFinalized
+	FinalityLatest    FinalityTag = "latest"
+	FinalitySafe      FinalityTag = "safe"
+	FinalityFinalized FinalityTag = "finalized"
 )
 
 func shouldUseV2API(v2Node v2api.FullNode, finalityTag FinalityTag) bool {
@@ -35,11 +35,11 @@ func GetFinalityTagFromMetadata(metadata map[string]interface{}) (FinalityTag, e
 	if tagValue, exists := metadata[MetadataFinalityTag]; exists {
 		if tagStr, ok := tagValue.(string); ok {
 			switch tagStr {
-			case FinalityTagSafe:
+			case "safe":
 				return FinalitySafe, nil
-			case FinalityTagFinalized:
+			case "finalized":
 				return FinalityFinalized, nil
-			case FinalityTagLatest:
+			case "latest":
 				return FinalityLatest, nil
 			case "":
 				return "", fmt.Errorf("empty finality tag not allowed")

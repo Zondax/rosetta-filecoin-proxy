@@ -79,19 +79,12 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 
 	// Now we need to get the appropriate query tipset for StateGetActor
 	// StateGetActor computes the state at parent's tipSet, so we need to query at (height + 1)
-	if requestedHeight == int64(tipSet.Height()) {
-		// If the requested height matches the tipset we got, use it directly for query
-		queryTipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight+1), filTypes.EmptyTSK)
-		if filErr != nil {
-			// If we can't get the +1 tipset, use the current tipset
-			queryTipSet = tipSet
-		}
-		responseTipSet = tipSet
-	} else {
-		// Edge case handling
+	queryTipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight+1), filTypes.EmptyTSK)
+	if filErr != nil {
+		// If we can't get the +1 tipset, use the current tipset
 		queryTipSet = tipSet
-		responseTipSet = tipSet
 	}
+	responseTipSet = tipSet
 
 	var balanceStr = "0"
 	queryTipSetHeight := int64(responseTipSet.Height())

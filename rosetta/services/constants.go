@@ -46,11 +46,6 @@ const (
 	VestingUnlockDurationKey = "UnlockDuration"
 	VestingInitialBalanceKey = "InitialBalance"
 
-	// V2 API Finality Tags
-	FinalityTagLatest    = "latest"
-	FinalityTagSafe      = "safe"
-	FinalityTagFinalized = "finalized"
-
 	// Metadata keys for V2 API
 	MetadataFinalityTag = "finality_tag"
 

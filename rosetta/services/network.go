@@ -51,7 +51,7 @@ func (s *NetworkAPIService) NetworkList(
 			SubNetworkIdentifier: &types.SubNetworkIdentifier{
 				Network: SubNetworkF3,
 				Metadata: map[string]interface{}{
-					MetadataFinalityTag: fmt.Sprintf("%s/%s/%s", FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized),
+					MetadataFinalityTag: fmt.Sprintf("%s/%s/%s", FinalityLatest, FinalitySafe, FinalityFinalized),
 				},
 			},
 		})
@@ -179,7 +179,7 @@ func (s *NetworkAPIService) NetworkOptions(
 	if EnableLotusV2APIs {
 		metadata["f3"] = map[string]interface{}{
 			"enabled": true,
-			"tags":    []string{FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized},
+			"tags":    []string{string(FinalityLatest), string(FinalitySafe), string(FinalityFinalized)},
 			"mode":    map[string]bool{"anchor": EnableFinalityAnchor},
 		}
 	}
