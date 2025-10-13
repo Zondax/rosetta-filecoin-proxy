@@ -149,9 +149,9 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	f3NetworkIdentifiers := []*types.NetworkIdentifier{}
 	if srv.EnableLotusV2APIs {
 		f3NetworkIdentifiers = []*types.NetworkIdentifier{
-			createNetworkIdentifierWithF3(srv.FinalityTagLatest),
-			createNetworkIdentifierWithF3(srv.FinalityTagSafe),
-			createNetworkIdentifierWithF3(srv.FinalityTagFinalized),
+			createNetworkIdentifierWithF3(srv.FinalityLatest),
+			createNetworkIdentifierWithF3(srv.FinalitySafe),
+			createNetworkIdentifierWithF3(srv.FinalityFinalized),
 		}
 	}
 
@@ -227,6 +227,21 @@ func setupActorsDatabase(api *api.FullNode) {
 	tools.ActorsDB = db
 }
 
+func parseBoolEnv(key string, target *bool) error {
+	value := os.Getenv(key)
+	if value == "" {
+		return nil
+	}
+
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+
+	*target = parsed
+	return nil
+}
+
 func main() {
 	startLogger("info")
 	logVersionsInfo()
@@ -235,24 +250,17 @@ func main() {
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
 	// Configure V2 API usage
-	if enableV2 := os.Getenv("ENABLE_LOTUS_V2_APIS"); enableV2 != "" {
-		v2Enabled, err := strconv.ParseBool(enableV2)
-		if err != nil {
-			srv.Logger.Errorf("Error %s\n", err)
-			return
-		}
-		srv.EnableLotusV2APIs = v2Enabled
+	if err := parseBoolEnv("ENABLE_LOTUS_V2_APIS", &srv.EnableLotusV2APIs); err != nil {
+		srv.Logger.Errorf("Error %s\n", err)
+		return
 	}
 
-	if enableFinalityAnchor := os.Getenv("ENABLE_FINALITY_ANCHOR"); enableFinalityAnchor != "" {
-		finalityAnchorEnabled, err := strconv.ParseBool(enableFinalityAnchor)
-		if err != nil {
+	if os.Getenv("ENABLE_FINALITY_ANCHOR") != "" {
+		if err := parseBoolEnv("ENABLE_FINALITY_ANCHOR", &srv.EnableFinalityAnchor); err != nil {
 			srv.Logger.Errorf("Error %s\n", err)
 			return
 		}
-		if srv.EnableLotusV2APIs {
-			srv.EnableFinalityAnchor = finalityAnchorEnabled
-		} else {
+		if !srv.EnableLotusV2APIs {
 			srv.Logger.Fatalf("Finality anchor mode is not supported for Lotus V1 APIs, enable v2 apis to use anchor mode")
 		}
 	}
