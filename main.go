@@ -62,7 +62,11 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, js
 		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
 	}
 
-	useV2, _ := strconv.ParseBool(srv.EnableLotusV2APIs)
+	useV2, err := strconv.ParseBool(srv.EnableLotusV2APIs)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to parse ENABLE_LOTUS_V2_APIS: %w", err)
+	}
+
 	if useV2 {
 		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers)
 		if err != nil {
