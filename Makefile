@@ -56,10 +56,10 @@ gitclean:
 	git submodule foreach --recursive git clean -xfd
 
 run: build
-	LOTUS_RPC_URL=https://node-fil-mainnet-next-light.zondax.dev/rpc  ./rosetta-filecoin-proxy
+	LOTUS_RPC_URL=https://node-fil-calibration-light.zondax.ch/rpc ENABLE_FINALITY_ANCHOR=1 ./rosetta-filecoin-proxy
 
 test_calibration_macos: build
-	LOTUS_RPC_URL=https://node-fil-mainnet-next-light.zondax.dev/rpc  ./rosetta-filecoin-proxy &
+	LOTUS_RPC_URL=https://node-fil-calibration-light.zondax.ch/rpc  ./rosetta-filecoin-proxy &
 
 generate_mocks:
 	@if [ -z "$(LOTUS_DIR)" ]; then \

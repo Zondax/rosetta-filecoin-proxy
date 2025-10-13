@@ -82,8 +82,10 @@ func (s *NetworkAPIService) NetworkStatus(
 	targetIndex := status.GetTargetIndex()
 
 	stage := status.globalSyncState.String()
+	synced := status.IsSynced()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
+		Synced:       &synced,
 		CurrentIndex: &currentIndex,
 		TargetIndex:  targetIndex,
 	}
