@@ -4,9 +4,9 @@ name: rosetta-cli
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
@@ -39,15 +39,15 @@ jobs:
   rosetta_cli:
     name: Rosetta CLI integration tests
     runs-on: zondax-runners
-    needs: [ build ]
+    needs: [build]
     strategy:
       fail-fast: false
       matrix:
         include:
-#          - network: mainnet
-#            url: LOTUS_MAINNET_RPC_URL
-#          - network: devnet
-#            url: LOTUS_DEVNET_RPC_URL
+          #          - network: mainnet
+          #            url: LOTUS_MAINNET_RPC_URL
+          #          - network: devnet
+          #            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
             url: LOTUS_CALIBRATION_RPC_URL
             token: LOTUS_CALIBRATION_RPC_TOKEN
@@ -59,7 +59,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23.10' # The Go version to download (if necessary) and use.
+          go-version: "1.23.10" # The Go version to download (if necessary) and use.
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
