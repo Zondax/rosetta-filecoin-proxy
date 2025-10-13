@@ -89,12 +89,8 @@ func CreateTagSelector(tag FinalityTag) filTypes.TipSetSelector {
 	var tipsetTag filTypes.TipSetTag
 
 	switch tag {
-	case FinalityLatest:
-		tipsetTag = "latest"
-	case FinalitySafe:
-		tipsetTag = "safe"
-	case FinalityFinalized:
-		tipsetTag = "finalized"
+	case FinalityLatest, FinalitySafe, FinalityFinalized:
+		tipsetTag = filTypes.TipSetTag(tag)
 	default:
 		tipsetTag = "latest"
 	}
