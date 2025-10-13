@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"runtime"
 	"strings"
 
@@ -296,12 +295,6 @@ var (
 		Retriable: true,
 	}
 
-	ErrFinalityTagNotSupported = &types.Error{
-		Code:      48,
-		Message:   fmt.Sprintf("finality tag not supported, only '%s', '%s' and '%s' are supported", FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized),
-		Retriable: false,
-	}
-
 	ErrorList = []*types.Error{
 		ErrUnableToGetChainID,
 		ErrInvalidBlockchain,
@@ -350,7 +343,6 @@ var (
 		ErrUnableToEstimateGasFeeCap,
 		ErrOperationNotSupported,
 		ErrUnableToGetTrace,
-		ErrFinalityTagNotSupported,
 	}
 )
 

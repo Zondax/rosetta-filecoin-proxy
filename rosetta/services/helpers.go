@@ -75,13 +75,6 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 		if networkId.SubNetworkIdentifier.Metadata == nil {
 			return BuildError(ErrMalformedValue, nil, false)
 		}
-
-		finalityTag := networkId.SubNetworkIdentifier.Metadata[MetadataFinalityTag]
-		switch finalityTag {
-		case FinalityTagLatest, FinalityTagSafe, FinalityTagFinalized:
-		default:
-			return BuildError(ErrFinalityTagNotSupported, nil, false)
-		}
 	}
 
 	return nil
