@@ -49,8 +49,7 @@ jobs:
           #          - network: devnet
           #            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
-            url: LOTUS_CALIBRATION_RPC_URL
-            token: LOTUS_CALIBRATION_RPC_TOKEN
+            url: https://node-fil-calibration-light.zondax.ch/rpc
     timeout-minutes: 120
     steps:
       - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
