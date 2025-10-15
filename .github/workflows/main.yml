@@ -16,7 +16,7 @@ jobs:
       options: --tty
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
 
@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - uses: actions/setup-go@v5
