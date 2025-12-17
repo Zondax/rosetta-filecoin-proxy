@@ -36,16 +36,36 @@ func (s *NetworkAPIService) NetworkList(
 		return nil, ErrUnableToGetChainID
 	}
 
-	resp := &types.NetworkListResponse{
-		NetworkIdentifiers: []*types.NetworkIdentifier{
-			{
-				Blockchain: BlockChainName,
-				Network:    string(networkName),
-			},
+	networks := []*types.NetworkIdentifier{
+		{
+			Blockchain: BlockChainName,
+			Network:    string(networkName),
 		},
 	}
 
-	return resp, nil
+	createNetworkIdentifierWithF3 := func(tag FinalityTag) *types.NetworkIdentifier {
+		return &types.NetworkIdentifier{
+			Blockchain: BlockChainName,
+			Network:    string(networkName),
+			SubNetworkIdentifier: &types.SubNetworkIdentifier{
+				Network: SubNetworkF3,
+				Metadata: map[string]interface{}{
+					MetadataFinalityTag: string(tag),
+				},
+			},
+		}
+	}
+
+	if EnableLotusV2APIs {
+		// Return separate network identifiers for each finality tag
+		networks = append(networks,
+			createNetworkIdentifierWithF3(FinalityLatest),
+			createNetworkIdentifierWithF3(FinalitySafe),
+			createNetworkIdentifierWithF3(FinalityFinalized),
+		)
+	}
+
+	return &types.NetworkListResponse{NetworkIdentifiers: networks}, nil
 }
 
 // NetworkStatus implements the /network/status endpoint.
@@ -70,8 +90,10 @@ func (s *NetworkAPIService) NetworkStatus(
 	targetIndex := status.GetTargetIndex()
 
 	stage := status.globalSyncState.String()
+	synced := status.IsSynced()
 	syncStatus := &types.SyncStatus{
 		Stage:        &stage,
+		Synced:       &synced,
 		CurrentIndex: &currentIndex,
 		TargetIndex:  targetIndex,
 	}
@@ -161,10 +183,20 @@ func (s *NetworkAPIService) NetworkOptions(
 		return nil, BuildError(ErrUnableToGetNodeInfo, err, false)
 	}
 
+	metadata := map[string]interface{}{}
+	if EnableLotusV2APIs {
+		metadata["f3"] = map[string]interface{}{
+			"enabled": true,
+			"tags":    []string{string(FinalityLatest), string(FinalitySafe), string(FinalityFinalized)},
+			"mode":    map[string]bool{"anchor": EnableFinalityAnchor},
+		}
+	}
+
 	return &types.NetworkOptionsResponse{
 		Version: &types.Version{
 			RosettaVersion: RosettaSDKVersion,
 			NodeVersion:    version.Version,
+			Metadata:       metadata,
 		},
 		Allow: &types.Allow{
 			HistoricalBalanceLookup: true,
