@@ -233,90 +233,187 @@ func TestMempool(t *testing.T) {
 	}
 }
 
-func TestAccountBalanceWithFinalityTag(t *testing.T) {
+func TestAccountBalance(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
-	networkIDWithFinality := &types.NetworkIdentifier{
-		Blockchain: services.BlockChainName,
-		Network:    NetworkName,
-		SubNetworkIdentifier: &types.SubNetworkIdentifier{
-			Network: services.SubNetworkF3,
-			Metadata: map[string]interface{}{
-				services.MetadataFinalityTag: "safe",
+	tests := []struct {
+		name      string
+		networkID *types.NetworkIdentifier
+	}{
+		{
+			name: "no_f3",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "latest_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "safe_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "safe",
+					},
+				},
+			},
+		},
+		{
+			name: "finalized",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "finalized",
+					},
+				},
 			},
 		},
 	}
 
 	var requestHeight int64 = 3250000
-	request := &types.AccountBalanceRequest{
-		NetworkIdentifier: networkIDWithFinality,
-		AccountIdentifier: &types.AccountIdentifier{
-			Address: "f1p7d3llm2qgcd225hll66xwh5lkck77nm6ac7vmq",
-		},
-		BlockIdentifier: &types.PartialBlockIdentifier{
-			Index: &requestHeight,
-		},
+	for _, test := range tests {
+		request := &types.AccountBalanceRequest{
+			NetworkIdentifier: test.networkID,
+			AccountIdentifier: &types.AccountIdentifier{
+				Address: "f1p7d3llm2qgcd225hll66xwh5lkck77nm6ac7vmq",
+			},
+			BlockIdentifier: &types.PartialBlockIdentifier{
+				Index: &requestHeight,
+			},
+		}
+		resp, err1, err2 := rosettaClient.AccountAPI.AccountBalance(ctx, request)
+		if err1 != nil {
+			t.Fatal(err1.Message)
+		}
+
+		if err2 != nil {
+			t.Fatal(err2.Error())
+		}
+
+		if resp == nil || resp.BlockIdentifier == nil {
+			t.Fatal("Response or BlockIdentifier is nil")
+		}
+
+		if len(resp.Balances) == 0 {
+			t.Error("Balances array is empty")
+		}
+
+		fmt.Printf("AccountBalance : %s at height %d: %s\n",
+			test.name, resp.BlockIdentifier.Index, resp.Balances[0].Value)
 	}
 
-	resp, err1, err2 := rosettaClient.AccountAPI.AccountBalance(ctx, request)
-	if err1 != nil {
-		t.Fatal(err1.Message)
-	}
-
-	if err2 != nil {
-		t.Fatal(err2.Error())
-	}
-
-	if resp == nil || resp.BlockIdentifier == nil {
-		t.Fatal("Response or BlockIdentifier is nil")
-	}
-
-	if len(resp.Balances) == 0 {
-		t.Error("Balances array is empty")
-	}
-
-	fmt.Printf("AccountBalance with finality tag 'safe' at height %d: %s\n",
-		resp.BlockIdentifier.Index, resp.Balances[0].Value)
 }
 
-func TestBlockWithFinalityTag(t *testing.T) {
+func TestBlock(t *testing.T) {
 	rosettaClient := setupRosettaClient()
 
-	networkIDWithFinality := &types.NetworkIdentifier{
-		Blockchain: services.BlockChainName,
-		Network:    NetworkName,
-		SubNetworkIdentifier: &types.SubNetworkIdentifier{
-			Network: services.SubNetworkF3,
-			Metadata: map[string]interface{}{
-				services.MetadataFinalityTag: "finalized",
+	tests := []struct {
+		name      string
+		networkID *types.NetworkIdentifier
+	}{
+		{
+			name: "no_f3",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "latest_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "safe_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "safe",
+					},
+				},
+			},
+		},
+		{
+			name: "finalized",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "finalized",
+					},
+				},
 			},
 		},
 	}
 
 	var requestHeight int64 = 3250000
-	request := &types.BlockRequest{
-		NetworkIdentifier: networkIDWithFinality,
-		BlockIdentifier: &types.PartialBlockIdentifier{
-			Index: &requestHeight,
-		},
-	}
+	for _, test := range tests {
+		request := &types.BlockRequest{
+			NetworkIdentifier: test.networkID,
+			BlockIdentifier: &types.PartialBlockIdentifier{
+				Index: &requestHeight,
+			},
+		}
+		resp, err1, err2 := rosettaClient.BlockAPI.Block(ctx, request)
+		if err1 != nil {
+			t.Fatal(err1.Message)
+		}
 
-	resp, err1, err2 := rosettaClient.BlockAPI.Block(ctx, request)
-	if err1 != nil {
-		t.Fatal(err1.Message)
-	}
+		if err2 != nil {
+			t.Fatal(err2.Error())
+		}
 
-	if err2 != nil {
-		t.Fatal(err2.Error())
-	}
+		if resp == nil || resp.Block == nil || resp.Block.BlockIdentifier == nil {
+			t.Fatal("Response, Block, or BlockIdentifier is nil")
+		}
 
-	if resp == nil || resp.Block == nil || resp.Block.BlockIdentifier == nil {
-		t.Fatal("Response, Block, or BlockIdentifier is nil")
-	}
+		if resp.Block.ParentBlockIdentifier == nil {
+			t.Error("ParentBlockIdentifier is nil")
+		}
 
-	if resp.Block.ParentBlockIdentifier == nil {
-		t.Error("ParentBlockIdentifier is nil")
+		fmt.Printf("Block %s at height %d\n", test.name, resp.Block.BlockIdentifier.Index)
 	}
-
-	fmt.Printf("Block with finality tag 'finalized' at height %d\n", resp.Block.BlockIdentifier.Index)
 }
