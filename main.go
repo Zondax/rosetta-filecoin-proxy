@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,12 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
+
 	rosettaAsserter "github.com/coinbase/rosetta-sdk-go/asserter"
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/api/client"
+	"github.com/filecoin-project/lotus/api/v2api"
 	logging "github.com/ipfs/go-log"
 	srv "github.com/zondax/rosetta-filecoin-proxy/rosetta/services"
 	"github.com/zondax/rosetta-filecoin-proxy/rosetta/tools"
@@ -43,13 +45,37 @@ func startLogger(level string) {
 	logging.SetAllLoggers(lvl)
 }
 
-func getFullNodeAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
+func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
 	headers := http.Header{}
 	if len(token) > 0 {
 		headers.Add("Authorization", "Bearer "+token)
 	}
 
-	return client.NewFullNodeRPCV1(context.Background(), addr, headers)
+	endpoints, err := srv.ResolveRPCEndpoints(addr)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	srv.Logger.Infof("Resolved RPC endpoints - V1: %s, V2: %s", endpoints.V1, endpoints.V2)
+
+	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), endpoints.V1, headers)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
+	}
+
+	if srv.EnableLotusV2APIs {
+		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers)
+		if err != nil {
+			v1Closer()
+			return nil, nil, nil, fmt.Errorf("V2 APIs enabled but failed to create V2 client: %w", err)
+		}
+		combinedCloser := func() {
+			v1Closer()
+			v2Closer()
+		}
+		return v1Client, v2Client, combinedCloser, nil
+	}
+
+	return v1Client, nil, v1Closer, nil
 }
 
 // newBlockchainRouter creates a Mux http.Handler from a collection
@@ -57,34 +83,35 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, jsonrpc.ClientClos
 func newBlockchainRouter(
 	network *types.NetworkIdentifier,
 	asserter *rosettaAsserter.Asserter,
-	api api.FullNode,
+	v1API api.FullNode,
+	v2API v2api.FullNode,
 	rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin,
 ) http.Handler {
-	accountAPIService := srv.NewAccountAPIService(network, &api, rosettaLib)
+	accountAPIService := srv.NewAccountAPIService(network, &v1API, &v2API, rosettaLib)
 	accountAPIController := server.NewAccountAPIController(
 		accountAPIService,
 		asserter,
 	)
 
-	networkAPIService := srv.NewNetworkAPIService(network, &api, srv.GetSupportedOpList())
+	networkAPIService := srv.NewNetworkAPIService(network, &v1API, srv.GetSupportedOpList())
 	networkAPIController := server.NewNetworkAPIController(
 		networkAPIService,
 		asserter,
 	)
 
-	blockAPIService := srv.NewBlockAPIService(network, &api, rosettaLib)
+	blockAPIService := srv.NewBlockAPIService(network, &v1API, &v2API, rosettaLib)
 	blockAPIController := server.NewBlockAPIController(
 		blockAPIService,
 		asserter,
 	)
 
-	mempoolAPIService := srv.NewMemPoolAPIService(network, &api, rosettaLib)
+	mempoolAPIService := srv.NewMemPoolAPIService(network, &v1API, rosettaLib)
 	mempoolAPIController := server.NewMempoolAPIController(
 		mempoolAPIService,
 		asserter,
 	)
 
-	constructionAPIService := srv.NewConstructionAPIService(network, &api, rosettaLib)
+	constructionAPIService := srv.NewConstructionAPIService(network, &v1API, rosettaLib)
 	constructionAPIController := server.NewConstructionAPIController(
 		constructionAPIService,
 		asserter,
@@ -94,11 +121,38 @@ func newBlockchainRouter(
 		blockAPIController, mempoolAPIController, constructionAPIController)
 }
 
-func startRosettaRPC(ctx context.Context, api api.FullNode) error {
-	netName, _ := api.StateNetworkName(ctx)
+func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode) error {
+	netName, err := v1API.StateNetworkName(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get network name: %w", err)
+	}
+
 	network := &types.NetworkIdentifier{
 		Blockchain: BlockchainName,
 		Network:    string(netName),
+	}
+
+	// Create network identifier with f3 sub-network for finality support
+	createNetworkIdentifierWithF3 := func(tag srv.FinalityTag) *types.NetworkIdentifier {
+		return &types.NetworkIdentifier{
+			Blockchain: BlockchainName,
+			Network:    string(netName),
+			SubNetworkIdentifier: &types.SubNetworkIdentifier{
+				Network: srv.SubNetworkF3,
+				Metadata: map[string]interface{}{
+					srv.MetadataFinalityTag: string(tag),
+				},
+			},
+		}
+	}
+
+	f3NetworkIdentifiers := []*types.NetworkIdentifier{}
+	if srv.EnableLotusV2APIs {
+		f3NetworkIdentifiers = []*types.NetworkIdentifier{
+			createNetworkIdentifierWithF3(srv.FinalityLatest),
+			createNetworkIdentifierWithF3(srv.FinalitySafe),
+			createNetworkIdentifierWithF3(srv.FinalityFinalized),
+		}
 	}
 
 	// The asserter automatically rejects incorrectly formatted
@@ -106,7 +160,7 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	asserter, err := rosettaAsserter.NewServer(
 		srv.GetSupportedOpList(),
 		true,
-		[]*types.NetworkIdentifier{network},
+		append([]*types.NetworkIdentifier{network}, f3NetworkIdentifiers...),
 		nil,
 		false,
 		"",
@@ -116,9 +170,9 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	}
 
 	// Create instance of RosettaFilecoinLib for current network
-	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(api)
+	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(v1API)
 
-	router := newBlockchainRouter(network, asserter, api, r)
+	router := newBlockchainRouter(network, asserter, v1API, v2API, r)
 	loggedRouter := server.LoggerMiddleware(router)
 	corsRouter := server.CorsMiddleware(loggedRouter)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
@@ -143,34 +197,49 @@ func startRosettaRPC(ctx context.Context, api api.FullNode) error {
 	return server.ListenAndServe()
 }
 
-func connectAPI(addr string, token string) (api.FullNode, jsonrpc.ClientCloser, error) {
-	lotusAPI, clientCloser, err := getFullNodeAPI(addr, token)
+func connectAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
+	v1API, v2API, clientCloser, err := getFullNodeAPI(addr, token)
 	if err != nil {
 		srv.Logger.Errorf("Error %s\n", err)
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	networkName, err := lotusAPI.StateNetworkName(context.Background())
+	networkName, err := v1API.StateNetworkName(context.Background())
 	if err != nil {
 		srv.Logger.Warn("Could not get Lotus network name!")
 	}
 
 	srv.NetworkName = string(networkName)
 
-	version, err := lotusAPI.Version(context.Background())
+	version, err := v1API.Version(context.Background())
 	if err != nil {
 		srv.Logger.Warn("Could not get Lotus api version!")
 	}
 
-	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s ", version.String(), srv.NetworkName)
+	srv.Logger.Infof("Connected to Lotus node version: %s | Network: %s | V2 APIs: %v | Finality Anchor Mode: %v", version.String(), srv.NetworkName, v2API != nil, srv.EnableFinalityAnchor)
 
-	return lotusAPI, clientCloser, nil
+	return v1API, v2API, clientCloser, nil
 }
 
 func setupActorsDatabase(api *api.FullNode) {
 	var db tools.Database = &tools.Cache{}
 	db.NewImpl(api)
 	tools.ActorsDB = db
+}
+
+func parseBoolEnv(key string, target *bool) error {
+	value := os.Getenv(key)
+	if value == "" {
+		return nil
+	}
+
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+
+	*target = parsed
+	return nil
 }
 
 func main() {
@@ -180,17 +249,38 @@ func main() {
 	addr := os.Getenv("LOTUS_RPC_URL")
 	token := os.Getenv("LOTUS_RPC_TOKEN")
 
+	// Configure V2 API usage
+	if err := parseBoolEnv("ENABLE_LOTUS_V2_APIS", &srv.EnableLotusV2APIs); err != nil {
+		srv.Logger.Errorf("Error %s\n", err)
+		return
+	}
+
+	if os.Getenv("ENABLE_FINALITY_ANCHOR") != "" {
+		if err := parseBoolEnv("ENABLE_FINALITY_ANCHOR", &srv.EnableFinalityAnchor); err != nil {
+			srv.Logger.Errorf("Error %s\n", err)
+			return
+		}
+		if !srv.EnableLotusV2APIs {
+			srv.Logger.Fatalf("Finality anchor mode is not supported for Lotus V1 APIs, enable v2 apis to use anchor mode")
+		}
+	}
+
 	srv.Logger.Info("Starting Rosetta Proxy")
 	srv.Logger.Infof("LOTUS_RPC_URL: %s", addr)
 
-	var lotusAPI api.FullNode
+	var lotusV1API api.FullNode
+	var lotusV2API v2api.FullNode
 	var clientCloser jsonrpc.ClientCloser
 	var err error
 
-	retryAttempts, _ := strconv.Atoi(srv.RetryConnectAttempts)
+	retryAttempts, err := strconv.Atoi(srv.RetryConnectAttempts)
+	if err != nil {
+		srv.Logger.Errorf("Error %s\n", err)
+		return
+	}
 
 	for i := 1; i <= retryAttempts; i++ {
-		lotusAPI, clientCloser, err = connectAPI(addr, token)
+		lotusV1API, lotusV2API, clientCloser, err = connectAPI(addr, token)
 		if err == nil {
 			break
 		}
@@ -204,10 +294,10 @@ func main() {
 	}
 	defer clientCloser()
 
-	setupActorsDatabase(&lotusAPI)
+	setupActorsDatabase(&lotusV1API)
 
 	ctx := context.Background()
-	err = startRosettaRPC(ctx, lotusAPI)
+	err = startRosettaRPC(ctx, lotusV1API, lotusV2API)
 	if err != nil {
 		srv.Logger.Infof("Exit Rosetta rpc: %s", err.Error())
 	}

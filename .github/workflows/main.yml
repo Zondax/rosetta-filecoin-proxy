@@ -4,9 +4,9 @@ name: rosetta-cli
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [master, dev]
   pull_request:
-    branches: [ master ]
+    branches: [master, dev]
 
 jobs:
   build:
@@ -39,18 +39,18 @@ jobs:
   rosetta_cli:
     name: Rosetta CLI integration tests
     runs-on: zondax-runners
-    needs: [ build ]
+    needs: [build]
     strategy:
       fail-fast: false
       matrix:
         include:
-#          - network: mainnet
-#            url: LOTUS_MAINNET_RPC_URL
-#          - network: devnet
-#            url: LOTUS_DEVNET_RPC_URL
+          # - network: mainnet
+          #   url: LOTUS_MAINNET_RPC_URL
+          #          - network: devnet
+          #            url: LOTUS_DEVNET_RPC_URL
           - network: calibration
             url: LOTUS_CALIBRATION_RPC_URL
-            token: LOTUS_CALIBRATION_RPC_TOKEN
+          #   token: LOTUS_CALIBRATION_RPC_TOKEN
     timeout-minutes: 120
     steps:
       - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
@@ -59,7 +59,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.23.10' # The Go version to download (if necessary) and use.
+          go-version: "1.23.10" # The Go version to download (if necessary) and use.
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -75,6 +75,6 @@ jobs:
         run: ./rosetta-filecoin-proxy&
         env:
           LOTUS_RPC_URL: ${{ secrets[matrix.url] }}
-          LOTUS_RPC_TOKEN: ${{ secrets[matrix.token] }}
+          # LOTUS_RPC_TOKEN: ${{ secrets[matrix.token] }}
       - run: ./rosetta_cli_test_PR.sh ${{ matrix.network }}
         working-directory: ./rosetta/tests

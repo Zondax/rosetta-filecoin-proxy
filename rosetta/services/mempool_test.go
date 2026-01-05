@@ -2,11 +2,12 @@ package services
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/coinbase/rosetta-sdk-go/server"
 	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/lotus/api"
-	"reflect"
-	"testing"
 )
 
 func TestMemPoolAPIService_Mempool(t *testing.T) {
