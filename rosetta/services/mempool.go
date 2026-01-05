@@ -12,14 +12,14 @@ import (
 	"github.com/filecoin-project/lotus/api"
 )
 
-// BlockAPIService implements the server.BlockAPIServicer interface.
+// MemPoolAPIService implements the server.BlockAPIServicer interface.
 type MemPoolAPIService struct {
 	network    *types.NetworkIdentifier
 	node       api.FullNode
 	rosettaLib *filLib.RosettaConstructionFilecoin
 }
 
-// NewBlockAPIService creates a new instance of a BlockAPIService.
+// NewMemPoolAPIService creates a new instance of a BlockAPIService.
 func NewMemPoolAPIService(network *types.NetworkIdentifier, api *api.FullNode, r *filLib.RosettaConstructionFilecoin) server.MempoolAPIServicer {
 	return &MemPoolAPIService{
 		network:    network,
