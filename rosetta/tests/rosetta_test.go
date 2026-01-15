@@ -15,7 +15,7 @@ import (
 
 const ServerURL = "http://localhost:8081"
 
-const NetworkName = "mainnet"
+const NetworkName = "calibrationnet"
 
 var (
 	ctx = context.Background()
@@ -64,7 +64,7 @@ func TestNetworkList(t *testing.T) {
 
 func TestGetBlock(t *testing.T) {
 	rosettaClient := setupRosettaClient()
-	var requestHeight int64 = 790000
+	var requestHeight int64 = 3250000
 	var request = types.BlockRequest{
 		NetworkIdentifier: NetworkID,
 		BlockIdentifier: &types.PartialBlockIdentifier{
@@ -230,5 +230,190 @@ func TestMempool(t *testing.T) {
 
 	if txResp == nil {
 		t.Fatal()
+	}
+}
+
+func TestAccountBalance(t *testing.T) {
+	rosettaClient := setupRosettaClient()
+
+	tests := []struct {
+		name      string
+		networkID *types.NetworkIdentifier
+	}{
+		{
+			name: "no_f3",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "latest_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "safe_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "safe",
+					},
+				},
+			},
+		},
+		{
+			name: "finalized",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "finalized",
+					},
+				},
+			},
+		},
+	}
+
+	var requestHeight int64 = 3250000
+	for _, test := range tests {
+		request := &types.AccountBalanceRequest{
+			NetworkIdentifier: test.networkID,
+			AccountIdentifier: &types.AccountIdentifier{
+				Address: "f1p7d3llm2qgcd225hll66xwh5lkck77nm6ac7vmq",
+			},
+			BlockIdentifier: &types.PartialBlockIdentifier{
+				Index: &requestHeight,
+			},
+		}
+		resp, err1, err2 := rosettaClient.AccountAPI.AccountBalance(ctx, request)
+		if err1 != nil {
+			t.Fatal(err1.Message)
+		}
+
+		if err2 != nil {
+			t.Fatal(err2.Error())
+		}
+
+		if resp == nil || resp.BlockIdentifier == nil {
+			t.Fatal("Response or BlockIdentifier is nil")
+		}
+
+		if len(resp.Balances) == 0 {
+			t.Error("Balances array is empty")
+		}
+
+		fmt.Printf("AccountBalance : %s at height %d: %s\n",
+			test.name, resp.BlockIdentifier.Index, resp.Balances[0].Value)
+	}
+
+}
+
+func TestBlock(t *testing.T) {
+	rosettaClient := setupRosettaClient()
+
+	tests := []struct {
+		name      string
+		networkID *types.NetworkIdentifier
+	}{
+		{
+			name: "no_f3",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "latest_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "latest",
+					},
+				},
+			},
+		},
+		{
+			name: "safe_finality",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "safe",
+					},
+				},
+			},
+		},
+		{
+			name: "finalized",
+			networkID: &types.NetworkIdentifier{
+				Blockchain: services.BlockChainName,
+				Network:    NetworkName,
+				SubNetworkIdentifier: &types.SubNetworkIdentifier{
+					Network: services.SubNetworkF3,
+					Metadata: map[string]interface{}{
+						services.MetadataFinalityTag: "finalized",
+					},
+				},
+			},
+		},
+	}
+
+	var requestHeight int64 = 3250000
+	for _, test := range tests {
+		request := &types.BlockRequest{
+			NetworkIdentifier: test.networkID,
+			BlockIdentifier: &types.PartialBlockIdentifier{
+				Index: &requestHeight,
+			},
+		}
+		resp, err1, err2 := rosettaClient.BlockAPI.Block(ctx, request)
+		if err1 != nil {
+			t.Fatal(err1.Message)
+		}
+
+		if err2 != nil {
+			t.Fatal(err2.Error())
+		}
+
+		if resp == nil || resp.Block == nil || resp.Block.BlockIdentifier == nil {
+			t.Fatal("Response, Block, or BlockIdentifier is nil")
+		}
+
+		if resp.Block.ParentBlockIdentifier == nil {
+			t.Error("ParentBlockIdentifier is nil")
+		}
+
+		fmt.Printf("Block %s at height %d\n", test.name, resp.Block.BlockIdentifier.Index)
 	}
 }

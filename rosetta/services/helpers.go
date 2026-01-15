@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -64,6 +65,16 @@ func ValidateNetworkId(ctx context.Context, node *api.FullNode, networkId *types
 
 	if networkId.Network != string(validNetwork) {
 		return BuildError(ErrInvalidNetwork, nil, true)
+	}
+
+	if networkId.SubNetworkIdentifier != nil {
+		if networkId.SubNetworkIdentifier.Network != SubNetworkF3 {
+			return BuildError(ErrInvalidNetwork, nil, true)
+		}
+
+		if networkId.SubNetworkIdentifier.Metadata == nil {
+			return BuildError(ErrMalformedValue, nil, false)
+		}
 	}
 
 	return nil
@@ -330,4 +341,37 @@ func IsOpSupported(op string) bool {
 	}
 
 	return false
+}
+
+// RPCEndpoints contains resolved V1 and V2 RPC endpoint URLs
+type RPCEndpoints struct {
+	V1 string
+	V2 string
+}
+
+// ResolveRPCEndpoints determines V1 and V2 endpoints from the provided address
+// Supports formats: /rpc, /rpc/v1, /rpc/v2
+func ResolveRPCEndpoints(addr string) (*RPCEndpoints, error) {
+	if strings.HasSuffix(addr, "/rpc") {
+		return &RPCEndpoints{
+			V1: addr + "/v1",
+			V2: addr + "/v2",
+		}, nil
+	}
+
+	if strings.HasSuffix(addr, "/rpc/v1") {
+		return &RPCEndpoints{
+			V1: addr,
+			V2: strings.Replace(addr, "/rpc/v1", "/rpc/v2", 1),
+		}, nil
+	}
+
+	if strings.HasSuffix(addr, "/rpc/v2") {
+		return &RPCEndpoints{
+			V1: strings.Replace(addr, "/rpc/v2", "/rpc/v1", 1),
+			V2: addr,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("unrecognized RPC endpoint format: %s. Expected format ending with /rpc, /rpc/v1, or /rpc/v2", addr)
 }
