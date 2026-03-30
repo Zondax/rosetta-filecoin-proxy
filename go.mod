@@ -1,6 +1,6 @@
 module github.com/zondax/rosetta-filecoin-proxy
 
-go 1.24.7
+go 1.25.0
 
 require (
 	github.com/coinbase/rosetta-sdk-go v0.8.5
