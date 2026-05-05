@@ -20,7 +20,7 @@ require (
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.11.1
-	github.com/zondax/rosetta-filecoin-lib v1.3401.1-0.20260504133342-4e61340caca2
+	github.com/zondax/rosetta-filecoin-lib v1.3401.1-0.20260505001354-82cadbbd7f18
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -126,7 +126,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.1 // indirect
+	go.uber.org/zap v1.28.0 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp v0.0.0-20260212183809-81e46e3db34a // indirect
 	golang.org/x/mod v0.34.0 // indirect
