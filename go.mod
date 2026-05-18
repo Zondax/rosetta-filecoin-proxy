@@ -10,7 +10,7 @@ require (
 	github.com/filecoin-project/go-f3 v0.8.13
 	github.com/filecoin-project/go-jsonrpc v0.10.1
 	github.com/filecoin-project/go-state-types v0.18.0
-	github.com/filecoin-project/lotus v1.36.0-rc1
+	github.com/filecoin-project/lotus v1.36.0
 	github.com/filecoin-project/specs-actors/v8 v8.0.1
 	github.com/google/uuid v1.6.0
 	github.com/ipfs/go-block-format v0.2.3
@@ -20,7 +20,7 @@ require (
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/stretchr/testify v1.11.1
-	github.com/zondax/rosetta-filecoin-lib v1.3600.0-rc1
+	github.com/zondax/rosetta-filecoin-lib v1.3600.0
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/GeertJohan/go.rice v1.0.3 // indirect
 	github.com/akavel/rsrc v0.8.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
-	github.com/buger/jsonparser v1.1.1 // indirect
+	github.com/buger/jsonparser v1.1.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/daaku/go.zipexe v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
