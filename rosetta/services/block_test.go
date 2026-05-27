@@ -30,9 +30,6 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	// Mock needed input arguments
 	var requestedIndex int64 = 0
-	requestedHash := "0171a0e40220bb47c05c217eae793e828a9f5a48713470bf811cda2cb32f186c842d6af1d4e9"
-	mockMetadata := make(map[string]interface{})
-	mockMetadata[BlockCIDsKey] = []string{"bafy2bzacebpqu5wuaddffscppacgu2cxk75skzldo45atrhwbnl4fnvb2l75m"}
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
 	mockTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
@@ -44,9 +41,26 @@ func TestBlockAPIService_Block(t *testing.T) {
 			ParentMessageReceipts: mockCid,
 			BlockSig:              &crypto.Signature{Type: crypto.SigTypeBLS},
 			BLSAggregate:          &crypto.Signature{Type: crypto.SigTypeBLS},
+			// Lotus v1.36's filTypes.NewTipSet requires non-nil Ticket.
+			Ticket: &filTypes.Ticket{VRFProof: []byte{0}},
 		},
 	},
 	)
+	// Derive identifiers from the tipset rather than hardcoding them.
+	// The previous fixture hardcoded `requestedHash` and the BlockCIDs
+	// entry as the literal strings produced before Lotus v1.36 forced
+	// the Ticket field to be non-nil — adding a Ticket changes the
+	// block's content-addressed CID and therefore the TipSetKey hash,
+	// invalidating the hardcoded values. Deriving them keeps the test
+	// resilient to BlockHeader-shape changes.
+	requestedHashPtr, _ := BuildTipSetKeyHash(mockTipSet.Key())
+	requestedHash := *requestedHashPtr
+	mockMetadata := make(map[string]interface{})
+	blockCIDs := make([]string, 0, len(mockTipSet.Cids()))
+	for _, c := range mockTipSet.Cids() {
+		blockCIDs = append(blockCIDs, c.String())
+	}
+	mockMetadata[BlockCIDsKey] = blockCIDs
 	///
 
 	// Mock functions

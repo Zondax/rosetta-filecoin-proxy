@@ -458,6 +458,9 @@ func createMockTipSet(height int64) *filTypes.TipSet {
 			ParentMessageReceipts: mockCid,
 			BlockSig:              &crypto.Signature{Type: crypto.SigTypeBLS},
 			BLSAggregate:          &crypto.Signature{Type: crypto.SigTypeBLS},
+			// See buildMockTargetTipSet in sync_status_test.go — Lotus v1.36
+			// requires non-nil Ticket on every BlockHeader passed to NewTipSet.
+			Ticket: &filTypes.Ticket{VRFProof: []byte{0}},
 		},
 	})
 	return ts

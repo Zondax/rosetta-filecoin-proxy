@@ -2,12 +2,14 @@ package services
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/filecoin-project/go-state-types/abi"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	builtin8 "github.com/filecoin-project/specs-actors/v8/actors/builtin"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
@@ -23,6 +25,7 @@ var rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 
 func TestMain(m *testing.M) {
 	rosettaLib = rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
+	os.Exit(m.Run())
 }
 
 func TestAccountAPIService_AccountBalance(t *testing.T) {
@@ -49,7 +52,12 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(cid.Cid{}, "100")
+	// Use a real legacy multisig actor CID from specs-actors v8 so that
+	// rosettaLib.BuiltinActors.IsActor(actor.Code, ActorMultisigName)
+	// returns true via the legacy-actor registry — the SubAccount paths
+	// (LockedBalance / VestingSchedule) gate on this check. An empty
+	// CID would fail IsActor and short-circuit with ErrAddNotMSig.
+	mockMsigActor := buildActorMock(builtin8.MultisigActorCodeID, "100")
 	///
 
 	// Output
@@ -82,6 +90,14 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 		},
 			nil)
 	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, mock.Anything, mock.Anything).
+		Return(mockTipSet, nil)
+	// The +1-tipset fix falls back to ChainGetTipSet(tipSet.Parents())
+	// when no successor exists (the at-head case). The broad-brush
+	// mock above returns mockTipSet for every epoch — which simulates
+	// a chain where every epoch past the requested one is null — so
+	// the fix's at-head branch fires. Register the parent lookup so
+	// the mock doesn't error on an unexpected call.
+	nodeMock.On("ChainGetTipSet", mock.Anything, mock.Anything).
 		Return(mockTipSet, nil)
 	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockMsigActor, nil)
@@ -224,9 +240,10 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := AccountAPIService{
-				network: tt.fields.network,
-				v1Node:  tt.fields.v1Node,
-				v2Node:  tt.fields.v2Node,
+				network:    tt.fields.network,
+				v1Node:     tt.fields.v1Node,
+				v2Node:     tt.fields.v2Node,
+				rosettaLib: rosettaLib,
 			}
 			got, got1 := a.AccountBalance(tt.args.ctx, tt.args.request)
 			if !reflect.DeepEqual(got, tt.want) {
