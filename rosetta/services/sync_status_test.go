@@ -352,6 +352,13 @@ func buildMockTargetTipSet(epoch int64) *filTypes.TipSet {
 			ParentMessageReceipts: mockCid,
 			BlockSig:              &crypto.Signature{Type: crypto.SigTypeBLS},
 			BLSAggregate:          &crypto.Signature{Type: crypto.SigTypeBLS},
+			// Lotus v1.36's filTypes.NewTipSet (chain/types/tipset.go:114)
+			// rejects blocks whose Ticket is nil. Older lotus didn't enforce
+			// this, so the previous BlockHeader literal silently produced
+			// nil tipsets — masked by the discarded error and TestMain not
+			// calling m.Run(). Use a deterministic non-nil Ticket so tests
+			// get a valid tipset back.
+			Ticket: &filTypes.Ticket{VRFProof: []byte{0}},
 		},
 	},
 	)
