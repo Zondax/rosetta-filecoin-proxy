@@ -21,6 +21,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -430,4 +431,50 @@ func TestAccountBalance_RequestedHeightIsNull(t *testing.T) {
 		"null-at-requested: block_identifier.Index must be the resolved (non-null) height, not the null epoch")
 	assert.Equal(t, *tipsetAt49Hash, got.BlockIdentifier.Hash,
 		"null-at-requested: block_identifier.Hash must reference the resolved tipset")
+}
+
+// TestAccountBalance_ChainGetTipSetByHeightError_PropagatesError covers
+// a side-effect bug surfaced during PR review of the +1-tipset fix: the
+// successor-walk loop in account.go originally broke silently on any
+// ChainGetTipSetByHeight error mid-walk, falling through to the
+// at-head fallback. That produced a height-shifted "200 OK" response
+// when the actual failure was a transient RPC error (e.g., the
+// upstream Lotus briefly unreachable), masking the real issue.
+//
+// Pre-PR #310 code returned ErrUnableToGetBlk in this case. The fix
+// in this PR restores the same shape — return an error to the caller
+// rather than papering over upstream failures.
+//
+// Setup: requestedHeight = 100, head = 200. ChainGetTipSetByHeight(100)
+// returns the resolution tipset normally. The +1 lookup at epoch 101
+// errors with a transient RPC failure. Expected: the response is an
+// error (ErrUnableToGetTipset), NOT a successful at-head fallback.
+func TestAccountBalance_ChainGetTipSetByHeightError_PropagatesError(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	var requestedHeight int64 = 100
+	const headHeight int64 = 200
+
+	tipsetAt100 := buildMockTargetTipSet(100)
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(100), mock.Anything).
+		Return(tipsetAt100, nil)
+	// Simulate a transient upstream Lotus failure on the +1 lookup.
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(101), mock.Anything).
+		Return((*filTypes.TipSet)(nil), errors.New("upstream lotus: rpc closed"))
+
+	a := AccountAPIService{network: NetworkID, v1Node: nodeMock, v2Node: nil}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{Address: "t0128015"},
+	})
+
+	require.Nil(t, got, "no balance response should be returned when the +1 lookup errors")
+	require.NotNil(t, gotErr, "AccountBalance must surface the upstream error rather than masking it as a height-shifted success")
+	assert.Equal(t, ErrUnableToGetTipset.Code, gotErr.Code,
+		"upstream RPC errors during the successor walk must return ErrUnableToGetTipset")
 }

@@ -114,7 +114,15 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 		}
 		candidate, candidateErr := a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(target), filTypes.EmptyTSK)
 		if candidateErr != nil {
-			break
+			// Surface RPC errors instead of silently falling through to
+			// the at-head branch — that branch's response is only
+			// correct when there's genuinely no successor tipset (we're
+			// at chain head). A transient ChainGetTipSetByHeight error
+			// is a different failure mode; masking it as a
+			// height-shifted "200 OK" hides real upstream issues from
+			// the caller. Pre-PR #310 code returned ErrUnableToGetBlk
+			// for this case; restore that behavior.
+			return nil, BuildError(ErrUnableToGetTipset, candidateErr, true)
 		}
 		if int64(candidate.Height()) > resolvedHeight {
 			queryTipSet = candidate
