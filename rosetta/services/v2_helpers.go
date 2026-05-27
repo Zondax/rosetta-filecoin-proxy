@@ -213,3 +213,89 @@ func ResolveTipSetForFinality(
 		IsNullTipSet: false,
 	}, nil
 }
+
+// MaxNullTipSetStretch is the largest consecutive null-tipset stretch
+// that ResolveSuccessorTipSet will walk before giving up. 50 is
+// generous: even calibration testnet's longest historical null runs
+// were single-digit; bound exists primarily to guarantee loop
+// termination if a misconfigured upstream node never returns a
+// non-null tipset above a given height.
+const MaxNullTipSetStretch = 50
+
+// ResolveSuccessorTipSet returns the next non-null tipset strictly
+// above `resolvedHeight`, walking forward through any null epochs.
+// The returned tipset's PARENT state reflects end-of-`resolvedHeight`,
+// which is what callers want to pass to StateGetActor / MsigGet* to
+// read balance "as of the end of block `resolvedHeight`".
+//
+// Returns (nil, nil) when no successor is found within
+// MaxNullTipSetStretch epochs OR when the walk would go past chain
+// head. Callers should treat this as "no observable successor" and
+// fall back to reading state at parent(resolvedHeight) with a shifted
+// response identifier (matching the pre-PR #310 useHeadTipSet branch).
+//
+// Returns (nil, err) on any RPC error during the walk.
+//
+// Mode dispatch:
+//
+//   - Default (no finality tag): walk via v1Node.ChainGetTipSetByHeight
+//     on the head chain.
+//   - V2 Anchor Mode (EnableFinalityAnchor && shouldUseV2API): walk via
+//     v2Node.ChainGetTipSet with a finality-chain TipSetSelector. This
+//     is essential because resolution.TipSet in anchor mode lives on
+//     the finality chain — querying successors via v1 would land on
+//     the head chain, potentially a different fork after a reorg
+//     between finality anchor and head, and StateGetActor on a
+//     head-chain successor would read state on the wrong chain.
+//   - V2 Height-Comparison Mode (default V2 behavior): walks via v1
+//     since resolution.TipSet there is the v1-resolved height when
+//     requestedHeight >= finalityHeight, or the finality tipset
+//     otherwise — both are reachable through v1's chain.
+func ResolveSuccessorTipSet(
+	ctx context.Context,
+	v1Node api.FullNode,
+	v2Node v2api.FullNode,
+	resolvedHeight int64,
+	headHeight int64,
+	finalityTag FinalityTag,
+) (*filTypes.TipSet, error) {
+	useV2Anchor := EnableFinalityAnchor && shouldUseV2API(v2Node, finalityTag)
+
+	for offset := int64(1); offset <= MaxNullTipSetStretch; offset++ {
+		target := resolvedHeight + offset
+		if target > headHeight {
+			// Walked past head — no successor exists yet.
+			return nil, nil
+		}
+
+		var candidate *filTypes.TipSet
+		var candidateErr error
+		if useV2Anchor {
+			epoch := abi.ChainEpoch(target)
+			tipsetTag := filTypes.TipSetTag(finalityTag)
+			selector := filTypes.TipSetSelector{
+				Height: &filTypes.TipSetHeight{
+					At:       &epoch,
+					Previous: false,
+					Anchor: &filTypes.TipSetAnchor{
+						Tag: &tipsetTag,
+					},
+				},
+			}
+			candidate, candidateErr = v2Node.ChainGetTipSet(ctx, selector)
+		} else {
+			candidate, candidateErr = v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(target), filTypes.EmptyTSK)
+		}
+		if candidateErr != nil {
+			return nil, candidateErr
+		}
+		if int64(candidate.Height()) > resolvedHeight {
+			return candidate, nil
+		}
+		// Otherwise the lookup returned a tipset at a lower height,
+		// meaning `target` was null. Try the next offset.
+	}
+	// Exhausted maxNullStretch without finding a successor. Caller
+	// should fall back as if at head.
+	return nil, nil
+}

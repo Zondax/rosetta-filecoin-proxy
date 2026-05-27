@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -464,4 +465,111 @@ func createMockTipSet(height int64) *filTypes.TipSet {
 		},
 	})
 	return ts
+}
+
+// TestResolveSuccessorTipSet covers the helper that finds the next
+// non-null tipset above `resolvedHeight`. The helper is mode-aware:
+// in V2 anchor mode it dispatches the walk to v2Node.ChainGetTipSet
+// (finality chain), and in all other modes it uses v1Node's
+// ChainGetTipSetByHeight (head chain). The mode dispatch is the
+// fix for the chain-mismatch class of bug — without it the walk
+// would land on the v1 head chain even when resolution.TipSet came
+// from the v2 finality chain, and StateGetActor on that successor
+// would read state on the wrong fork after a finality / head reorg.
+func TestResolveSuccessorTipSet(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("v1 happy path: successor at +1 exists", func(t *testing.T) {
+		v1Mock := &mockV1FullNode{}
+		tsAt101 := createMockTipSet(101)
+		v1Mock.On("ChainGetTipSetByHeight", ctx, abi.ChainEpoch(101), filTypes.EmptyTSK).
+			Return(tsAt101, nil)
+
+		got, err := ResolveSuccessorTipSet(ctx, v1Mock, nil, 100, 200, "")
+
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.Equal(t, int64(101), int64(got.Height()))
+	})
+
+	t.Run("v1 null +1: walks to +2", func(t *testing.T) {
+		v1Mock := &mockV1FullNode{}
+		tsAt100 := createMockTipSet(100)
+		tsAt102 := createMockTipSet(102)
+		// Lotus's null-tipset fallback: requesting epoch 101 returns the
+		// tipset at 100 (latest non-null ≤ 101).
+		v1Mock.On("ChainGetTipSetByHeight", ctx, abi.ChainEpoch(101), filTypes.EmptyTSK).
+			Return(tsAt100, nil)
+		v1Mock.On("ChainGetTipSetByHeight", ctx, abi.ChainEpoch(102), filTypes.EmptyTSK).
+			Return(tsAt102, nil)
+
+		got, err := ResolveSuccessorTipSet(ctx, v1Mock, nil, 100, 200, "")
+
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.Equal(t, int64(102), int64(got.Height()),
+			"walk must skip the null +1 and land on the next non-null tipset above resolvedHeight")
+	})
+
+	t.Run("walked past head returns nil-nil", func(t *testing.T) {
+		v1Mock := &mockV1FullNode{}
+		// No mocks registered — should never be called because target>head
+		// short-circuits the loop before any RPC.
+		got, err := ResolveSuccessorTipSet(ctx, v1Mock, nil, 200, 200, "")
+
+		require.NoError(t, err)
+		assert.Nil(t, got, "no successor when resolvedHeight is at head")
+	})
+
+	t.Run("v1 RPC error propagates", func(t *testing.T) {
+		v1Mock := &mockV1FullNode{}
+		v1Mock.On("ChainGetTipSetByHeight", ctx, abi.ChainEpoch(101), filTypes.EmptyTSK).
+			Return((*filTypes.TipSet)(nil), errors.New("upstream lotus: rpc closed"))
+
+		got, err := ResolveSuccessorTipSet(ctx, v1Mock, nil, 100, 200, "")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "rpc closed")
+		assert.Nil(t, got)
+	})
+
+	t.Run("V2 anchor mode dispatches to v2Node, NOT v1Node", func(t *testing.T) {
+		// This test is the Bug 2 regression: under anchor mode, the
+		// successor walk must use v2Node.ChainGetTipSet against the
+		// finality chain, not v1Node.ChainGetTipSetByHeight against the
+		// head chain. If the dispatch is wrong, the walk would land on
+		// a potentially-different fork and StateGetActor would read
+		// state on the wrong chain.
+		originalV2 := EnableLotusV2APIs
+		originalAnchor := EnableFinalityAnchor
+		EnableLotusV2APIs = true
+		EnableFinalityAnchor = true
+		defer func() {
+			EnableLotusV2APIs = originalV2
+			EnableFinalityAnchor = originalAnchor
+		}()
+
+		v1Mock := &mockV1FullNode{}
+		// CRITICAL: v1Mock has NO ChainGetTipSetByHeight expectation.
+		// If the helper dispatches to v1 in anchor mode (the bug), the
+		// mock will panic with "unexpected method call", failing the
+		// test. The fix dispatches to v2 instead — v1 is untouched.
+
+		v2Mock := &mockV2FullNode{}
+		tsAt101 := createMockTipSet(101)
+		v2Mock.On("ChainGetTipSet", ctx,
+			mock.MatchedBy(func(s filTypes.TipSetSelector) bool {
+				return s.Height != nil && s.Height.At != nil && int64(*s.Height.At) == 101 &&
+					s.Height.Anchor != nil && s.Height.Anchor.Tag != nil &&
+					string(*s.Height.Anchor.Tag) == "finalized"
+			}),
+		).Return(tsAt101, nil)
+
+		got, err := ResolveSuccessorTipSet(ctx, v1Mock, v2Mock, 100, 200, FinalityFinalized)
+
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.Equal(t, int64(101), int64(got.Height()))
+		v2Mock.AssertExpectations(t)
+	})
 }
