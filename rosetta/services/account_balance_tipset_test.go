@@ -329,3 +329,108 @@ func TestAccountBalance_AtChainHead(t *testing.T) {
 	assert.Equal(t, *tipsetAtHeadMinus1Hash, got.BlockIdentifier.Hash,
 		"at head: block_identifier.Hash must reference the head-1 tipset, matching block_identifier.Index")
 }
+
+// TestAccountBalance_RequestedHeightIsNull pins down the response when
+// the user-requested epoch ITSELF has no block (a "null tipset"). It
+// exercises a second-order regression in the post-PR #310 account.go
+// flow that compounds the +1-tipset bug:
+//
+//   account.go:75 reassigns requestedHeight = resolution.Height after
+//   ResolveTipSetForFinality completes. When resolution lands on a
+//   null tipset, resolution.Height is the LOWER non-null height
+//   (e.g., 49 when the user asked for 50). The subsequent
+//   ChainGetTipSetByHeight(requestedHeight+1) then queries epoch 50
+//   AGAIN — which is still null — and falls back to tipsetAt49 again.
+//   StateGetActor at tipsetAt49.Key() reads state at parent(49) =
+//   end of 48. The response advertises balance "at height 49" but the
+//   balance is actually at end of 48.
+//
+// Correct semantics: when the user asks for state at the end of a
+// null height N, the answer is the same as state at end of (N-1)
+// since N contributed no messages. That state is computed at the
+// PARENT of the next non-null tipset above N — i.e., tipsetAt(N+1)'s
+// parent state if N+1 is non-null, or walk forward until found.
+//
+// Mock setup encodes the chain shape (epoch 50 null, epoch 51
+// non-null) and provides two distinct actor states keyed by which
+// tipset's parent state gets read:
+//
+//   buggy path:   StateGetActor(tipsetAt49.Key()) → end-of-48 balance
+//   correct path: StateGetActor(tipsetAt51.Key()) → end-of-49 balance
+//                (== end-of-50 semantics, since 50 is null)
+//
+// The buggy code hits the first; the correct fix walks to tipsetAt51.
+//
+// THIS TEST IS EXPECTED TO FAIL on the commit that adds it. Block
+// identifier already happens to be correct (resolution uses
+// tipsetAt49 for the response tipset); the balance assertion is the
+// one that surfaces the bug.
+func TestAccountBalance_RequestedHeightIsNull(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	var requestedHeight int64 = 50 // NULL — no block at this epoch
+	const headHeight int64 = 200
+
+	tipsetAt49 := buildMockTargetTipSet(49)
+	tipsetAt51 := buildMockTargetTipSet(51)
+	tipsetAt49Hash, err := BuildTipSetKeyHash(tipsetAt49.Key())
+	require.NoError(t, err)
+
+	// Two distinct actor states keyed by which tipset's parent state
+	// the code reads. The bug surfaces as the wrong actor being
+	// returned.
+	actorEndOf48Wrong := buildActorMock(cid.Cid{}, "100000000000")
+	actorEndOf49Right := buildActorMock(cid.Cid{}, "150000000000")
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	// Epoch 50 is NULL — both the resolution call and the (buggy)
+	// re-query at +1 hit it. Both fall back to tipsetAt49 per Lotus
+	// semantics.
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(50), mock.Anything).
+		Return(tipsetAt49, nil)
+	// Epoch 51 is the next non-null tipset; a correct implementation
+	// should walk forward and consult it for the query lookup.
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(51), mock.Anything).
+		Return(tipsetAt51, nil)
+
+	// Register both possible StateGetActor outcomes so the test
+	// surfaces whichever path the code takes through its assertion,
+	// rather than crashing with an "unexpected call" panic.
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt49)).
+		Return(actorEndOf48Wrong, nil)
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt51)).
+		Return(actorEndOf49Right, nil)
+
+	a := AccountAPIService{network: NetworkID, v1Node: nodeMock, v2Node: nil}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{Address: "t0128015"},
+	})
+
+	require.Nil(t, gotErr)
+	require.NotNil(t, got)
+	require.Len(t, got.Balances, 1)
+
+	// CORE ASSERTION — fails on this commit, passes once the +1
+	// lookup walks past null tipsets. Balance must reflect state at
+	// end of 49 (which equals state at end of 50, since 50 is null
+	// and adds no messages), via tipsetAt51's parent state. The buggy
+	// code returns state at end of 48 because it re-queries epoch 50
+	// (after requestedHeight was reassigned to 49) and falls back to
+	// tipsetAt49.
+	assert.Equal(t, actorEndOf49Right.Balance.String(), got.Balances[0].Value,
+		"null-at-requested: balance should be state at end of 49 (= end of 50, since 50 is null). "+
+			"Got %q means the code re-queried the same null epoch and read state at parent(49) = end of 48.",
+		got.Balances[0].Value)
+
+	// Block-identifier already lands on the resolved (non-null) tipset
+	// in the current code because responseTipSet = resolution.TipSet.
+	// The two assertions below guard against future regressions.
+	assert.Equal(t, int64(49), got.BlockIdentifier.Index,
+		"null-at-requested: block_identifier.Index must be the resolved (non-null) height, not the null epoch")
+	assert.Equal(t, *tipsetAt49Hash, got.BlockIdentifier.Hash,
+		"null-at-requested: block_identifier.Hash must reference the resolved tipset")
+}
