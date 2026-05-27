@@ -20,11 +20,18 @@ package services
 // actually read.
 
 import (
+	"context"
+	"testing"
+
+	"github.com/coinbase/rosetta-sdk-go/types"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	"github.com/ipfs/go-cid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	mocks "github.com/zondax/rosetta-filecoin-proxy/rosetta/services/mocks"
 )
@@ -64,3 +71,63 @@ func commonAccountBalanceMocks(nodeMock *mocks.FullNode, headHeight int64) *filT
 	nodeMock.On("ChainHead", mock.Anything).Return(headTipSet, nil)
 	return headTipSet
 }
+
+// TestAccountBalance_HistoricalHeight_HappyPath establishes the baseline:
+// a request for a historical block whose +1 tipset exists and is
+// non-null. AccountBalance should return the actor balance from the +1
+// tipset's parent state (i.e., state at end of requestedHeight) and the
+// response's block_identifier should honestly reflect the requested
+// height with the tipset-at-requestedHeight's hash.
+//
+// This test PASSES on origin/master and after any future refactor of
+// the tipset resolution logic.
+func TestAccountBalance_HistoricalHeight_HappyPath(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	var requestedHeight int64 = 100
+	const headHeight int64 = 200
+
+	tipsetAt100 := buildMockTargetTipSet(100)
+	tipsetAt101 := buildMockTargetTipSet(101)
+	tipsetAt100Hash, err := BuildTipSetKeyHash(tipsetAt100.Key())
+	require.NoError(t, err)
+
+	// The balance the test will assert on. This is the actor state at
+	// the END of height 100, i.e., visible in tipsetAt101's parent state.
+	actorEndOf100 := buildActorMock(cid.Cid{}, "200000000000")
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(100), mock.Anything).
+		Return(tipsetAt100, nil)
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(101), mock.Anything).
+		Return(tipsetAt101, nil)
+
+	// Only the +1 tipset's key should reach StateGetActor in the happy
+	// path. If the code mistakenly reads at tipsetAt100.Key() the mock
+	// will return mock.AnythingOfType missing, surfacing as a panic
+	// (or, worse, a different actor — the test would assert on it).
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt101)).
+		Return(actorEndOf100, nil)
+
+	a := AccountAPIService{network: NetworkID, v1Node: nodeMock, v2Node: nil}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{Address: "t0128015"},
+	})
+
+	require.Nil(t, gotErr, "AccountBalance should succeed for a healthy historical query")
+	require.NotNil(t, got)
+	require.Len(t, got.Balances, 1)
+
+	assert.Equal(t, actorEndOf100.Balance.String(), got.Balances[0].Value,
+		"happy path: balance should reflect state at end of requestedHeight (read via the +1 tipset)")
+	assert.Equal(t, requestedHeight, got.BlockIdentifier.Index)
+	assert.Equal(t, *tipsetAt100Hash, got.BlockIdentifier.Hash)
+}
+
+// Silence unused-import warning for abi when no other test in this file
+// uses it yet; subsequent commits add tests that do.
+var _ abi.ChainEpoch
