@@ -1,0 +1,66 @@
+package services
+
+// Tests in this file pin down how AccountBalance resolves the tipset it
+// reads state from (the "+1 trick") across the canonical paths.
+//
+// The +1 trick: Lotus's StateGetActor(ctx, addr, tipset.Key()) returns
+// the actor state at the PARENT of `tipset`. So to read state at the
+// end of height N (after N's messages have been applied) we need a
+// tipset whose parent is at height N — naturally, that's the tipset at
+// height N+1. The interesting cases arise when N+1 is null, doesn't
+// exist yet (head), or N itself is null.
+//
+// The existing TestAccountAPIService_AccountBalance test uses one
+// catch-all mock for ChainGetTipSetByHeight that returns the same
+// tipset for every epoch. That broad-brush approach can't see the +1
+// trick going wrong because both the response lookup (at N) and the
+// query lookup (at N+1) get the same value back. The helpers below let
+// each test return different tipsets per epoch and different actors
+// per tipset, so the assertion can verify which tipset's state was
+// actually read.
+
+import (
+	"github.com/filecoin-project/go-state-types/abi"
+	"github.com/filecoin-project/lotus/api"
+	filTypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	"github.com/stretchr/testify/mock"
+
+	mocks "github.com/zondax/rosetta-filecoin-proxy/rosetta/services/mocks"
+)
+
+// matchEpoch returns a mock matcher that fires when the mocked
+// ChainGetTipSetByHeight is called with the given epoch. Use it to
+// register different return tipsets for different epochs in one mock.
+func matchEpoch(want int64) interface{} {
+	return mock.MatchedBy(func(e abi.ChainEpoch) bool { return int64(e) == want })
+}
+
+// matchTipSetKey returns a mock matcher for StateGetActor calls that
+// fires only when the third argument's TipSetKey equals the given
+// tipset's key. Use it to register different actor returns depending
+// on which tipset's state is being read, so the assertion can verify
+// which tipset the code actually consulted.
+func matchTipSetKey(ts *filTypes.TipSet) interface{} {
+	wantKey := ts.Key().String()
+	return mock.MatchedBy(func(tsk filTypes.TipSetKey) bool { return tsk.String() == wantKey })
+}
+
+// commonAccountBalanceMocks registers the boilerplate that every
+// AccountBalance test in this file needs: network name (for
+// ValidateNetworkId), sync state (for CheckSyncStatus → returns
+// synced), and chain head. Returns the head tipset so each caller can
+// build per-test assertions around it.
+func commonAccountBalanceMocks(nodeMock *mocks.FullNode, headHeight int64) *filTypes.TipSet {
+	headTipSet := buildMockTargetTipSet(headHeight)
+	nodeMock.On("StateNetworkName", mock.Anything).
+		Return(dtypes.NetworkName(NetworkID.Network), nil)
+	nodeMock.On("SyncState", mock.Anything).
+		Return(&api.SyncState{
+			ActiveSyncs: []api.ActiveSync{
+				{Stage: api.StageSyncComplete, Target: &filTypes.TipSet{}},
+			},
+		}, nil)
+	nodeMock.On("ChainHead", mock.Anything).Return(headTipSet, nil)
+	return headTipSet
+}
