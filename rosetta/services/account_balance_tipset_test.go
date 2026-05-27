@@ -239,3 +239,93 @@ func TestAccountBalance_NullTipsetAtRequestedPlusOne_Regression(t *testing.T) {
 	assert.Equal(t, requestedHeight, got.BlockIdentifier.Index)
 	assert.Equal(t, *tipsetAt100Hash, got.BlockIdentifier.Hash)
 }
+
+// TestAccountBalance_AtChainHead pins down the response contract when
+// requestedHeight equals the current chain head. There is no
+// "successor of head" tipset yet — by definition head is the
+// latest-canonical block — so the +1 trick can't read state at the
+// end of head. Pre-PR #310 code special-cased this with a
+// useHeadTipSet branch that returned state at the end of head-1 and
+// labeled the response's block_identifier as head-1, keeping
+// (balance, block_identifier) self-consistent. Post-PR #310 code does
+// an unconditional ChainGetTipSetByHeight(head+1), gets back the
+// tipset at head (latest-non-null ≤ head+1), passes its Key() to
+// StateGetActor, and ends up returning state at parent(head) = end of
+// head-1 — but labels the response with block_identifier == head,
+// claiming a balance for head that doesn't include any of head's
+// messages.
+//
+// The contract this test pins is option (a) from the design notes:
+// when requestedHeight is at/past head, the response reports the
+// balance at the end of head-1 AND labels the block_identifier as
+// head-1. (balance, block_identifier) self-consistent; clients learn
+// honestly that the queried height isn't yet observable.
+//
+// THIS TEST IS EXPECTED TO FAIL on the commit that adds it. The
+// failing assertion will show either:
+//   - block_identifier.Index == requestedHeight (current behavior;
+//     test asserts head-1)
+// or, if a fix uses a different shape (option b/c), test should be
+// revisited.
+func TestAccountBalance_AtChainHead(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	const headHeight int64 = 200
+	requestedHeight := headHeight // request the head itself
+
+	tipsetAtHead := buildMockTargetTipSet(headHeight)
+	tipsetAtHeadMinus1 := buildMockTargetTipSet(headHeight - 1)
+	tipsetAtHeadMinus1Hash, err := BuildTipSetKeyHash(tipsetAtHeadMinus1.Key())
+	require.NoError(t, err)
+
+	// State-at-end-of-head-1 is what tipsetAtHead's parent state holds.
+	// We can't observe state-at-end-of-head because no block has been
+	// mined on top of head to compute that parent state.
+	actorEndOfHeadMinus1 := buildActorMock(cid.Cid{}, "150000000000")
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	// Resolution call at height head returns tipsetAtHead.
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(headHeight), mock.Anything).
+		Return(tipsetAtHead, nil)
+	// Query call at head+1 falls back to tipsetAtHead (no block exists
+	// at head+1 yet — by definition head is the latest).
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(headHeight+1), mock.Anything).
+		Return(tipsetAtHead, nil)
+	// Pre-PR #310 useHeadTipSet branch additionally fetched the parent
+	// tipset to label the response. The fix is expected to do
+	// something equivalent — register it so the mock doesn't error on
+	// an unexpected call.
+	nodeMock.On("ChainGetTipSet", mock.Anything, tipsetAtHead.Parents()).
+		Return(tipsetAtHeadMinus1, nil)
+
+	// StateGetActor at tipsetAtHead.Key() returns state at the parent
+	// of head — i.e., state at end of head-1. This is the actor we
+	// expect the response to surface.
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAtHead)).
+		Return(actorEndOfHeadMinus1, nil)
+
+	a := AccountAPIService{network: NetworkID, v1Node: nodeMock, v2Node: nil}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{Address: "t0128015"},
+	})
+
+	require.Nil(t, gotErr)
+	require.NotNil(t, got)
+	require.Len(t, got.Balances, 1)
+
+	// Balance assertion: state at end of head-1 (the only state we can
+	// observe given no block exists above head).
+	assert.Equal(t, actorEndOfHeadMinus1.Balance.String(), got.Balances[0].Value,
+		"at head: response must surface state at end of head-1 (no successor exists to compute end-of-head)")
+
+	// Block-identifier assertion: self-consistent with the balance —
+	// head-1, not head. Current buggy code labels this as head.
+	assert.Equal(t, headHeight-1, got.BlockIdentifier.Index,
+		"at head: block_identifier must be head-1 to honestly reflect which height's state is returned")
+	assert.Equal(t, *tipsetAtHeadMinus1Hash, got.BlockIdentifier.Hash,
+		"at head: block_identifier.Hash must reference the head-1 tipset, matching block_identifier.Index")
+}
