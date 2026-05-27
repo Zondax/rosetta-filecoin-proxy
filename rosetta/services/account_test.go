@@ -9,6 +9,7 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	builtin8 "github.com/filecoin-project/specs-actors/v8/actors/builtin"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	rosettaFilecoinLib "github.com/zondax/rosetta-filecoin-lib"
@@ -51,7 +52,12 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	mockHeadTipSet := buildMockTargetTipSet(mockHeight + 10)
 	mockTipSetHash, _ := BuildTipSetKeyHash(mockTipSet.Key())
 	mockAddress := "t0128015"
-	mockMsigActor := buildActorMock(cid.Cid{}, "100")
+	// Use a real legacy multisig actor CID from specs-actors v8 so that
+	// rosettaLib.BuiltinActors.IsActor(actor.Code, ActorMultisigName)
+	// returns true via the legacy-actor registry — the SubAccount paths
+	// (LockedBalance / VestingSchedule) gate on this check. An empty
+	// CID would fail IsActor and short-circuit with ErrAddNotMSig.
+	mockMsigActor := buildActorMock(builtin8.MultisigActorCodeID, "100")
 	///
 
 	// Output
@@ -225,16 +231,6 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Pre-existing breakage surfaced by re-enabling test execution: the
-			// SubAccount paths (LockedBalance / VestingSchedule) need an actor
-			// whose Code CID matches a real multisig actor — but buildActorMock
-			// uses cid.Cid{} (empty), so BuiltinActors.IsActor returns false
-			// and these subtests get ErrAddNotMSig. Fixing requires a separate
-			// pass to seed the mock with a valid multisig actor CID; out of
-			// scope for the +1-tipset regression work.
-			if tt.name == "LockedBalanceOfMultiSig" || tt.name == "VestingSchedule" {
-				t.Skip("TODO: mock actor uses empty CID; multisig path needs a real actor code CID")
-			}
 			a := AccountAPIService{
 				network:    tt.fields.network,
 				v1Node:     tt.fields.v1Node,

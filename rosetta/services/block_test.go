@@ -30,9 +30,6 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	// Mock needed input arguments
 	var requestedIndex int64 = 0
-	requestedHash := "0171a0e40220bb47c05c217eae793e828a9f5a48713470bf811cda2cb32f186c842d6af1d4e9"
-	mockMetadata := make(map[string]interface{})
-	mockMetadata[BlockCIDsKey] = []string{"bafy2bzacebpqu5wuaddffscppacgu2cxk75skzldo45atrhwbnl4fnvb2l75m"}
 	mockCid, _ := cid.Parse("bafkqaaa")
 	mockMiner, _ := address.NewFromString("t00")
 	mockTipSet, _ := filTypes.NewTipSet([]*filTypes.BlockHeader{
@@ -49,6 +46,21 @@ func TestBlockAPIService_Block(t *testing.T) {
 		},
 	},
 	)
+	// Derive identifiers from the tipset rather than hardcoding them.
+	// The previous fixture hardcoded `requestedHash` and the BlockCIDs
+	// entry as the literal strings produced before Lotus v1.36 forced
+	// the Ticket field to be non-nil — adding a Ticket changes the
+	// block's content-addressed CID and therefore the TipSetKey hash,
+	// invalidating the hardcoded values. Deriving them keeps the test
+	// resilient to BlockHeader-shape changes.
+	requestedHashPtr, _ := BuildTipSetKeyHash(mockTipSet.Key())
+	requestedHash := *requestedHashPtr
+	mockMetadata := make(map[string]interface{})
+	blockCIDs := make([]string, 0, len(mockTipSet.Cids()))
+	for _, c := range mockTipSet.Cids() {
+		blockCIDs = append(blockCIDs, c.String())
+	}
+	mockMetadata[BlockCIDsKey] = blockCIDs
 	///
 
 	// Mock functions
@@ -130,18 +142,6 @@ func TestBlockAPIService_Block(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Pre-existing breakage surfaced by re-enabling test execution:
-			// the response's BlockIdentifier was constructed by pointer in
-			// the test fixture, and reflect.DeepEqual compares those by
-			// pointer address — so the test compares the live response's
-			// freshly-allocated identifier against a different fixture-
-			// allocated one and always disagrees. Fixing requires moving
-			// the comparison to value-equality (or rebuilding the expected
-			// response from the same primitives the implementation uses).
-			// Out of scope for the +1-tipset regression work.
-			if tt.name == "RetrieveGenesisTipSet" {
-				t.Skip("TODO: response comparison uses pointer identity via reflect.DeepEqual")
-			}
 			s := &BlockAPIService{
 				network: tt.fields.network,
 				v1Node:  tt.fields.v1Node,
