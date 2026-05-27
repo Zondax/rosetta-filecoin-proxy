@@ -128,9 +128,6 @@ func TestAccountBalance_HistoricalHeight_HappyPath(t *testing.T) {
 	assert.Equal(t, *tipsetAt100Hash, got.BlockIdentifier.Hash)
 }
 
-// Silence unused-import warning for abi when no other test in this file
-// uses it yet; subsequent commits add tests that do.
-var _ abi.ChainEpoch
 
 // TestAccountBalance_NullTipsetAtRequestedPlusOne_Regression pins down a
 // concrete regression introduced by PR #310 ("Feat/v2 f3") that

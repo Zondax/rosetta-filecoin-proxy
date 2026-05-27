@@ -91,6 +91,14 @@ func TestAccountAPIService_AccountBalance(t *testing.T) {
 			nil)
 	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockTipSet, nil)
+	// The +1-tipset fix falls back to ChainGetTipSet(tipSet.Parents())
+	// when no successor exists (the at-head case). The broad-brush
+	// mock above returns mockTipSet for every epoch — which simulates
+	// a chain where every epoch past the requested one is null — so
+	// the fix's at-head branch fires. Register the parent lookup so
+	// the mock doesn't error on an unexpected call.
+	nodeMock.On("ChainGetTipSet", mock.Anything, mock.Anything).
+		Return(mockTipSet, nil)
 	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, mock.Anything).
 		Return(mockMsigActor, nil)
 	nodeMock.On("MsigGetAvailableBalance", mock.Anything, mock.Anything, mock.Anything).

@@ -72,19 +72,74 @@ func (a AccountAPIService) AccountBalance(ctx context.Context,
 	}
 
 	tipSet := resolution.TipSet
-	requestedHeight = resolution.Height
+	resolvedHeight := resolution.Height
 
 	var queryTipSet *filTypes.TipSet
 	var responseTipSet *filTypes.TipSet
 
-	// Now we need to get the appropriate query tipset for StateGetActor
-	// StateGetActor computes the state at parent's tipSet, so we need to query at (height + 1)
-	queryTipSet, filErr = a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(requestedHeight+1), filTypes.EmptyTSK)
-	if filErr != nil {
-		// If we can't get the +1 tipset, use the current tipset
-		queryTipSet = tipSet
+	// StateGetActor returns state at the PARENT of the tipset key it's
+	// given, so to read state at the end of `resolvedHeight` we need a
+	// tipset whose parent is at `resolvedHeight` — naturally a tipset
+	// at `resolvedHeight + 1`. Two failure modes the pre-PR #310 code
+	// handled but the post-PR #310 ad-hoc lookup did not:
+	//
+	//   1. `resolvedHeight + 1` is null. Lotus's ChainGetTipSetByHeight
+	//      falls back to the latest non-null tipset whose height is
+	//      <= the requested epoch, which can be tipset-at-`resolvedHeight`
+	//      (or even lower). Using that fallback's Key() makes
+	//      StateGetActor read state at the parent of `resolvedHeight` —
+	//      i.e., state at the end of `resolvedHeight - 1`, silently
+	//      dropping every message that landed at `resolvedHeight`.
+	//      Walk forward until we find a tipset strictly above
+	//      `resolvedHeight`.
+	//
+	//   2. `resolvedHeight` is already at chain head. No successor
+	//      exists yet. We can't observe state at the end of head;
+	//      best behavior is to report state at the end of head-1 AND
+	//      shift the response's block_identifier down to head-1 so
+	//      (balance, block_identifier) remain self-consistent.
+	queryTipSet = nil
+	headForLoop, headErr := a.v1Node.ChainHead(ctx)
+	if headErr != nil {
+		return nil, BuildError(ErrUnableToGetLatestBlk, headErr, true)
 	}
-	responseTipSet = tipSet
+	headHeight := int64(headForLoop.Height())
+	const maxNullStretch = 50 // safety bound; consecutive null epochs are rare
+	for offset := int64(1); offset <= maxNullStretch; offset++ {
+		target := resolvedHeight + offset
+		if target > headHeight {
+			// Walked past head — by definition, no successor tipset
+			// exists yet. Fall through to the at-head branch below.
+			break
+		}
+		candidate, candidateErr := a.v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(target), filTypes.EmptyTSK)
+		if candidateErr != nil {
+			break
+		}
+		if int64(candidate.Height()) > resolvedHeight {
+			queryTipSet = candidate
+			break
+		}
+		// Otherwise Lotus bumped us backward — (resolvedHeight + offset)
+		// is null; try the next offset.
+	}
+	if queryTipSet == nil {
+		// No successor available (either at head or no non-null tipset
+		// within the safety bound). Use the resolution tipset and
+		// self-consistently label the response with its parent so
+		// (balance, identifier) remain aligned: balance reflects state
+		// at parent(resolvedHeight) = end of resolvedHeight - 1, and
+		// the identifier reports the height whose state is actually
+		// returned.
+		parentTipSet, parentErr := a.v1Node.ChainGetTipSet(ctx, tipSet.Parents())
+		if parentErr != nil {
+			return nil, BuildError(ErrUnableToGetParentBlk, parentErr, true)
+		}
+		queryTipSet = tipSet
+		responseTipSet = parentTipSet
+	} else {
+		responseTipSet = tipSet
+	}
 
 	var balanceStr = "0"
 	queryTipSetHeight := int64(responseTipSet.Height())
