@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 
@@ -23,6 +24,7 @@ var rosettaLib *rosettaFilecoinLib.RosettaConstructionFilecoin
 
 func TestMain(m *testing.M) {
 	rosettaLib = rosettaFilecoinLib.NewRosettaConstructionFilecoin(nil)
+	os.Exit(m.Run())
 }
 
 func TestAccountAPIService_AccountBalance(t *testing.T) {
