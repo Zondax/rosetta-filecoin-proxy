@@ -29,6 +29,7 @@ import (
 	"github.com/filecoin-project/lotus/api"
 	filTypes "github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
+	builtin8 "github.com/filecoin-project/specs-actors/v8/actors/builtin"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -477,4 +478,137 @@ func TestAccountBalance_ChainGetTipSetByHeightError_PropagatesError(t *testing.T
 	require.NotNil(t, gotErr, "AccountBalance must surface the upstream error rather than masking it as a height-shifted success")
 	assert.Equal(t, ErrUnableToGetTipset.Code, gotErr.Code,
 		"upstream RPC errors during the successor walk must return ErrUnableToGetTipset")
+}
+
+// TestAccountBalance_HeadMinusOne_NotAtHead verifies a distinction
+// reviewers flagged that the existing four tests don't pin: a
+// request at head-1 must take the regular +1 successor path (read
+// state via tipsetAtHead's parent state = end of head-1, labeled
+// at head-1), NOT the at-head fallback (which would shift the
+// identifier to head-2 — over-shifting by one block).
+//
+// requestedHeight = head - 1 = 199, head = 200
+// ChainGetTipSetByHeight(199) → tipsetAt199
+// ChainGetTipSetByHeight(200) → tipsetAt200 (head, NOT null) — this
+//   is the successor; its parent state IS end of 199.
+// StateGetActor(tipsetAt200.Key()) → end-of-199 balance.
+//
+// Expected: balance reflects end-of-199 (read via tipsetAt200's
+// parent state), block_identifier.Index == 199 (the requested
+// height — NOT 198 as the at-head fallback would produce).
+func TestAccountBalance_HeadMinusOne_NotAtHead(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	const headHeight int64 = 200
+	requestedHeight := headHeight - 1 // 199
+
+	tipsetAt199 := buildMockTargetTipSet(199)
+	tipsetAt200 := buildMockTargetTipSet(200)
+	tipsetAt199Hash, err := BuildTipSetKeyHash(tipsetAt199.Key())
+	require.NoError(t, err)
+
+	actorEndOf199 := buildActorMock(cid.Cid{}, "175000000000")
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(199), mock.Anything).
+		Return(tipsetAt199, nil)
+	// CRITICAL: epoch 200 (head) is non-null in this scenario. The +1
+	// walk finds it on offset=1 and uses its key for StateGetActor.
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(200), mock.Anything).
+		Return(tipsetAt200, nil)
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt200)).
+		Return(actorEndOf199, nil)
+
+	a := AccountAPIService{network: NetworkID, v1Node: nodeMock, v2Node: nil}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{Address: "t0128015"},
+	})
+
+	require.Nil(t, gotErr)
+	require.NotNil(t, got)
+	require.Len(t, got.Balances, 1)
+
+	assert.Equal(t, actorEndOf199.Balance.String(), got.Balances[0].Value,
+		"head-1: balance must be state at end of 199, read via tipsetAt200 — the at-head fallback would produce end-of-198 instead")
+	assert.Equal(t, requestedHeight, got.BlockIdentifier.Index,
+		"head-1: block_identifier must be 199 (requested height) — over-shifting to 198 would be the at-head bug")
+	assert.Equal(t, *tipsetAt199Hash, got.BlockIdentifier.Hash)
+}
+
+// TestAccountBalance_SubAccount_LockedBalance_WithPlusOneTrick
+// confirms the multisig SubAccount path reads MsigGetAvailableBalance
+// from the +1 query tipset, not the resolution tipset. The existing
+// TestAccountAPIService_AccountBalance covers SubAccount semantics
+// but uses a broad-brush mock that returns the same tipset for all
+// epochs — it can't see the +1 trick going wrong on this path. This
+// test exercises the multisig LockedBalance branch through the
+// per-epoch matcher so a future regression on the same +1 lookup in
+// a SubAccount context is caught.
+//
+// Setup mirrors the multisig actor with end-of-100 balance "100",
+// MsigGetAvailableBalance returning "30" at the +1 tipset (tipsetAt101).
+// LockedBalance = actor.Balance - spendable = 100 - 30 = 70.
+func TestAccountBalance_SubAccount_LockedBalance_WithPlusOneTrick(t *testing.T) {
+	nodeMock := &mocks.FullNode{}
+
+	var requestedHeight int64 = 100
+	const headHeight int64 = 200
+
+	tipsetAt100 := buildMockTargetTipSet(100)
+	tipsetAt101 := buildMockTargetTipSet(101)
+	tipsetAt100Hash, err := BuildTipSetKeyHash(tipsetAt100.Key())
+	require.NoError(t, err)
+
+	// Use a real legacy multisig actor CID so IsActor returns true.
+	multisigActor := buildActorMock(builtin8.MultisigActorCodeID, "100")
+	spendableBalance, _ := filTypes.BigFromString("30")
+
+	commonAccountBalanceMocks(nodeMock, headHeight)
+
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(100), mock.Anything).
+		Return(tipsetAt100, nil)
+	nodeMock.On("ChainGetTipSetByHeight", mock.Anything, matchEpoch(101), mock.Anything).
+		Return(tipsetAt101, nil)
+
+	// Both StateGetActor and MsigGetAvailableBalance must consult the
+	// +1 tipset (tipsetAt101), not the resolution tipset (tipsetAt100).
+	// Mocks register against tipsetAt101 only; if the code reads at
+	// tipsetAt100 the mock will panic with "unexpected method call",
+	// failing the test loudly.
+	nodeMock.On("StateGetActor", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt101)).
+		Return(multisigActor, nil)
+	nodeMock.On("MsigGetAvailableBalance", mock.Anything, mock.Anything, matchTipSetKey(tipsetAt101)).
+		Return(spendableBalance, nil)
+
+	a := AccountAPIService{
+		network:    NetworkID,
+		v1Node:     nodeMock,
+		v2Node:     nil,
+		rosettaLib: rosettaLib, // initialized in TestMain; required for IsActor
+	}
+
+	got, gotErr := a.AccountBalance(context.Background(), &types.AccountBalanceRequest{
+		NetworkIdentifier: NetworkID,
+		BlockIdentifier:   &types.PartialBlockIdentifier{Index: &requestedHeight},
+		AccountIdentifier: &types.AccountIdentifier{
+			Address: "t0128015",
+			SubAccount: &types.SubAccountIdentifier{
+				Address: LockedBalanceStr,
+			},
+		},
+	})
+
+	require.Nil(t, gotErr)
+	require.NotNil(t, got)
+	require.Len(t, got.Balances, 1)
+
+	// LockedBalance = actor.Balance (100) - spendable (30) = 70
+	assert.Equal(t, "70", got.Balances[0].Value,
+		"locked balance must use the +1 tipset for both StateGetActor and MsigGetAvailableBalance")
+	assert.Equal(t, requestedHeight, got.BlockIdentifier.Index)
+	assert.Equal(t, *tipsetAt100Hash, got.BlockIdentifier.Hash)
 }
