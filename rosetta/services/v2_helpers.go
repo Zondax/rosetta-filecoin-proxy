@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -13,6 +14,15 @@ import (
 )
 
 var v2Logger = logging.Logger("v2-helpers")
+
+// ErrNoSuccessorTipset is returned by ResolveSuccessorTipSet when the
+// walk exhausts MaxNullTipSetStretch consecutive null epochs without
+// finding a non-null tipset above the resolved height AND the chain
+// has extended past that point (i.e., we are NOT at head). Surfacing
+// this as an explicit error — rather than silently degrading to
+// "state at parent(resolvedHeight)" — prevents an unbounded
+// staleness window from being masked as a "200 OK" response.
+var ErrNoSuccessorTipset = errors.New("no non-null successor tipset found within MaxNullTipSetStretch epochs above resolved height (chain extended past resolved but no observable state)")
 
 // FinalityTag represents the different finality levels for V2 API
 type FinalityTag string
@@ -228,11 +238,21 @@ const MaxNullTipSetStretch = 50
 // which is what callers want to pass to StateGetActor / MsigGet* to
 // read balance "as of the end of block `resolvedHeight`".
 //
-// Returns (nil, nil) when no successor is found within
-// MaxNullTipSetStretch epochs OR when the walk would go past chain
-// head. Callers should treat this as "no observable successor" and
-// fall back to reading state at parent(resolvedHeight) with a shifted
-// response identifier (matching the pre-PR #310 useHeadTipSet branch).
+// Returns (nil, nil) when the walk would go past chain head — meaning
+// no successor exists yet because resolvedHeight is at or above the
+// current head. Callers should treat this as "no observable successor"
+// and fall back to reading state at parent(resolvedHeight) with a
+// shifted response identifier (matching the pre-PR #310 useHeadTipSet
+// branch).
+//
+// Returns (nil, ErrNoSuccessorTipset) when the walk exhausts
+// MaxNullTipSetStretch consecutive null epochs without finding a
+// successor and is NOT at head. This is distinct from the at-head
+// case because the chain HAS extended past resolvedHeight — we just
+// couldn't find a non-null tipset within the safety bound — so
+// silently degrading to the parent-fallback path would return state
+// that's stale by an unbounded number of blocks. Surface the error
+// instead so the caller can retry, log, or alert.
 //
 // Returns (nil, err) on any RPC error during the walk.
 //
@@ -295,7 +315,14 @@ func ResolveSuccessorTipSet(
 		// Otherwise the lookup returned a tipset at a lower height,
 		// meaning `target` was null. Try the next offset.
 	}
-	// Exhausted maxNullStretch without finding a successor. Caller
-	// should fall back as if at head.
-	return nil, nil
+	// Exhausted MaxNullTipSetStretch without finding a successor, and
+	// resolvedHeight + MaxNullTipSetStretch is still <= headHeight
+	// (otherwise we'd have returned nil-nil from the `target>headHeight`
+	// short-circuit). The chain has extended past resolvedHeight; we
+	// just couldn't see a non-null tipset within the bound. Returning
+	// nil-nil here would silently degrade the response to "state at
+	// parent(resolvedHeight)" labeled as resolvedHeight-1 — but the
+	// actual stale-by amount is unbounded (could be 100s of blocks of
+	// silently-dropped activity). Surface an explicit error instead.
+	return nil, ErrNoSuccessorTipset
 }

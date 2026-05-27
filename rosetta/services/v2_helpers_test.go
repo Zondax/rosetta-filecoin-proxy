@@ -573,3 +573,33 @@ func TestResolveSuccessorTipSet(t *testing.T) {
 		v2Mock.AssertExpectations(t)
 	})
 }
+
+// TestResolveSuccessorTipSet_MaxNullStretchExhausted pins the contract
+// added in response to a review concern: if the walk exhausts
+// MaxNullTipSetStretch consecutive null epochs without finding a
+// successor AND the chain has extended past that point, the helper
+// must return an explicit ErrNoSuccessorTipset rather than nil-nil
+// (which the caller treats as the at-head case). Distinguishing the
+// two prevents an unbounded staleness window from being silently
+// returned as a successful response.
+func TestResolveSuccessorTipSet_MaxNullStretchExhausted(t *testing.T) {
+	ctx := context.Background()
+	v1Mock := &mockV1FullNode{}
+
+	// Pretend chain head is well above resolvedHeight + MaxNullTipSetStretch.
+	// All epochs in the walk window are null — Lotus's
+	// ChainGetTipSetByHeight returns tipsetAtResolvedHeight (height 100)
+	// for every probed height in 101..(100 + MaxNullTipSetStretch).
+	tsAt100 := createMockTipSet(100)
+	for offset := int64(1); offset <= MaxNullTipSetStretch; offset++ {
+		v1Mock.On("ChainGetTipSetByHeight", ctx, abi.ChainEpoch(100+offset), filTypes.EmptyTSK).
+			Return(tsAt100, nil)
+	}
+
+	got, err := ResolveSuccessorTipSet(ctx, v1Mock, nil, 100, 100+MaxNullTipSetStretch+10, "")
+
+	require.Nil(t, got)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, ErrNoSuccessorTipset,
+		"helper must return ErrNoSuccessorTipset (not nil-nil) when the chain extends past resolvedHeight but no non-null successor exists within MaxNullTipSetStretch — silent degradation would mask an unbounded staleness window")
+}
