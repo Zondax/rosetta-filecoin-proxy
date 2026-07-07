@@ -86,6 +86,42 @@ func TestResolveMethodName(t *testing.T) {
 			want:      actors.UnknownStr,
 		},
 		{
+			name:      "EVM actor InvokeContractDelegate resolves by name",
+			actorName: "evm",
+			method:    abi.MethodNum(6),
+			want:      "InvokeContractDelegate",
+		},
+		{
+			name:      "multisig known method resolves by name",
+			actorName: "multisig",
+			method:    abi.MethodNum(2),
+			want:      "Propose",
+		},
+		{
+			name:      "init known method resolves by name",
+			actorName: "init",
+			method:    abi.MethodNum(2),
+			want:      "Exec",
+		},
+		{
+			name:      "account exported method at threshold falls back to Send",
+			actorName: ACCOUNT_ACTOR_NAME,
+			method:    abi.MethodNum(FIRST_EXPORTED_METHOD_NUMBER),
+			want:      METHOD_FALLBACK,
+		},
+		{
+			name:      "account method just below exported threshold stays unknown",
+			actorName: ACCOUNT_ACTOR_NAME,
+			method:    abi.MethodNum(FIRST_EXPORTED_METHOD_NUMBER - 1),
+			want:      actors.UnknownStr,
+		},
+		{
+			name:      "account fallback matching is case-insensitive",
+			actorName: "Account",
+			method:    invokeEVMMethod,
+			want:      METHOD_FALLBACK,
+		},
+		{
 			name:      "unknown actor stays unknown",
 			actorName: "not-a-real-actor",
 			method:    invokeEVMMethod,
@@ -100,6 +136,36 @@ func TestResolveMethodName(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetMethodNameShortcuts(t *testing.T) {
+	// These branches short-circuit before any actor/lib resolution, so they can
+	// be exercised with a nil lib.
+	t.Run("nil message returns an error", func(t *testing.T) {
+		if name, err := GetMethodName(nil, nil); err == nil {
+			t.Fatalf("expected an error for a nil message, got name %q", name)
+		}
+	})
+
+	t.Run("method 0 resolves to Send", func(t *testing.T) {
+		name, err := GetMethodName(&filTypes.MessageTrace{Method: abi.MethodNum(0)}, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if name != METHOD_SEND {
+			t.Errorf("GetMethodName(method=0) = %q, want %q", name, METHOD_SEND)
+		}
+	})
+
+	t.Run("method 1 resolves to Constructor", func(t *testing.T) {
+		name, err := GetMethodName(&filTypes.MessageTrace{Method: abi.MethodNum(1)}, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if name != "Constructor" {
+			t.Errorf("GetMethodName(method=1) = %q, want %q", name, "Constructor")
+		}
+	})
 }
 
 func TestValidateNetworkId(t *testing.T) {
