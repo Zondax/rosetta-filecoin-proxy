@@ -173,35 +173,45 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 	}
 
 	actorName := GetActorNameFromAddress(msg.To, lib)
-	method := GetMethodByActorName(actorName)
+	return resolveMethodName(actorName, msg.Method), nil
+}
 
-	// If method is unknown check for fallback behavior
-	if method == actors.UnknownStr && isAccountActorFallback(actorName, msg.Method) {
-		// Try to find the method in all known actors
-		if methodName := FindMethodNameInAllActors(uint64(msg.Method)); methodName != actors.UnknownStr {
-			return methodName, nil
-		}
-
-		// If not found and it's an actor with fallback behavior, return METHOD_FALLBACK
-		return METHOD_FALLBACK, nil
+// resolveMethodName maps an (actorName, method) pair to a human-readable method
+// name. It first looks the method number up in the recipient actor's own method
+// set. If the method is not defined there but is an exported (FRC-42 range)
+// method sent to an account/ethaccount actor, it is reported as the actor's
+// fallback method (METHOD_FALLBACK) rather than "<unknown>", so the value
+// transfer is still surfaced (e.g. an EVM-originated value transfer to a plain
+// account actor handled by the account's fallback method).
+func resolveMethodName(actorName string, method abi.MethodNum) string {
+	if methodName := findMethodInActor(actorName, method); methodName != actors.UnknownStr {
+		return methodName
 	}
 
-	val := reflect.Indirect(reflect.ValueOf(method))
+	if isAccountActorFallback(actorName, method) {
+		return METHOD_FALLBACK
+	}
+
+	return actors.UnknownStr
+}
+
+// findMethodInActor returns the field name of the recipient actor's method set
+// whose value matches the given method number, or actors.UnknownStr if the
+// actor is unknown or the method is not part of its method set.
+func findMethodInActor(actorName string, method abi.MethodNum) string {
+	val := reflect.Indirect(reflect.ValueOf(GetMethodByActorName(actorName)))
 
 	if val.Kind() != reflect.Struct {
-		return actors.UnknownStr, nil
+		return actors.UnknownStr
 	}
 
 	for i := 0; i < val.Type().NumField(); i++ {
-		field := val.Field(i)
-		methodNum := field.Uint()
-		if methodNum == uint64(msg.Method) {
-			methodName := val.Type().Field(i).Name
-			return methodName, nil
+		if val.Field(i).Uint() == uint64(method) {
+			return val.Type().Field(i).Name
 		}
 	}
 
-	return actors.UnknownStr, nil
+	return actors.UnknownStr
 }
 
 func GetMethodByActorName(actorName string) interface{} {
