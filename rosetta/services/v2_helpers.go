@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -13,6 +14,15 @@ import (
 )
 
 var v2Logger = logging.Logger("v2-helpers")
+
+// ErrNoSuccessorTipset is returned by ResolveSuccessorTipSet when the
+// walk exhausts MaxNullTipSetStretch consecutive null epochs without
+// finding a non-null tipset above the resolved height AND the chain
+// has extended past that point (i.e., we are NOT at head). Surfacing
+// this as an explicit error — rather than silently degrading to
+// "state at parent(resolvedHeight)" — prevents an unbounded
+// staleness window from being masked as a "200 OK" response.
+var ErrNoSuccessorTipset = errors.New("no non-null successor tipset found within MaxNullTipSetStretch epochs above resolved height (chain extended past resolved but no observable state)")
 
 // FinalityTag represents the different finality levels for V2 API
 type FinalityTag string
@@ -212,4 +222,107 @@ func ResolveTipSetForFinality(
 		Height:       finalityHeight,
 		IsNullTipSet: false,
 	}, nil
+}
+
+// MaxNullTipSetStretch is the largest consecutive null-tipset stretch
+// that ResolveSuccessorTipSet will walk before giving up. 50 is
+// generous: even calibration testnet's longest historical null runs
+// were single-digit; bound exists primarily to guarantee loop
+// termination if a misconfigured upstream node never returns a
+// non-null tipset above a given height.
+const MaxNullTipSetStretch = 50
+
+// ResolveSuccessorTipSet returns the next non-null tipset strictly
+// above `resolvedHeight`, walking forward through any null epochs.
+// The returned tipset's PARENT state reflects end-of-`resolvedHeight`,
+// which is what callers want to pass to StateGetActor / MsigGet* to
+// read balance "as of the end of block `resolvedHeight`".
+//
+// Returns (nil, nil) when the walk would go past chain head — meaning
+// no successor exists yet because resolvedHeight is at or above the
+// current head. Callers should treat this as "no observable successor"
+// and fall back to reading state at parent(resolvedHeight) with a
+// shifted response identifier (matching the pre-PR #310 useHeadTipSet
+// branch).
+//
+// Returns (nil, ErrNoSuccessorTipset) when the walk exhausts
+// MaxNullTipSetStretch consecutive null epochs without finding a
+// successor and is NOT at head. This is distinct from the at-head
+// case because the chain HAS extended past resolvedHeight — we just
+// couldn't find a non-null tipset within the safety bound — so
+// silently degrading to the parent-fallback path would return state
+// that's stale by an unbounded number of blocks. Surface the error
+// instead so the caller can retry, log, or alert.
+//
+// Returns (nil, err) on any RPC error during the walk.
+//
+// Mode dispatch:
+//
+//   - Default (no finality tag): walk via v1Node.ChainGetTipSetByHeight
+//     on the head chain.
+//   - V2 Anchor Mode (EnableFinalityAnchor && shouldUseV2API): walk via
+//     v2Node.ChainGetTipSet with a finality-chain TipSetSelector. This
+//     is essential because resolution.TipSet in anchor mode lives on
+//     the finality chain — querying successors via v1 would land on
+//     the head chain, potentially a different fork after a reorg
+//     between finality anchor and head, and StateGetActor on a
+//     head-chain successor would read state on the wrong chain.
+//   - V2 Height-Comparison Mode (default V2 behavior): walks via v1
+//     since resolution.TipSet there is the v1-resolved height when
+//     requestedHeight >= finalityHeight, or the finality tipset
+//     otherwise — both are reachable through v1's chain.
+func ResolveSuccessorTipSet(
+	ctx context.Context,
+	v1Node api.FullNode,
+	v2Node v2api.FullNode,
+	resolvedHeight int64,
+	headHeight int64,
+	finalityTag FinalityTag,
+) (*filTypes.TipSet, error) {
+	useV2Anchor := EnableFinalityAnchor && shouldUseV2API(v2Node, finalityTag)
+
+	for offset := int64(1); offset <= MaxNullTipSetStretch; offset++ {
+		target := resolvedHeight + offset
+		if target > headHeight {
+			// Walked past head — no successor exists yet.
+			return nil, nil
+		}
+
+		var candidate *filTypes.TipSet
+		var candidateErr error
+		if useV2Anchor {
+			epoch := abi.ChainEpoch(target)
+			tipsetTag := filTypes.TipSetTag(finalityTag)
+			selector := filTypes.TipSetSelector{
+				Height: &filTypes.TipSetHeight{
+					At:       &epoch,
+					Previous: false,
+					Anchor: &filTypes.TipSetAnchor{
+						Tag: &tipsetTag,
+					},
+				},
+			}
+			candidate, candidateErr = v2Node.ChainGetTipSet(ctx, selector)
+		} else {
+			candidate, candidateErr = v1Node.ChainGetTipSetByHeight(ctx, abi.ChainEpoch(target), filTypes.EmptyTSK)
+		}
+		if candidateErr != nil {
+			return nil, candidateErr
+		}
+		if int64(candidate.Height()) > resolvedHeight {
+			return candidate, nil
+		}
+		// Otherwise the lookup returned a tipset at a lower height,
+		// meaning `target` was null. Try the next offset.
+	}
+	// Exhausted MaxNullTipSetStretch without finding a successor, and
+	// resolvedHeight + MaxNullTipSetStretch is still <= headHeight
+	// (otherwise we'd have returned nil-nil from the `target>headHeight`
+	// short-circuit). The chain has extended past resolvedHeight; we
+	// just couldn't see a non-null tipset within the bound. Returning
+	// nil-nil here would silently degrade the response to "state at
+	// parent(resolvedHeight)" labeled as resolvedHeight-1 — but the
+	// actual stale-by amount is unbounded (could be 100s of blocks of
+	// silently-dropped activity). Surface an explicit error instead.
+	return nil, ErrNoSuccessorTipset
 }
