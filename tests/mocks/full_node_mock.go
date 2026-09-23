@@ -45,10 +45,19 @@ func NewFullNode(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *FullNode {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &FullNode{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -102,7 +111,7 @@ type FullNode_AuthNew_Call struct {
 // AuthNew is a helper method to define mock.On call
 //   - ctx context.Context
 //   - perms []auth.Permission
-func (_e *FullNode_Expecter) AuthNew(ctx interface{}, perms interface{}) *FullNode_AuthNew_Call {
+func (_e *FullNode_Expecter) AuthNew(ctx any, perms any) *FullNode_AuthNew_Call {
 	return &FullNode_AuthNew_Call{Call: _e.mock.On("AuthNew", ctx, perms)}
 }
 
@@ -170,7 +179,7 @@ type FullNode_AuthVerify_Call struct {
 // AuthVerify is a helper method to define mock.On call
 //   - ctx context.Context
 //   - token string
-func (_e *FullNode_Expecter) AuthVerify(ctx interface{}, token interface{}) *FullNode_AuthVerify_Call {
+func (_e *FullNode_Expecter) AuthVerify(ctx any, token any) *FullNode_AuthVerify_Call {
 	return &FullNode_AuthVerify_Call{Call: _e.mock.On("AuthVerify", ctx, token)}
 }
 
@@ -237,7 +246,7 @@ type FullNode_ChainBlockstoreInfo_Call struct {
 
 // ChainBlockstoreInfo is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ChainBlockstoreInfo(context1 interface{}) *FullNode_ChainBlockstoreInfo_Call {
+func (_e *FullNode_Expecter) ChainBlockstoreInfo(context1 any) *FullNode_ChainBlockstoreInfo_Call {
 	return &FullNode_ChainBlockstoreInfo_Call{Call: _e.mock.On("ChainBlockstoreInfo", context1)}
 }
 
@@ -288,7 +297,7 @@ type FullNode_ChainCheckBlockstore_Call struct {
 
 // ChainCheckBlockstore is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ChainCheckBlockstore(context1 interface{}) *FullNode_ChainCheckBlockstore_Call {
+func (_e *FullNode_Expecter) ChainCheckBlockstore(context1 any) *FullNode_ChainCheckBlockstore_Call {
 	return &FullNode_ChainCheckBlockstore_Call{Call: _e.mock.On("ChainCheckBlockstore", context1)}
 }
 
@@ -340,7 +349,7 @@ type FullNode_ChainDeleteObj_Call struct {
 // ChainDeleteObj is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainDeleteObj(context1 interface{}, cid1 interface{}) *FullNode_ChainDeleteObj_Call {
+func (_e *FullNode_Expecter) ChainDeleteObj(context1 any, cid1 any) *FullNode_ChainDeleteObj_Call {
 	return &FullNode_ChainDeleteObj_Call{Call: _e.mock.On("ChainDeleteObj", context1, cid1)}
 }
 
@@ -410,7 +419,7 @@ type FullNode_ChainExport_Call struct {
 //   - nroots abi.ChainEpoch
 //   - oldmsgskip bool
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) ChainExport(ctx interface{}, nroots interface{}, oldmsgskip interface{}, tsk interface{}) *FullNode_ChainExport_Call {
+func (_e *FullNode_Expecter) ChainExport(ctx any, nroots any, oldmsgskip any, tsk any) *FullNode_ChainExport_Call {
 	return &FullNode_ChainExport_Call{Call: _e.mock.On("ChainExport", ctx, nroots, oldmsgskip, tsk)}
 }
 
@@ -479,7 +488,7 @@ type FullNode_ChainExportRangeInternal_Call struct {
 //   - head types.TipSetKey
 //   - tail types.TipSetKey
 //   - cfg api.ChainExportConfig
-func (_e *FullNode_Expecter) ChainExportRangeInternal(ctx interface{}, head interface{}, tail interface{}, cfg interface{}) *FullNode_ChainExportRangeInternal_Call {
+func (_e *FullNode_Expecter) ChainExportRangeInternal(ctx any, head any, tail any, cfg any) *FullNode_ChainExportRangeInternal_Call {
 	return &FullNode_ChainExportRangeInternal_Call{Call: _e.mock.On("ChainExportRangeInternal", ctx, head, tail, cfg)}
 }
 
@@ -557,7 +566,7 @@ type FullNode_ChainGetBlock_Call struct {
 // ChainGetBlock is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainGetBlock(context1 interface{}, cid1 interface{}) *FullNode_ChainGetBlock_Call {
+func (_e *FullNode_Expecter) ChainGetBlock(context1 any, cid1 any) *FullNode_ChainGetBlock_Call {
 	return &FullNode_ChainGetBlock_Call{Call: _e.mock.On("ChainGetBlock", context1, cid1)}
 }
 
@@ -625,7 +634,7 @@ type FullNode_ChainGetBlockMessages_Call struct {
 // ChainGetBlockMessages is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blockCid cid.Cid
-func (_e *FullNode_Expecter) ChainGetBlockMessages(ctx interface{}, blockCid interface{}) *FullNode_ChainGetBlockMessages_Call {
+func (_e *FullNode_Expecter) ChainGetBlockMessages(ctx any, blockCid any) *FullNode_ChainGetBlockMessages_Call {
 	return &FullNode_ChainGetBlockMessages_Call{Call: _e.mock.On("ChainGetBlockMessages", ctx, blockCid)}
 }
 
@@ -693,7 +702,7 @@ type FullNode_ChainGetEvents_Call struct {
 // ChainGetEvents is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainGetEvents(context1 interface{}, cid1 interface{}) *FullNode_ChainGetEvents_Call {
+func (_e *FullNode_Expecter) ChainGetEvents(context1 any, cid1 any) *FullNode_ChainGetEvents_Call {
 	return &FullNode_ChainGetEvents_Call{Call: _e.mock.On("ChainGetEvents", context1, cid1)}
 }
 
@@ -760,7 +769,7 @@ type FullNode_ChainGetFinalizedTipSet_Call struct {
 
 // ChainGetFinalizedTipSet is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) ChainGetFinalizedTipSet(ctx interface{}) *FullNode_ChainGetFinalizedTipSet_Call {
+func (_e *FullNode_Expecter) ChainGetFinalizedTipSet(ctx any) *FullNode_ChainGetFinalizedTipSet_Call {
 	return &FullNode_ChainGetFinalizedTipSet_Call{Call: _e.mock.On("ChainGetFinalizedTipSet", ctx)}
 }
 
@@ -822,7 +831,7 @@ type FullNode_ChainGetGenesis_Call struct {
 
 // ChainGetGenesis is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ChainGetGenesis(context1 interface{}) *FullNode_ChainGetGenesis_Call {
+func (_e *FullNode_Expecter) ChainGetGenesis(context1 any) *FullNode_ChainGetGenesis_Call {
 	return &FullNode_ChainGetGenesis_Call{Call: _e.mock.On("ChainGetGenesis", context1)}
 }
 
@@ -885,7 +894,7 @@ type FullNode_ChainGetMessage_Call struct {
 // ChainGetMessage is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainGetMessage(context1 interface{}, cid1 interface{}) *FullNode_ChainGetMessage_Call {
+func (_e *FullNode_Expecter) ChainGetMessage(context1 any, cid1 any) *FullNode_ChainGetMessage_Call {
 	return &FullNode_ChainGetMessage_Call{Call: _e.mock.On("ChainGetMessage", context1, cid1)}
 }
 
@@ -953,7 +962,7 @@ type FullNode_ChainGetMessagesInTipset_Call struct {
 // ChainGetMessagesInTipset is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) ChainGetMessagesInTipset(ctx interface{}, tsk interface{}) *FullNode_ChainGetMessagesInTipset_Call {
+func (_e *FullNode_Expecter) ChainGetMessagesInTipset(ctx any, tsk any) *FullNode_ChainGetMessagesInTipset_Call {
 	return &FullNode_ChainGetMessagesInTipset_Call{Call: _e.mock.On("ChainGetMessagesInTipset", ctx, tsk)}
 }
 
@@ -1021,7 +1030,7 @@ type FullNode_ChainGetNode_Call struct {
 // ChainGetNode is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p string
-func (_e *FullNode_Expecter) ChainGetNode(ctx interface{}, p interface{}) *FullNode_ChainGetNode_Call {
+func (_e *FullNode_Expecter) ChainGetNode(ctx any, p any) *FullNode_ChainGetNode_Call {
 	return &FullNode_ChainGetNode_Call{Call: _e.mock.On("ChainGetNode", ctx, p)}
 }
 
@@ -1089,7 +1098,7 @@ type FullNode_ChainGetParentMessages_Call struct {
 // ChainGetParentMessages is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blockCid cid.Cid
-func (_e *FullNode_Expecter) ChainGetParentMessages(ctx interface{}, blockCid interface{}) *FullNode_ChainGetParentMessages_Call {
+func (_e *FullNode_Expecter) ChainGetParentMessages(ctx any, blockCid any) *FullNode_ChainGetParentMessages_Call {
 	return &FullNode_ChainGetParentMessages_Call{Call: _e.mock.On("ChainGetParentMessages", ctx, blockCid)}
 }
 
@@ -1157,7 +1166,7 @@ type FullNode_ChainGetParentReceipts_Call struct {
 // ChainGetParentReceipts is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blockCid cid.Cid
-func (_e *FullNode_Expecter) ChainGetParentReceipts(ctx interface{}, blockCid interface{}) *FullNode_ChainGetParentReceipts_Call {
+func (_e *FullNode_Expecter) ChainGetParentReceipts(ctx any, blockCid any) *FullNode_ChainGetParentReceipts_Call {
 	return &FullNode_ChainGetParentReceipts_Call{Call: _e.mock.On("ChainGetParentReceipts", ctx, blockCid)}
 }
 
@@ -1226,7 +1235,7 @@ type FullNode_ChainGetPath_Call struct {
 //   - ctx context.Context
 //   - from types.TipSetKey
 //   - to types.TipSetKey
-func (_e *FullNode_Expecter) ChainGetPath(ctx interface{}, from interface{}, to interface{}) *FullNode_ChainGetPath_Call {
+func (_e *FullNode_Expecter) ChainGetPath(ctx any, from any, to any) *FullNode_ChainGetPath_Call {
 	return &FullNode_ChainGetPath_Call{Call: _e.mock.On("ChainGetPath", ctx, from, to)}
 }
 
@@ -1299,7 +1308,7 @@ type FullNode_ChainGetTipSet_Call struct {
 // ChainGetTipSet is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) ChainGetTipSet(context1 interface{}, tipSetKey interface{}) *FullNode_ChainGetTipSet_Call {
+func (_e *FullNode_Expecter) ChainGetTipSet(context1 any, tipSetKey any) *FullNode_ChainGetTipSet_Call {
 	return &FullNode_ChainGetTipSet_Call{Call: _e.mock.On("ChainGetTipSet", context1, tipSetKey)}
 }
 
@@ -1368,7 +1377,7 @@ type FullNode_ChainGetTipSetAfterHeight_Call struct {
 //   - context1 context.Context
 //   - chainEpoch abi.ChainEpoch
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) ChainGetTipSetAfterHeight(context1 interface{}, chainEpoch interface{}, tipSetKey interface{}) *FullNode_ChainGetTipSetAfterHeight_Call {
+func (_e *FullNode_Expecter) ChainGetTipSetAfterHeight(context1 any, chainEpoch any, tipSetKey any) *FullNode_ChainGetTipSetAfterHeight_Call {
 	return &FullNode_ChainGetTipSetAfterHeight_Call{Call: _e.mock.On("ChainGetTipSetAfterHeight", context1, chainEpoch, tipSetKey)}
 }
 
@@ -1442,7 +1451,7 @@ type FullNode_ChainGetTipSetByHeight_Call struct {
 //   - context1 context.Context
 //   - chainEpoch abi.ChainEpoch
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) ChainGetTipSetByHeight(context1 interface{}, chainEpoch interface{}, tipSetKey interface{}) *FullNode_ChainGetTipSetByHeight_Call {
+func (_e *FullNode_Expecter) ChainGetTipSetByHeight(context1 any, chainEpoch any, tipSetKey any) *FullNode_ChainGetTipSetByHeight_Call {
 	return &FullNode_ChainGetTipSetByHeight_Call{Call: _e.mock.On("ChainGetTipSetByHeight", context1, chainEpoch, tipSetKey)}
 }
 
@@ -1513,7 +1522,7 @@ type FullNode_ChainHasObj_Call struct {
 // ChainHasObj is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainHasObj(context1 interface{}, cid1 interface{}) *FullNode_ChainHasObj_Call {
+func (_e *FullNode_Expecter) ChainHasObj(context1 any, cid1 any) *FullNode_ChainHasObj_Call {
 	return &FullNode_ChainHasObj_Call{Call: _e.mock.On("ChainHasObj", context1, cid1)}
 }
 
@@ -1580,7 +1589,7 @@ type FullNode_ChainHead_Call struct {
 
 // ChainHead is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ChainHead(context1 interface{}) *FullNode_ChainHead_Call {
+func (_e *FullNode_Expecter) ChainHead(context1 any) *FullNode_ChainHead_Call {
 	return &FullNode_ChainHead_Call{Call: _e.mock.On("ChainHead", context1)}
 }
 
@@ -1632,7 +1641,7 @@ type FullNode_ChainHotGC_Call struct {
 // ChainHotGC is a helper method to define mock.On call
 //   - ctx context.Context
 //   - opts api.HotGCOpts
-func (_e *FullNode_Expecter) ChainHotGC(ctx interface{}, opts interface{}) *FullNode_ChainHotGC_Call {
+func (_e *FullNode_Expecter) ChainHotGC(ctx any, opts any) *FullNode_ChainHotGC_Call {
 	return &FullNode_ChainHotGC_Call{Call: _e.mock.On("ChainHotGC", ctx, opts)}
 }
 
@@ -1699,7 +1708,7 @@ type FullNode_ChainNotify_Call struct {
 
 // ChainNotify is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ChainNotify(context1 interface{}) *FullNode_ChainNotify_Call {
+func (_e *FullNode_Expecter) ChainNotify(context1 any) *FullNode_ChainNotify_Call {
 	return &FullNode_ChainNotify_Call{Call: _e.mock.On("ChainNotify", context1)}
 }
 
@@ -1751,7 +1760,7 @@ type FullNode_ChainPrune_Call struct {
 // ChainPrune is a helper method to define mock.On call
 //   - ctx context.Context
 //   - opts api.PruneOpts
-func (_e *FullNode_Expecter) ChainPrune(ctx interface{}, opts interface{}) *FullNode_ChainPrune_Call {
+func (_e *FullNode_Expecter) ChainPrune(ctx any, opts any) *FullNode_ChainPrune_Call {
 	return &FullNode_ChainPrune_Call{Call: _e.mock.On("ChainPrune", ctx, opts)}
 }
 
@@ -1808,7 +1817,7 @@ type FullNode_ChainPutObj_Call struct {
 // ChainPutObj is a helper method to define mock.On call
 //   - context1 context.Context
 //   - block blocks.Block
-func (_e *FullNode_Expecter) ChainPutObj(context1 interface{}, block interface{}) *FullNode_ChainPutObj_Call {
+func (_e *FullNode_Expecter) ChainPutObj(context1 any, block any) *FullNode_ChainPutObj_Call {
 	return &FullNode_ChainPutObj_Call{Call: _e.mock.On("ChainPutObj", context1, block)}
 }
 
@@ -1876,7 +1885,7 @@ type FullNode_ChainReadObj_Call struct {
 // ChainReadObj is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) ChainReadObj(context1 interface{}, cid1 interface{}) *FullNode_ChainReadObj_Call {
+func (_e *FullNode_Expecter) ChainReadObj(context1 any, cid1 any) *FullNode_ChainReadObj_Call {
 	return &FullNode_ChainReadObj_Call{Call: _e.mock.On("ChainReadObj", context1, cid1)}
 }
 
@@ -1933,7 +1942,7 @@ type FullNode_ChainSetHead_Call struct {
 // ChainSetHead is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) ChainSetHead(context1 interface{}, tipSetKey interface{}) *FullNode_ChainSetHead_Call {
+func (_e *FullNode_Expecter) ChainSetHead(context1 any, tipSetKey any) *FullNode_ChainSetHead_Call {
 	return &FullNode_ChainSetHead_Call{Call: _e.mock.On("ChainSetHead", context1, tipSetKey)}
 }
 
@@ -2000,7 +2009,7 @@ type FullNode_ChainStatObj_Call struct {
 //   - ctx context.Context
 //   - obj cid.Cid
 //   - base cid.Cid
-func (_e *FullNode_Expecter) ChainStatObj(ctx interface{}, obj interface{}, base interface{}) *FullNode_ChainStatObj_Call {
+func (_e *FullNode_Expecter) ChainStatObj(ctx any, obj any, base any) *FullNode_ChainStatObj_Call {
 	return &FullNode_ChainStatObj_Call{Call: _e.mock.On("ChainStatObj", ctx, obj, base)}
 }
 
@@ -2071,7 +2080,7 @@ type FullNode_ChainTipSetWeight_Call struct {
 // ChainTipSetWeight is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) ChainTipSetWeight(context1 interface{}, tipSetKey interface{}) *FullNode_ChainTipSetWeight_Call {
+func (_e *FullNode_Expecter) ChainTipSetWeight(context1 any, tipSetKey any) *FullNode_ChainTipSetWeight_Call {
 	return &FullNode_ChainTipSetWeight_Call{Call: _e.mock.On("ChainTipSetWeight", context1, tipSetKey)}
 }
 
@@ -2093,8 +2102,8 @@ func (_c *FullNode_ChainTipSetWeight_Call) Run(run func(context1 context.Context
 	return _c
 }
 
-func (_c *FullNode_ChainTipSetWeight_Call) Return(v types.BigInt, err error) *FullNode_ChainTipSetWeight_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_ChainTipSetWeight_Call) Return(bigInt types.BigInt, err error) *FullNode_ChainTipSetWeight_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -2140,7 +2149,7 @@ type FullNode_ChainValidateIndex_Call struct {
 //   - ctx context.Context
 //   - epoch abi.ChainEpoch
 //   - backfill bool
-func (_e *FullNode_Expecter) ChainValidateIndex(ctx interface{}, epoch interface{}, backfill interface{}) *FullNode_ChainValidateIndex_Call {
+func (_e *FullNode_Expecter) ChainValidateIndex(ctx any, epoch any, backfill any) *FullNode_ChainValidateIndex_Call {
 	return &FullNode_ChainValidateIndex_Call{Call: _e.mock.On("ChainValidateIndex", ctx, epoch, backfill)}
 }
 
@@ -2212,7 +2221,7 @@ type FullNode_Closing_Call struct {
 
 // Closing is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) Closing(context1 interface{}) *FullNode_Closing_Call {
+func (_e *FullNode_Expecter) Closing(context1 any) *FullNode_Closing_Call {
 	return &FullNode_Closing_Call{Call: _e.mock.On("Closing", context1)}
 }
 
@@ -2264,7 +2273,7 @@ type FullNode_CreateBackup_Call struct {
 // CreateBackup is a helper method to define mock.On call
 //   - ctx context.Context
 //   - fpath string
-func (_e *FullNode_Expecter) CreateBackup(ctx interface{}, fpath interface{}) *FullNode_CreateBackup_Call {
+func (_e *FullNode_Expecter) CreateBackup(ctx any, fpath any) *FullNode_CreateBackup_Call {
 	return &FullNode_CreateBackup_Call{Call: _e.mock.On("CreateBackup", ctx, fpath)}
 }
 
@@ -2331,7 +2340,7 @@ type FullNode_Discover_Call struct {
 
 // Discover is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) Discover(ctx interface{}) *FullNode_Discover_Call {
+func (_e *FullNode_Expecter) Discover(ctx any) *FullNode_Discover_Call {
 	return &FullNode_Discover_Call{Call: _e.mock.On("Discover", ctx)}
 }
 
@@ -2393,7 +2402,7 @@ type FullNode_EthAccounts_Call struct {
 
 // EthAccounts is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthAccounts(ctx interface{}) *FullNode_EthAccounts_Call {
+func (_e *FullNode_Expecter) EthAccounts(ctx any) *FullNode_EthAccounts_Call {
 	return &FullNode_EthAccounts_Call{Call: _e.mock.On("EthAccounts", ctx)}
 }
 
@@ -2454,7 +2463,7 @@ type FullNode_EthAddressToFilecoinAddress_Call struct {
 // EthAddressToFilecoinAddress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - ethAddress ethtypes.EthAddress
-func (_e *FullNode_Expecter) EthAddressToFilecoinAddress(ctx interface{}, ethAddress interface{}) *FullNode_EthAddressToFilecoinAddress_Call {
+func (_e *FullNode_Expecter) EthAddressToFilecoinAddress(ctx any, ethAddress any) *FullNode_EthAddressToFilecoinAddress_Call {
 	return &FullNode_EthAddressToFilecoinAddress_Call{Call: _e.mock.On("EthAddressToFilecoinAddress", ctx, ethAddress)}
 }
 
@@ -2482,6 +2491,66 @@ func (_c *FullNode_EthAddressToFilecoinAddress_Call) Return(address1 address.Add
 }
 
 func (_c *FullNode_EthAddressToFilecoinAddress_Call) RunAndReturn(run func(ctx context.Context, ethAddress ethtypes.EthAddress) (address.Address, error)) *FullNode_EthAddressToFilecoinAddress_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// EthBaseFee provides a mock function for the type FullNode
+func (_mock *FullNode) EthBaseFee(ctx context.Context) (ethtypes.EthBigInt, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EthBaseFee")
+	}
+
+	var r0 ethtypes.EthBigInt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (ethtypes.EthBigInt, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ethtypes.EthBigInt); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(ethtypes.EthBigInt)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// FullNode_EthBaseFee_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EthBaseFee'
+type FullNode_EthBaseFee_Call struct {
+	*mock.Call
+}
+
+// EthBaseFee is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *FullNode_Expecter) EthBaseFee(ctx any) *FullNode_EthBaseFee_Call {
+	return &FullNode_EthBaseFee_Call{Call: _e.mock.On("EthBaseFee", ctx)}
+}
+
+func (_c *FullNode_EthBaseFee_Call) Run(run func(ctx context.Context)) *FullNode_EthBaseFee_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *FullNode_EthBaseFee_Call) Return(ethBigInt ethtypes.EthBigInt, err error) *FullNode_EthBaseFee_Call {
+	_c.Call.Return(ethBigInt, err)
+	return _c
+}
+
+func (_c *FullNode_EthBaseFee_Call) RunAndReturn(run func(ctx context.Context) (ethtypes.EthBigInt, error)) *FullNode_EthBaseFee_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2519,7 +2588,7 @@ type FullNode_EthBlockNumber_Call struct {
 
 // EthBlockNumber is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthBlockNumber(ctx interface{}) *FullNode_EthBlockNumber_Call {
+func (_e *FullNode_Expecter) EthBlockNumber(ctx any) *FullNode_EthBlockNumber_Call {
 	return &FullNode_EthBlockNumber_Call{Call: _e.mock.On("EthBlockNumber", ctx)}
 }
 
@@ -2583,7 +2652,7 @@ type FullNode_EthCall_Call struct {
 //   - ctx context.Context
 //   - tx ethtypes.EthCall
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthCall(ctx interface{}, tx interface{}, blkParam interface{}) *FullNode_EthCall_Call {
+func (_e *FullNode_Expecter) EthCall(ctx any, tx any, blkParam any) *FullNode_EthCall_Call {
 	return &FullNode_EthCall_Call{Call: _e.mock.On("EthCall", ctx, tx, blkParam)}
 }
 
@@ -2653,7 +2722,7 @@ type FullNode_EthChainId_Call struct {
 
 // EthChainId is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthChainId(ctx interface{}) *FullNode_EthChainId_Call {
+func (_e *FullNode_Expecter) EthChainId(ctx any) *FullNode_EthChainId_Call {
 	return &FullNode_EthChainId_Call{Call: _e.mock.On("EthChainId", ctx)}
 }
 
@@ -2714,7 +2783,7 @@ type FullNode_EthEstimateGas_Call struct {
 // EthEstimateGas is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jsonrpc.RawParams
-func (_e *FullNode_Expecter) EthEstimateGas(ctx interface{}, p interface{}) *FullNode_EthEstimateGas_Call {
+func (_e *FullNode_Expecter) EthEstimateGas(ctx any, p any) *FullNode_EthEstimateGas_Call {
 	return &FullNode_EthEstimateGas_Call{Call: _e.mock.On("EthEstimateGas", ctx, p)}
 }
 
@@ -2780,7 +2849,7 @@ type FullNode_EthFeeHistory_Call struct {
 // EthFeeHistory is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jsonrpc.RawParams
-func (_e *FullNode_Expecter) EthFeeHistory(ctx interface{}, p interface{}) *FullNode_EthFeeHistory_Call {
+func (_e *FullNode_Expecter) EthFeeHistory(ctx any, p any) *FullNode_EthFeeHistory_Call {
 	return &FullNode_EthFeeHistory_Call{Call: _e.mock.On("EthFeeHistory", ctx, p)}
 }
 
@@ -2845,7 +2914,7 @@ type FullNode_EthGasPrice_Call struct {
 
 // EthGasPrice is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthGasPrice(ctx interface{}) *FullNode_EthGasPrice_Call {
+func (_e *FullNode_Expecter) EthGasPrice(ctx any) *FullNode_EthGasPrice_Call {
 	return &FullNode_EthGasPrice_Call{Call: _e.mock.On("EthGasPrice", ctx)}
 }
 
@@ -2907,7 +2976,7 @@ type FullNode_EthGetBalance_Call struct {
 //   - ctx context.Context
 //   - address1 ethtypes.EthAddress
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthGetBalance(ctx interface{}, address1 interface{}, blkParam interface{}) *FullNode_EthGetBalance_Call {
+func (_e *FullNode_Expecter) EthGetBalance(ctx any, address1 any, blkParam any) *FullNode_EthGetBalance_Call {
 	return &FullNode_EthGetBalance_Call{Call: _e.mock.On("EthGetBalance", ctx, address1, blkParam)}
 }
 
@@ -2979,7 +3048,7 @@ type FullNode_EthGetBlockByHash_Call struct {
 //   - ctx context.Context
 //   - blkHash ethtypes.EthHash
 //   - fullTxInfo bool
-func (_e *FullNode_Expecter) EthGetBlockByHash(ctx interface{}, blkHash interface{}, fullTxInfo interface{}) *FullNode_EthGetBlockByHash_Call {
+func (_e *FullNode_Expecter) EthGetBlockByHash(ctx any, blkHash any, fullTxInfo any) *FullNode_EthGetBlockByHash_Call {
 	return &FullNode_EthGetBlockByHash_Call{Call: _e.mock.On("EthGetBlockByHash", ctx, blkHash, fullTxInfo)}
 }
 
@@ -3051,7 +3120,7 @@ type FullNode_EthGetBlockByNumber_Call struct {
 //   - ctx context.Context
 //   - blkNum string
 //   - fullTxInfo bool
-func (_e *FullNode_Expecter) EthGetBlockByNumber(ctx interface{}, blkNum interface{}, fullTxInfo interface{}) *FullNode_EthGetBlockByNumber_Call {
+func (_e *FullNode_Expecter) EthGetBlockByNumber(ctx any, blkNum any, fullTxInfo any) *FullNode_EthGetBlockByNumber_Call {
 	return &FullNode_EthGetBlockByNumber_Call{Call: _e.mock.On("EthGetBlockByNumber", ctx, blkNum, fullTxInfo)}
 }
 
@@ -3124,7 +3193,7 @@ type FullNode_EthGetBlockReceipts_Call struct {
 // EthGetBlockReceipts is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthGetBlockReceipts(ctx interface{}, blkParam interface{}) *FullNode_EthGetBlockReceipts_Call {
+func (_e *FullNode_Expecter) EthGetBlockReceipts(ctx any, blkParam any) *FullNode_EthGetBlockReceipts_Call {
 	return &FullNode_EthGetBlockReceipts_Call{Call: _e.mock.On("EthGetBlockReceipts", ctx, blkParam)}
 }
 
@@ -3193,7 +3262,7 @@ type FullNode_EthGetBlockReceiptsLimited_Call struct {
 //   - ctx context.Context
 //   - blkParam ethtypes.EthBlockNumberOrHash
 //   - limit abi.ChainEpoch
-func (_e *FullNode_Expecter) EthGetBlockReceiptsLimited(ctx interface{}, blkParam interface{}, limit interface{}) *FullNode_EthGetBlockReceiptsLimited_Call {
+func (_e *FullNode_Expecter) EthGetBlockReceiptsLimited(ctx any, blkParam any, limit any) *FullNode_EthGetBlockReceiptsLimited_Call {
 	return &FullNode_EthGetBlockReceiptsLimited_Call{Call: _e.mock.On("EthGetBlockReceiptsLimited", ctx, blkParam, limit)}
 }
 
@@ -3264,7 +3333,7 @@ type FullNode_EthGetBlockTransactionCountByHash_Call struct {
 // EthGetBlockTransactionCountByHash is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blkHash ethtypes.EthHash
-func (_e *FullNode_Expecter) EthGetBlockTransactionCountByHash(ctx interface{}, blkHash interface{}) *FullNode_EthGetBlockTransactionCountByHash_Call {
+func (_e *FullNode_Expecter) EthGetBlockTransactionCountByHash(ctx any, blkHash any) *FullNode_EthGetBlockTransactionCountByHash_Call {
 	return &FullNode_EthGetBlockTransactionCountByHash_Call{Call: _e.mock.On("EthGetBlockTransactionCountByHash", ctx, blkHash)}
 }
 
@@ -3330,7 +3399,7 @@ type FullNode_EthGetBlockTransactionCountByNumber_Call struct {
 // EthGetBlockTransactionCountByNumber is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blkNum string
-func (_e *FullNode_Expecter) EthGetBlockTransactionCountByNumber(ctx interface{}, blkNum interface{}) *FullNode_EthGetBlockTransactionCountByNumber_Call {
+func (_e *FullNode_Expecter) EthGetBlockTransactionCountByNumber(ctx any, blkNum any) *FullNode_EthGetBlockTransactionCountByNumber_Call {
 	return &FullNode_EthGetBlockTransactionCountByNumber_Call{Call: _e.mock.On("EthGetBlockTransactionCountByNumber", ctx, blkNum)}
 }
 
@@ -3399,7 +3468,7 @@ type FullNode_EthGetCode_Call struct {
 //   - ctx context.Context
 //   - address1 ethtypes.EthAddress
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthGetCode(ctx interface{}, address1 interface{}, blkParam interface{}) *FullNode_EthGetCode_Call {
+func (_e *FullNode_Expecter) EthGetCode(ctx any, address1 any, blkParam any) *FullNode_EthGetCode_Call {
 	return &FullNode_EthGetCode_Call{Call: _e.mock.On("EthGetCode", ctx, address1, blkParam)}
 }
 
@@ -3472,7 +3541,7 @@ type FullNode_EthGetFilterChanges_Call struct {
 // EthGetFilterChanges is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id ethtypes.EthFilterID
-func (_e *FullNode_Expecter) EthGetFilterChanges(ctx interface{}, id interface{}) *FullNode_EthGetFilterChanges_Call {
+func (_e *FullNode_Expecter) EthGetFilterChanges(ctx any, id any) *FullNode_EthGetFilterChanges_Call {
 	return &FullNode_EthGetFilterChanges_Call{Call: _e.mock.On("EthGetFilterChanges", ctx, id)}
 }
 
@@ -3540,7 +3609,7 @@ type FullNode_EthGetFilterLogs_Call struct {
 // EthGetFilterLogs is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id ethtypes.EthFilterID
-func (_e *FullNode_Expecter) EthGetFilterLogs(ctx interface{}, id interface{}) *FullNode_EthGetFilterLogs_Call {
+func (_e *FullNode_Expecter) EthGetFilterLogs(ctx any, id any) *FullNode_EthGetFilterLogs_Call {
 	return &FullNode_EthGetFilterLogs_Call{Call: _e.mock.On("EthGetFilterLogs", ctx, id)}
 }
 
@@ -3608,7 +3677,7 @@ type FullNode_EthGetLogs_Call struct {
 // EthGetLogs is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter *ethtypes.EthFilterSpec
-func (_e *FullNode_Expecter) EthGetLogs(ctx interface{}, filter interface{}) *FullNode_EthGetLogs_Call {
+func (_e *FullNode_Expecter) EthGetLogs(ctx any, filter any) *FullNode_EthGetLogs_Call {
 	return &FullNode_EthGetLogs_Call{Call: _e.mock.On("EthGetLogs", ctx, filter)}
 }
 
@@ -3676,7 +3745,7 @@ type FullNode_EthGetMessageCidByTransactionHash_Call struct {
 // EthGetMessageCidByTransactionHash is a helper method to define mock.On call
 //   - ctx context.Context
 //   - txHash *ethtypes.EthHash
-func (_e *FullNode_Expecter) EthGetMessageCidByTransactionHash(ctx interface{}, txHash interface{}) *FullNode_EthGetMessageCidByTransactionHash_Call {
+func (_e *FullNode_Expecter) EthGetMessageCidByTransactionHash(ctx any, txHash any) *FullNode_EthGetMessageCidByTransactionHash_Call {
 	return &FullNode_EthGetMessageCidByTransactionHash_Call{Call: _e.mock.On("EthGetMessageCidByTransactionHash", ctx, txHash)}
 }
 
@@ -3746,7 +3815,7 @@ type FullNode_EthGetStorageAt_Call struct {
 //   - address1 ethtypes.EthAddress
 //   - position ethtypes.EthBytes
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthGetStorageAt(ctx interface{}, address1 interface{}, position interface{}, blkParam interface{}) *FullNode_EthGetStorageAt_Call {
+func (_e *FullNode_Expecter) EthGetStorageAt(ctx any, address1 any, position any, blkParam any) *FullNode_EthGetStorageAt_Call {
 	return &FullNode_EthGetStorageAt_Call{Call: _e.mock.On("EthGetStorageAt", ctx, address1, position, blkParam)}
 }
 
@@ -3825,7 +3894,7 @@ type FullNode_EthGetTransactionByBlockHashAndIndex_Call struct {
 //   - ctx context.Context
 //   - blkHash ethtypes.EthHash
 //   - txIndex ethtypes.EthUint64
-func (_e *FullNode_Expecter) EthGetTransactionByBlockHashAndIndex(ctx interface{}, blkHash interface{}, txIndex interface{}) *FullNode_EthGetTransactionByBlockHashAndIndex_Call {
+func (_e *FullNode_Expecter) EthGetTransactionByBlockHashAndIndex(ctx any, blkHash any, txIndex any) *FullNode_EthGetTransactionByBlockHashAndIndex_Call {
 	return &FullNode_EthGetTransactionByBlockHashAndIndex_Call{Call: _e.mock.On("EthGetTransactionByBlockHashAndIndex", ctx, blkHash, txIndex)}
 }
 
@@ -3899,7 +3968,7 @@ type FullNode_EthGetTransactionByBlockNumberAndIndex_Call struct {
 //   - ctx context.Context
 //   - blkNum string
 //   - txIndex ethtypes.EthUint64
-func (_e *FullNode_Expecter) EthGetTransactionByBlockNumberAndIndex(ctx interface{}, blkNum interface{}, txIndex interface{}) *FullNode_EthGetTransactionByBlockNumberAndIndex_Call {
+func (_e *FullNode_Expecter) EthGetTransactionByBlockNumberAndIndex(ctx any, blkNum any, txIndex any) *FullNode_EthGetTransactionByBlockNumberAndIndex_Call {
 	return &FullNode_EthGetTransactionByBlockNumberAndIndex_Call{Call: _e.mock.On("EthGetTransactionByBlockNumberAndIndex", ctx, blkNum, txIndex)}
 }
 
@@ -3972,7 +4041,7 @@ type FullNode_EthGetTransactionByHash_Call struct {
 // EthGetTransactionByHash is a helper method to define mock.On call
 //   - ctx context.Context
 //   - txHash *ethtypes.EthHash
-func (_e *FullNode_Expecter) EthGetTransactionByHash(ctx interface{}, txHash interface{}) *FullNode_EthGetTransactionByHash_Call {
+func (_e *FullNode_Expecter) EthGetTransactionByHash(ctx any, txHash any) *FullNode_EthGetTransactionByHash_Call {
 	return &FullNode_EthGetTransactionByHash_Call{Call: _e.mock.On("EthGetTransactionByHash", ctx, txHash)}
 }
 
@@ -4041,7 +4110,7 @@ type FullNode_EthGetTransactionByHashLimited_Call struct {
 //   - ctx context.Context
 //   - txHash *ethtypes.EthHash
 //   - limit abi.ChainEpoch
-func (_e *FullNode_Expecter) EthGetTransactionByHashLimited(ctx interface{}, txHash interface{}, limit interface{}) *FullNode_EthGetTransactionByHashLimited_Call {
+func (_e *FullNode_Expecter) EthGetTransactionByHashLimited(ctx any, txHash any, limit any) *FullNode_EthGetTransactionByHashLimited_Call {
 	return &FullNode_EthGetTransactionByHashLimited_Call{Call: _e.mock.On("EthGetTransactionByHashLimited", ctx, txHash, limit)}
 }
 
@@ -4113,7 +4182,7 @@ type FullNode_EthGetTransactionCount_Call struct {
 //   - ctx context.Context
 //   - sender ethtypes.EthAddress
 //   - blkParam ethtypes.EthBlockNumberOrHash
-func (_e *FullNode_Expecter) EthGetTransactionCount(ctx interface{}, sender interface{}, blkParam interface{}) *FullNode_EthGetTransactionCount_Call {
+func (_e *FullNode_Expecter) EthGetTransactionCount(ctx any, sender any, blkParam any) *FullNode_EthGetTransactionCount_Call {
 	return &FullNode_EthGetTransactionCount_Call{Call: _e.mock.On("EthGetTransactionCount", ctx, sender, blkParam)}
 }
 
@@ -4186,7 +4255,7 @@ type FullNode_EthGetTransactionHashByCid_Call struct {
 // EthGetTransactionHashByCid is a helper method to define mock.On call
 //   - ctx context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) EthGetTransactionHashByCid(ctx interface{}, cid1 interface{}) *FullNode_EthGetTransactionHashByCid_Call {
+func (_e *FullNode_Expecter) EthGetTransactionHashByCid(ctx any, cid1 any) *FullNode_EthGetTransactionHashByCid_Call {
 	return &FullNode_EthGetTransactionHashByCid_Call{Call: _e.mock.On("EthGetTransactionHashByCid", ctx, cid1)}
 }
 
@@ -4254,7 +4323,7 @@ type FullNode_EthGetTransactionReceipt_Call struct {
 // EthGetTransactionReceipt is a helper method to define mock.On call
 //   - ctx context.Context
 //   - txHash ethtypes.EthHash
-func (_e *FullNode_Expecter) EthGetTransactionReceipt(ctx interface{}, txHash interface{}) *FullNode_EthGetTransactionReceipt_Call {
+func (_e *FullNode_Expecter) EthGetTransactionReceipt(ctx any, txHash any) *FullNode_EthGetTransactionReceipt_Call {
 	return &FullNode_EthGetTransactionReceipt_Call{Call: _e.mock.On("EthGetTransactionReceipt", ctx, txHash)}
 }
 
@@ -4323,7 +4392,7 @@ type FullNode_EthGetTransactionReceiptLimited_Call struct {
 //   - ctx context.Context
 //   - txHash ethtypes.EthHash
 //   - limit abi.ChainEpoch
-func (_e *FullNode_Expecter) EthGetTransactionReceiptLimited(ctx interface{}, txHash interface{}, limit interface{}) *FullNode_EthGetTransactionReceiptLimited_Call {
+func (_e *FullNode_Expecter) EthGetTransactionReceiptLimited(ctx any, txHash any, limit any) *FullNode_EthGetTransactionReceiptLimited_Call {
 	return &FullNode_EthGetTransactionReceiptLimited_Call{Call: _e.mock.On("EthGetTransactionReceiptLimited", ctx, txHash, limit)}
 }
 
@@ -4393,7 +4462,7 @@ type FullNode_EthMaxPriorityFeePerGas_Call struct {
 
 // EthMaxPriorityFeePerGas is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthMaxPriorityFeePerGas(ctx interface{}) *FullNode_EthMaxPriorityFeePerGas_Call {
+func (_e *FullNode_Expecter) EthMaxPriorityFeePerGas(ctx any) *FullNode_EthMaxPriorityFeePerGas_Call {
 	return &FullNode_EthMaxPriorityFeePerGas_Call{Call: _e.mock.On("EthMaxPriorityFeePerGas", ctx)}
 }
 
@@ -4455,7 +4524,7 @@ type FullNode_EthNewBlockFilter_Call struct {
 
 // EthNewBlockFilter is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthNewBlockFilter(ctx interface{}) *FullNode_EthNewBlockFilter_Call {
+func (_e *FullNode_Expecter) EthNewBlockFilter(ctx any) *FullNode_EthNewBlockFilter_Call {
 	return &FullNode_EthNewBlockFilter_Call{Call: _e.mock.On("EthNewBlockFilter", ctx)}
 }
 
@@ -4518,7 +4587,7 @@ type FullNode_EthNewFilter_Call struct {
 // EthNewFilter is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter *ethtypes.EthFilterSpec
-func (_e *FullNode_Expecter) EthNewFilter(ctx interface{}, filter interface{}) *FullNode_EthNewFilter_Call {
+func (_e *FullNode_Expecter) EthNewFilter(ctx any, filter any) *FullNode_EthNewFilter_Call {
 	return &FullNode_EthNewFilter_Call{Call: _e.mock.On("EthNewFilter", ctx, filter)}
 }
 
@@ -4585,7 +4654,7 @@ type FullNode_EthNewPendingTransactionFilter_Call struct {
 
 // EthNewPendingTransactionFilter is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthNewPendingTransactionFilter(ctx interface{}) *FullNode_EthNewPendingTransactionFilter_Call {
+func (_e *FullNode_Expecter) EthNewPendingTransactionFilter(ctx any) *FullNode_EthNewPendingTransactionFilter_Call {
 	return &FullNode_EthNewPendingTransactionFilter_Call{Call: _e.mock.On("EthNewPendingTransactionFilter", ctx)}
 }
 
@@ -4645,7 +4714,7 @@ type FullNode_EthProtocolVersion_Call struct {
 
 // EthProtocolVersion is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthProtocolVersion(ctx interface{}) *FullNode_EthProtocolVersion_Call {
+func (_e *FullNode_Expecter) EthProtocolVersion(ctx any) *FullNode_EthProtocolVersion_Call {
 	return &FullNode_EthProtocolVersion_Call{Call: _e.mock.On("EthProtocolVersion", ctx)}
 }
 
@@ -4708,7 +4777,7 @@ type FullNode_EthSendRawTransaction_Call struct {
 // EthSendRawTransaction is a helper method to define mock.On call
 //   - ctx context.Context
 //   - rawTx ethtypes.EthBytes
-func (_e *FullNode_Expecter) EthSendRawTransaction(ctx interface{}, rawTx interface{}) *FullNode_EthSendRawTransaction_Call {
+func (_e *FullNode_Expecter) EthSendRawTransaction(ctx any, rawTx any) *FullNode_EthSendRawTransaction_Call {
 	return &FullNode_EthSendRawTransaction_Call{Call: _e.mock.On("EthSendRawTransaction", ctx, rawTx)}
 }
 
@@ -4776,7 +4845,7 @@ type FullNode_EthSendRawTransactionUntrusted_Call struct {
 // EthSendRawTransactionUntrusted is a helper method to define mock.On call
 //   - ctx context.Context
 //   - rawTx ethtypes.EthBytes
-func (_e *FullNode_Expecter) EthSendRawTransactionUntrusted(ctx interface{}, rawTx interface{}) *FullNode_EthSendRawTransactionUntrusted_Call {
+func (_e *FullNode_Expecter) EthSendRawTransactionUntrusted(ctx any, rawTx any) *FullNode_EthSendRawTransactionUntrusted_Call {
 	return &FullNode_EthSendRawTransactionUntrusted_Call{Call: _e.mock.On("EthSendRawTransactionUntrusted", ctx, rawTx)}
 }
 
@@ -4844,7 +4913,7 @@ type FullNode_EthSubscribe_Call struct {
 // EthSubscribe is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params jsonrpc.RawParams
-func (_e *FullNode_Expecter) EthSubscribe(ctx interface{}, params interface{}) *FullNode_EthSubscribe_Call {
+func (_e *FullNode_Expecter) EthSubscribe(ctx any, params any) *FullNode_EthSubscribe_Call {
 	return &FullNode_EthSubscribe_Call{Call: _e.mock.On("EthSubscribe", ctx, params)}
 }
 
@@ -4909,7 +4978,7 @@ type FullNode_EthSyncing_Call struct {
 
 // EthSyncing is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) EthSyncing(ctx interface{}) *FullNode_EthSyncing_Call {
+func (_e *FullNode_Expecter) EthSyncing(ctx any) *FullNode_EthSyncing_Call {
 	return &FullNode_EthSyncing_Call{Call: _e.mock.On("EthSyncing", ctx)}
 }
 
@@ -4972,7 +5041,7 @@ type FullNode_EthTraceBlock_Call struct {
 // EthTraceBlock is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blkNum string
-func (_e *FullNode_Expecter) EthTraceBlock(ctx interface{}, blkNum interface{}) *FullNode_EthTraceBlock_Call {
+func (_e *FullNode_Expecter) EthTraceBlock(ctx any, blkNum any) *FullNode_EthTraceBlock_Call {
 	return &FullNode_EthTraceBlock_Call{Call: _e.mock.On("EthTraceBlock", ctx, blkNum)}
 }
 
@@ -5040,7 +5109,7 @@ type FullNode_EthTraceFilter_Call struct {
 // EthTraceFilter is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter ethtypes.EthTraceFilterCriteria
-func (_e *FullNode_Expecter) EthTraceFilter(ctx interface{}, filter interface{}) *FullNode_EthTraceFilter_Call {
+func (_e *FullNode_Expecter) EthTraceFilter(ctx any, filter any) *FullNode_EthTraceFilter_Call {
 	return &FullNode_EthTraceFilter_Call{Call: _e.mock.On("EthTraceFilter", ctx, filter)}
 }
 
@@ -5109,7 +5178,7 @@ type FullNode_EthTraceReplayBlockTransactions_Call struct {
 //   - ctx context.Context
 //   - blkNum string
 //   - traceTypes []string
-func (_e *FullNode_Expecter) EthTraceReplayBlockTransactions(ctx interface{}, blkNum interface{}, traceTypes interface{}) *FullNode_EthTraceReplayBlockTransactions_Call {
+func (_e *FullNode_Expecter) EthTraceReplayBlockTransactions(ctx any, blkNum any, traceTypes any) *FullNode_EthTraceReplayBlockTransactions_Call {
 	return &FullNode_EthTraceReplayBlockTransactions_Call{Call: _e.mock.On("EthTraceReplayBlockTransactions", ctx, blkNum, traceTypes)}
 }
 
@@ -5182,7 +5251,7 @@ type FullNode_EthTraceTransaction_Call struct {
 // EthTraceTransaction is a helper method to define mock.On call
 //   - ctx context.Context
 //   - txHash string
-func (_e *FullNode_Expecter) EthTraceTransaction(ctx interface{}, txHash interface{}) *FullNode_EthTraceTransaction_Call {
+func (_e *FullNode_Expecter) EthTraceTransaction(ctx any, txHash any) *FullNode_EthTraceTransaction_Call {
 	return &FullNode_EthTraceTransaction_Call{Call: _e.mock.On("EthTraceTransaction", ctx, txHash)}
 }
 
@@ -5248,7 +5317,7 @@ type FullNode_EthUninstallFilter_Call struct {
 // EthUninstallFilter is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id ethtypes.EthFilterID
-func (_e *FullNode_Expecter) EthUninstallFilter(ctx interface{}, id interface{}) *FullNode_EthUninstallFilter_Call {
+func (_e *FullNode_Expecter) EthUninstallFilter(ctx any, id any) *FullNode_EthUninstallFilter_Call {
 	return &FullNode_EthUninstallFilter_Call{Call: _e.mock.On("EthUninstallFilter", ctx, id)}
 }
 
@@ -5314,7 +5383,7 @@ type FullNode_EthUnsubscribe_Call struct {
 // EthUnsubscribe is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id ethtypes.EthSubscriptionID
-func (_e *FullNode_Expecter) EthUnsubscribe(ctx interface{}, id interface{}) *FullNode_EthUnsubscribe_Call {
+func (_e *FullNode_Expecter) EthUnsubscribe(ctx any, id any) *FullNode_EthUnsubscribe_Call {
 	return &FullNode_EthUnsubscribe_Call{Call: _e.mock.On("EthUnsubscribe", ctx, id)}
 }
 
@@ -5382,7 +5451,7 @@ type FullNode_F3GetCertificate_Call struct {
 // F3GetCertificate is a helper method to define mock.On call
 //   - ctx context.Context
 //   - instance uint64
-func (_e *FullNode_Expecter) F3GetCertificate(ctx interface{}, instance interface{}) *FullNode_F3GetCertificate_Call {
+func (_e *FullNode_Expecter) F3GetCertificate(ctx any, instance any) *FullNode_F3GetCertificate_Call {
 	return &FullNode_F3GetCertificate_Call{Call: _e.mock.On("F3GetCertificate", ctx, instance)}
 }
 
@@ -5450,7 +5519,7 @@ type FullNode_F3GetECPowerTable_Call struct {
 // F3GetECPowerTable is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) F3GetECPowerTable(ctx interface{}, tsk interface{}) *FullNode_F3GetECPowerTable_Call {
+func (_e *FullNode_Expecter) F3GetECPowerTable(ctx any, tsk any) *FullNode_F3GetECPowerTable_Call {
 	return &FullNode_F3GetECPowerTable_Call{Call: _e.mock.On("F3GetECPowerTable", ctx, tsk)}
 }
 
@@ -5518,7 +5587,7 @@ type FullNode_F3GetF3PowerTable_Call struct {
 // F3GetF3PowerTable is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) F3GetF3PowerTable(ctx interface{}, tsk interface{}) *FullNode_F3GetF3PowerTable_Call {
+func (_e *FullNode_Expecter) F3GetF3PowerTable(ctx any, tsk any) *FullNode_F3GetF3PowerTable_Call {
 	return &FullNode_F3GetF3PowerTable_Call{Call: _e.mock.On("F3GetF3PowerTable", ctx, tsk)}
 }
 
@@ -5585,7 +5654,7 @@ type FullNode_F3GetLatestCertificate_Call struct {
 
 // F3GetLatestCertificate is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) F3GetLatestCertificate(ctx interface{}) *FullNode_F3GetLatestCertificate_Call {
+func (_e *FullNode_Expecter) F3GetLatestCertificate(ctx any) *FullNode_F3GetLatestCertificate_Call {
 	return &FullNode_F3GetLatestCertificate_Call{Call: _e.mock.On("F3GetLatestCertificate", ctx)}
 }
 
@@ -5647,7 +5716,7 @@ type FullNode_F3GetManifest_Call struct {
 
 // F3GetManifest is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) F3GetManifest(ctx interface{}) *FullNode_F3GetManifest_Call {
+func (_e *FullNode_Expecter) F3GetManifest(ctx any) *FullNode_F3GetManifest_Call {
 	return &FullNode_F3GetManifest_Call{Call: _e.mock.On("F3GetManifest", ctx)}
 }
 
@@ -5712,7 +5781,7 @@ type FullNode_F3GetOrRenewParticipationTicket_Call struct {
 //   - minerID address.Address
 //   - previous api.F3ParticipationTicket
 //   - instances uint64
-func (_e *FullNode_Expecter) F3GetOrRenewParticipationTicket(ctx interface{}, minerID interface{}, previous interface{}, instances interface{}) *FullNode_F3GetOrRenewParticipationTicket_Call {
+func (_e *FullNode_Expecter) F3GetOrRenewParticipationTicket(ctx any, minerID any, previous any, instances any) *FullNode_F3GetOrRenewParticipationTicket_Call {
 	return &FullNode_F3GetOrRenewParticipationTicket_Call{Call: _e.mock.On("F3GetOrRenewParticipationTicket", ctx, minerID, previous, instances)}
 }
 
@@ -5790,7 +5859,7 @@ type FullNode_F3GetPowerTableByInstance_Call struct {
 // F3GetPowerTableByInstance is a helper method to define mock.On call
 //   - ctx context.Context
 //   - instance uint64
-func (_e *FullNode_Expecter) F3GetPowerTableByInstance(ctx interface{}, instance interface{}) *FullNode_F3GetPowerTableByInstance_Call {
+func (_e *FullNode_Expecter) F3GetPowerTableByInstance(ctx any, instance any) *FullNode_F3GetPowerTableByInstance_Call {
 	return &FullNode_F3GetPowerTableByInstance_Call{Call: _e.mock.On("F3GetPowerTableByInstance", ctx, instance)}
 }
 
@@ -5855,7 +5924,7 @@ type FullNode_F3GetProgress_Call struct {
 
 // F3GetProgress is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) F3GetProgress(ctx interface{}) *FullNode_F3GetProgress_Call {
+func (_e *FullNode_Expecter) F3GetProgress(ctx any) *FullNode_F3GetProgress_Call {
 	return &FullNode_F3GetProgress_Call{Call: _e.mock.On("F3GetProgress", ctx)}
 }
 
@@ -5915,7 +5984,7 @@ type FullNode_F3IsRunning_Call struct {
 
 // F3IsRunning is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) F3IsRunning(ctx interface{}) *FullNode_F3IsRunning_Call {
+func (_e *FullNode_Expecter) F3IsRunning(ctx any) *FullNode_F3IsRunning_Call {
 	return &FullNode_F3IsRunning_Call{Call: _e.mock.On("F3IsRunning", ctx)}
 }
 
@@ -5977,7 +6046,7 @@ type FullNode_F3ListParticipants_Call struct {
 
 // F3ListParticipants is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) F3ListParticipants(ctx interface{}) *FullNode_F3ListParticipants_Call {
+func (_e *FullNode_Expecter) F3ListParticipants(ctx any) *FullNode_F3ListParticipants_Call {
 	return &FullNode_F3ListParticipants_Call{Call: _e.mock.On("F3ListParticipants", ctx)}
 }
 
@@ -6038,7 +6107,7 @@ type FullNode_F3Participate_Call struct {
 // F3Participate is a helper method to define mock.On call
 //   - ctx context.Context
 //   - ticket api.F3ParticipationTicket
-func (_e *FullNode_Expecter) F3Participate(ctx interface{}, ticket interface{}) *FullNode_F3Participate_Call {
+func (_e *FullNode_Expecter) F3Participate(ctx any, ticket any) *FullNode_F3Participate_Call {
 	return &FullNode_F3Participate_Call{Call: _e.mock.On("F3Participate", ctx, ticket)}
 }
 
@@ -6106,7 +6175,7 @@ type FullNode_FilecoinAddressToEthAddress_Call struct {
 // FilecoinAddressToEthAddress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jsonrpc.RawParams
-func (_e *FullNode_Expecter) FilecoinAddressToEthAddress(ctx interface{}, p interface{}) *FullNode_FilecoinAddressToEthAddress_Call {
+func (_e *FullNode_Expecter) FilecoinAddressToEthAddress(ctx any, p any) *FullNode_FilecoinAddressToEthAddress_Call {
 	return &FullNode_FilecoinAddressToEthAddress_Call{Call: _e.mock.On("FilecoinAddressToEthAddress", ctx, p)}
 }
 
@@ -6174,7 +6243,7 @@ type FullNode_GasEstimateFeeCap_Call struct {
 //   - message *types.Message
 //   - n int64
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) GasEstimateFeeCap(context1 interface{}, message interface{}, n interface{}, tipSetKey interface{}) *FullNode_GasEstimateFeeCap_Call {
+func (_e *FullNode_Expecter) GasEstimateFeeCap(context1 any, message any, n any, tipSetKey any) *FullNode_GasEstimateFeeCap_Call {
 	return &FullNode_GasEstimateFeeCap_Call{Call: _e.mock.On("GasEstimateFeeCap", context1, message, n, tipSetKey)}
 }
 
@@ -6206,8 +6275,8 @@ func (_c *FullNode_GasEstimateFeeCap_Call) Run(run func(context1 context.Context
 	return _c
 }
 
-func (_c *FullNode_GasEstimateFeeCap_Call) Return(v types.BigInt, err error) *FullNode_GasEstimateFeeCap_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_GasEstimateFeeCap_Call) Return(bigInt types.BigInt, err error) *FullNode_GasEstimateFeeCap_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -6251,7 +6320,7 @@ type FullNode_GasEstimateGasLimit_Call struct {
 //   - context1 context.Context
 //   - message *types.Message
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) GasEstimateGasLimit(context1 interface{}, message interface{}, tipSetKey interface{}) *FullNode_GasEstimateGasLimit_Call {
+func (_e *FullNode_Expecter) GasEstimateGasLimit(context1 any, message any, tipSetKey any) *FullNode_GasEstimateGasLimit_Call {
 	return &FullNode_GasEstimateGasLimit_Call{Call: _e.mock.On("GasEstimateGasLimit", context1, message, tipSetKey)}
 }
 
@@ -6325,7 +6394,7 @@ type FullNode_GasEstimateGasPremium_Call struct {
 //   - sender address.Address
 //   - gaslimit int64
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) GasEstimateGasPremium(context1 interface{}, nblocksincl interface{}, sender interface{}, gaslimit interface{}, tsk interface{}) *FullNode_GasEstimateGasPremium_Call {
+func (_e *FullNode_Expecter) GasEstimateGasPremium(context1 any, nblocksincl any, sender any, gaslimit any, tsk any) *FullNode_GasEstimateGasPremium_Call {
 	return &FullNode_GasEstimateGasPremium_Call{Call: _e.mock.On("GasEstimateGasPremium", context1, nblocksincl, sender, gaslimit, tsk)}
 }
 
@@ -6362,8 +6431,8 @@ func (_c *FullNode_GasEstimateGasPremium_Call) Run(run func(context1 context.Con
 	return _c
 }
 
-func (_c *FullNode_GasEstimateGasPremium_Call) Return(v types.BigInt, err error) *FullNode_GasEstimateGasPremium_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_GasEstimateGasPremium_Call) Return(bigInt types.BigInt, err error) *FullNode_GasEstimateGasPremium_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -6410,7 +6479,7 @@ type FullNode_GasEstimateMessageGas_Call struct {
 //   - message *types.Message
 //   - messageSendSpec *api.MessageSendSpec
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) GasEstimateMessageGas(context1 interface{}, message interface{}, messageSendSpec interface{}, tipSetKey interface{}) *FullNode_GasEstimateMessageGas_Call {
+func (_e *FullNode_Expecter) GasEstimateMessageGas(context1 any, message any, messageSendSpec any, tipSetKey any) *FullNode_GasEstimateMessageGas_Call {
 	return &FullNode_GasEstimateMessageGas_Call{Call: _e.mock.On("GasEstimateMessageGas", context1, message, messageSendSpec, tipSetKey)}
 }
 
@@ -6488,7 +6557,7 @@ type FullNode_GetActorEventsRaw_Call struct {
 // GetActorEventsRaw is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter *types.ActorEventFilter
-func (_e *FullNode_Expecter) GetActorEventsRaw(ctx interface{}, filter interface{}) *FullNode_GetActorEventsRaw_Call {
+func (_e *FullNode_Expecter) GetActorEventsRaw(ctx any, filter any) *FullNode_GetActorEventsRaw_Call {
 	return &FullNode_GetActorEventsRaw_Call{Call: _e.mock.On("GetActorEventsRaw", ctx, filter)}
 }
 
@@ -6553,7 +6622,7 @@ type FullNode_ID_Call struct {
 
 // ID is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) ID(context1 interface{}) *FullNode_ID_Call {
+func (_e *FullNode_Expecter) ID(context1 any) *FullNode_ID_Call {
 	return &FullNode_ID_Call{Call: _e.mock.On("ID", context1)}
 }
 
@@ -6615,7 +6684,7 @@ type FullNode_LogAlerts_Call struct {
 
 // LogAlerts is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) LogAlerts(ctx interface{}) *FullNode_LogAlerts_Call {
+func (_e *FullNode_Expecter) LogAlerts(ctx any) *FullNode_LogAlerts_Call {
 	return &FullNode_LogAlerts_Call{Call: _e.mock.On("LogAlerts", ctx)}
 }
 
@@ -6677,7 +6746,7 @@ type FullNode_LogList_Call struct {
 
 // LogList is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) LogList(context1 interface{}) *FullNode_LogList_Call {
+func (_e *FullNode_Expecter) LogList(context1 any) *FullNode_LogList_Call {
 	return &FullNode_LogList_Call{Call: _e.mock.On("LogList", context1)}
 }
 
@@ -6730,7 +6799,7 @@ type FullNode_LogSetLevel_Call struct {
 //   - context1 context.Context
 //   - s string
 //   - s1 string
-func (_e *FullNode_Expecter) LogSetLevel(context1 interface{}, s interface{}, s1 interface{}) *FullNode_LogSetLevel_Call {
+func (_e *FullNode_Expecter) LogSetLevel(context1 any, s any, s1 any) *FullNode_LogSetLevel_Call {
 	return &FullNode_LogSetLevel_Call{Call: _e.mock.On("LogSetLevel", context1, s, s1)}
 }
 
@@ -6803,7 +6872,7 @@ type FullNode_MarketAddBalance_Call struct {
 //   - wallet address.Address
 //   - addr address.Address
 //   - amt types.BigInt
-func (_e *FullNode_Expecter) MarketAddBalance(ctx interface{}, wallet interface{}, addr interface{}, amt interface{}) *FullNode_MarketAddBalance_Call {
+func (_e *FullNode_Expecter) MarketAddBalance(ctx any, wallet any, addr any, amt any) *FullNode_MarketAddBalance_Call {
 	return &FullNode_MarketAddBalance_Call{Call: _e.mock.On("MarketAddBalance", ctx, wallet, addr, amt)}
 }
 
@@ -6879,7 +6948,7 @@ type FullNode_MarketGetReserved_Call struct {
 // MarketGetReserved is a helper method to define mock.On call
 //   - ctx context.Context
 //   - addr address.Address
-func (_e *FullNode_Expecter) MarketGetReserved(ctx interface{}, addr interface{}) *FullNode_MarketGetReserved_Call {
+func (_e *FullNode_Expecter) MarketGetReserved(ctx any, addr any) *FullNode_MarketGetReserved_Call {
 	return &FullNode_MarketGetReserved_Call{Call: _e.mock.On("MarketGetReserved", ctx, addr)}
 }
 
@@ -6901,8 +6970,8 @@ func (_c *FullNode_MarketGetReserved_Call) Run(run func(ctx context.Context, add
 	return _c
 }
 
-func (_c *FullNode_MarketGetReserved_Call) Return(v types.BigInt, err error) *FullNode_MarketGetReserved_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_MarketGetReserved_Call) Return(bigInt types.BigInt, err error) *FullNode_MarketGetReserved_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -6937,7 +7006,7 @@ type FullNode_MarketReleaseFunds_Call struct {
 //   - ctx context.Context
 //   - addr address.Address
 //   - amt types.BigInt
-func (_e *FullNode_Expecter) MarketReleaseFunds(ctx interface{}, addr interface{}, amt interface{}) *FullNode_MarketReleaseFunds_Call {
+func (_e *FullNode_Expecter) MarketReleaseFunds(ctx any, addr any, amt any) *FullNode_MarketReleaseFunds_Call {
 	return &FullNode_MarketReleaseFunds_Call{Call: _e.mock.On("MarketReleaseFunds", ctx, addr, amt)}
 }
 
@@ -7010,7 +7079,7 @@ type FullNode_MarketReserveFunds_Call struct {
 //   - wallet address.Address
 //   - addr address.Address
 //   - amt types.BigInt
-func (_e *FullNode_Expecter) MarketReserveFunds(ctx interface{}, wallet interface{}, addr interface{}, amt interface{}) *FullNode_MarketReserveFunds_Call {
+func (_e *FullNode_Expecter) MarketReserveFunds(ctx any, wallet any, addr any, amt any) *FullNode_MarketReserveFunds_Call {
 	return &FullNode_MarketReserveFunds_Call{Call: _e.mock.On("MarketReserveFunds", ctx, wallet, addr, amt)}
 }
 
@@ -7088,7 +7157,7 @@ type FullNode_MarketWithdraw_Call struct {
 //   - wallet address.Address
 //   - addr address.Address
 //   - amt types.BigInt
-func (_e *FullNode_Expecter) MarketWithdraw(ctx interface{}, wallet interface{}, addr interface{}, amt interface{}) *FullNode_MarketWithdraw_Call {
+func (_e *FullNode_Expecter) MarketWithdraw(ctx any, wallet any, addr any, amt any) *FullNode_MarketWithdraw_Call {
 	return &FullNode_MarketWithdraw_Call{Call: _e.mock.On("MarketWithdraw", ctx, wallet, addr, amt)}
 }
 
@@ -7166,7 +7235,7 @@ type FullNode_MinerCreateBlock_Call struct {
 // MinerCreateBlock is a helper method to define mock.On call
 //   - context1 context.Context
 //   - blockTemplate *api.BlockTemplate
-func (_e *FullNode_Expecter) MinerCreateBlock(context1 interface{}, blockTemplate interface{}) *FullNode_MinerCreateBlock_Call {
+func (_e *FullNode_Expecter) MinerCreateBlock(context1 any, blockTemplate any) *FullNode_MinerCreateBlock_Call {
 	return &FullNode_MinerCreateBlock_Call{Call: _e.mock.On("MinerCreateBlock", context1, blockTemplate)}
 }
 
@@ -7236,7 +7305,7 @@ type FullNode_MinerGetBaseInfo_Call struct {
 //   - address1 address.Address
 //   - chainEpoch abi.ChainEpoch
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) MinerGetBaseInfo(context1 interface{}, address1 interface{}, chainEpoch interface{}, tipSetKey interface{}) *FullNode_MinerGetBaseInfo_Call {
+func (_e *FullNode_Expecter) MinerGetBaseInfo(context1 any, address1 any, chainEpoch any, tipSetKey any) *FullNode_MinerGetBaseInfo_Call {
 	return &FullNode_MinerGetBaseInfo_Call{Call: _e.mock.On("MinerGetBaseInfo", context1, address1, chainEpoch, tipSetKey)}
 }
 
@@ -7314,7 +7383,7 @@ type FullNode_MpoolBatchPush_Call struct {
 // MpoolBatchPush is a helper method to define mock.On call
 //   - context1 context.Context
 //   - signedMessages []*types.SignedMessage
-func (_e *FullNode_Expecter) MpoolBatchPush(context1 interface{}, signedMessages interface{}) *FullNode_MpoolBatchPush_Call {
+func (_e *FullNode_Expecter) MpoolBatchPush(context1 any, signedMessages any) *FullNode_MpoolBatchPush_Call {
 	return &FullNode_MpoolBatchPush_Call{Call: _e.mock.On("MpoolBatchPush", context1, signedMessages)}
 }
 
@@ -7383,7 +7452,7 @@ type FullNode_MpoolBatchPushMessage_Call struct {
 //   - context1 context.Context
 //   - messages []*types.Message
 //   - messageSendSpec *api.MessageSendSpec
-func (_e *FullNode_Expecter) MpoolBatchPushMessage(context1 interface{}, messages interface{}, messageSendSpec interface{}) *FullNode_MpoolBatchPushMessage_Call {
+func (_e *FullNode_Expecter) MpoolBatchPushMessage(context1 any, messages any, messageSendSpec any) *FullNode_MpoolBatchPushMessage_Call {
 	return &FullNode_MpoolBatchPushMessage_Call{Call: _e.mock.On("MpoolBatchPushMessage", context1, messages, messageSendSpec)}
 }
 
@@ -7456,7 +7525,7 @@ type FullNode_MpoolBatchPushUntrusted_Call struct {
 // MpoolBatchPushUntrusted is a helper method to define mock.On call
 //   - context1 context.Context
 //   - signedMessages []*types.SignedMessage
-func (_e *FullNode_Expecter) MpoolBatchPushUntrusted(context1 interface{}, signedMessages interface{}) *FullNode_MpoolBatchPushUntrusted_Call {
+func (_e *FullNode_Expecter) MpoolBatchPushUntrusted(context1 any, signedMessages any) *FullNode_MpoolBatchPushUntrusted_Call {
 	return &FullNode_MpoolBatchPushUntrusted_Call{Call: _e.mock.On("MpoolBatchPushUntrusted", context1, signedMessages)}
 }
 
@@ -7524,7 +7593,7 @@ type FullNode_MpoolCheckMessages_Call struct {
 // MpoolCheckMessages is a helper method to define mock.On call
 //   - context1 context.Context
 //   - messagePrototypes []*api.MessagePrototype
-func (_e *FullNode_Expecter) MpoolCheckMessages(context1 interface{}, messagePrototypes interface{}) *FullNode_MpoolCheckMessages_Call {
+func (_e *FullNode_Expecter) MpoolCheckMessages(context1 any, messagePrototypes any) *FullNode_MpoolCheckMessages_Call {
 	return &FullNode_MpoolCheckMessages_Call{Call: _e.mock.On("MpoolCheckMessages", context1, messagePrototypes)}
 }
 
@@ -7592,7 +7661,7 @@ type FullNode_MpoolCheckPendingMessages_Call struct {
 // MpoolCheckPendingMessages is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) MpoolCheckPendingMessages(context1 interface{}, address1 interface{}) *FullNode_MpoolCheckPendingMessages_Call {
+func (_e *FullNode_Expecter) MpoolCheckPendingMessages(context1 any, address1 any) *FullNode_MpoolCheckPendingMessages_Call {
 	return &FullNode_MpoolCheckPendingMessages_Call{Call: _e.mock.On("MpoolCheckPendingMessages", context1, address1)}
 }
 
@@ -7660,7 +7729,7 @@ type FullNode_MpoolCheckReplaceMessages_Call struct {
 // MpoolCheckReplaceMessages is a helper method to define mock.On call
 //   - context1 context.Context
 //   - messages []*types.Message
-func (_e *FullNode_Expecter) MpoolCheckReplaceMessages(context1 interface{}, messages interface{}) *FullNode_MpoolCheckReplaceMessages_Call {
+func (_e *FullNode_Expecter) MpoolCheckReplaceMessages(context1 any, messages any) *FullNode_MpoolCheckReplaceMessages_Call {
 	return &FullNode_MpoolCheckReplaceMessages_Call{Call: _e.mock.On("MpoolCheckReplaceMessages", context1, messages)}
 }
 
@@ -7717,7 +7786,7 @@ type FullNode_MpoolClear_Call struct {
 // MpoolClear is a helper method to define mock.On call
 //   - ctx context.Context
 //   - clearLocal bool
-func (_e *FullNode_Expecter) MpoolClear(ctx interface{}, clearLocal interface{}) *FullNode_MpoolClear_Call {
+func (_e *FullNode_Expecter) MpoolClear(ctx any, clearLocal any) *FullNode_MpoolClear_Call {
 	return &FullNode_MpoolClear_Call{Call: _e.mock.On("MpoolClear", ctx, clearLocal)}
 }
 
@@ -7784,7 +7853,7 @@ type FullNode_MpoolGetConfig_Call struct {
 
 // MpoolGetConfig is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) MpoolGetConfig(context1 interface{}) *FullNode_MpoolGetConfig_Call {
+func (_e *FullNode_Expecter) MpoolGetConfig(context1 any) *FullNode_MpoolGetConfig_Call {
 	return &FullNode_MpoolGetConfig_Call{Call: _e.mock.On("MpoolGetConfig", context1)}
 }
 
@@ -7845,7 +7914,7 @@ type FullNode_MpoolGetNonce_Call struct {
 // MpoolGetNonce is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) MpoolGetNonce(context1 interface{}, address1 interface{}) *FullNode_MpoolGetNonce_Call {
+func (_e *FullNode_Expecter) MpoolGetNonce(context1 any, address1 any) *FullNode_MpoolGetNonce_Call {
 	return &FullNode_MpoolGetNonce_Call{Call: _e.mock.On("MpoolGetNonce", context1, address1)}
 }
 
@@ -7913,7 +7982,7 @@ type FullNode_MpoolPending_Call struct {
 // MpoolPending is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) MpoolPending(context1 interface{}, tipSetKey interface{}) *FullNode_MpoolPending_Call {
+func (_e *FullNode_Expecter) MpoolPending(context1 any, tipSetKey any) *FullNode_MpoolPending_Call {
 	return &FullNode_MpoolPending_Call{Call: _e.mock.On("MpoolPending", context1, tipSetKey)}
 }
 
@@ -7979,7 +8048,7 @@ type FullNode_MpoolPush_Call struct {
 // MpoolPush is a helper method to define mock.On call
 //   - context1 context.Context
 //   - signedMessage *types.SignedMessage
-func (_e *FullNode_Expecter) MpoolPush(context1 interface{}, signedMessage interface{}) *FullNode_MpoolPush_Call {
+func (_e *FullNode_Expecter) MpoolPush(context1 any, signedMessage any) *FullNode_MpoolPush_Call {
 	return &FullNode_MpoolPush_Call{Call: _e.mock.On("MpoolPush", context1, signedMessage)}
 }
 
@@ -8048,7 +8117,7 @@ type FullNode_MpoolPushMessage_Call struct {
 //   - ctx context.Context
 //   - msg *types.Message
 //   - spec *api.MessageSendSpec
-func (_e *FullNode_Expecter) MpoolPushMessage(ctx interface{}, msg interface{}, spec interface{}) *FullNode_MpoolPushMessage_Call {
+func (_e *FullNode_Expecter) MpoolPushMessage(ctx any, msg any, spec any) *FullNode_MpoolPushMessage_Call {
 	return &FullNode_MpoolPushMessage_Call{Call: _e.mock.On("MpoolPushMessage", ctx, msg, spec)}
 }
 
@@ -8119,7 +8188,7 @@ type FullNode_MpoolPushUntrusted_Call struct {
 // MpoolPushUntrusted is a helper method to define mock.On call
 //   - context1 context.Context
 //   - signedMessage *types.SignedMessage
-func (_e *FullNode_Expecter) MpoolPushUntrusted(context1 interface{}, signedMessage interface{}) *FullNode_MpoolPushUntrusted_Call {
+func (_e *FullNode_Expecter) MpoolPushUntrusted(context1 any, signedMessage any) *FullNode_MpoolPushUntrusted_Call {
 	return &FullNode_MpoolPushUntrusted_Call{Call: _e.mock.On("MpoolPushUntrusted", context1, signedMessage)}
 }
 
@@ -8188,7 +8257,7 @@ type FullNode_MpoolSelect_Call struct {
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
 //   - f float64
-func (_e *FullNode_Expecter) MpoolSelect(context1 interface{}, tipSetKey interface{}, f interface{}) *FullNode_MpoolSelect_Call {
+func (_e *FullNode_Expecter) MpoolSelect(context1 any, tipSetKey any, f any) *FullNode_MpoolSelect_Call {
 	return &FullNode_MpoolSelect_Call{Call: _e.mock.On("MpoolSelect", context1, tipSetKey, f)}
 }
 
@@ -8250,7 +8319,7 @@ type FullNode_MpoolSetConfig_Call struct {
 // MpoolSetConfig is a helper method to define mock.On call
 //   - context1 context.Context
 //   - mpoolConfig *types.MpoolConfig
-func (_e *FullNode_Expecter) MpoolSetConfig(context1 interface{}, mpoolConfig interface{}) *FullNode_MpoolSetConfig_Call {
+func (_e *FullNode_Expecter) MpoolSetConfig(context1 any, mpoolConfig any) *FullNode_MpoolSetConfig_Call {
 	return &FullNode_MpoolSetConfig_Call{Call: _e.mock.On("MpoolSetConfig", context1, mpoolConfig)}
 }
 
@@ -8317,7 +8386,7 @@ type FullNode_MpoolSub_Call struct {
 
 // MpoolSub is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) MpoolSub(context1 interface{}) *FullNode_MpoolSub_Call {
+func (_e *FullNode_Expecter) MpoolSub(context1 any) *FullNode_MpoolSub_Call {
 	return &FullNode_MpoolSub_Call{Call: _e.mock.On("MpoolSub", context1)}
 }
 
@@ -8385,7 +8454,7 @@ type FullNode_MsigAddApprove_Call struct {
 //   - address12 address.Address
 //   - address13 address.Address
 //   - b bool
-func (_e *FullNode_Expecter) MsigAddApprove(context1 interface{}, address1 interface{}, address11 interface{}, v interface{}, address12 interface{}, address13 interface{}, b interface{}) *FullNode_MsigAddApprove_Call {
+func (_e *FullNode_Expecter) MsigAddApprove(context1 any, address1 any, address11 any, v any, address12 any, address13 any, b any) *FullNode_MsigAddApprove_Call {
 	return &FullNode_MsigAddApprove_Call{Call: _e.mock.On("MsigAddApprove", context1, address1, address11, v, address12, address13, b)}
 }
 
@@ -8482,7 +8551,7 @@ type FullNode_MsigAddCancel_Call struct {
 //   - v uint64
 //   - address12 address.Address
 //   - b bool
-func (_e *FullNode_Expecter) MsigAddCancel(context1 interface{}, address1 interface{}, address11 interface{}, v interface{}, address12 interface{}, b interface{}) *FullNode_MsigAddCancel_Call {
+func (_e *FullNode_Expecter) MsigAddCancel(context1 any, address1 any, address11 any, v any, address12 any, b any) *FullNode_MsigAddCancel_Call {
 	return &FullNode_MsigAddCancel_Call{Call: _e.mock.On("MsigAddCancel", context1, address1, address11, v, address12, b)}
 }
 
@@ -8573,7 +8642,7 @@ type FullNode_MsigAddPropose_Call struct {
 //   - address11 address.Address
 //   - address12 address.Address
 //   - b bool
-func (_e *FullNode_Expecter) MsigAddPropose(context1 interface{}, address1 interface{}, address11 interface{}, address12 interface{}, b interface{}) *FullNode_MsigAddPropose_Call {
+func (_e *FullNode_Expecter) MsigAddPropose(context1 any, address1 any, address11 any, address12 any, b any) *FullNode_MsigAddPropose_Call {
 	return &FullNode_MsigAddPropose_Call{Call: _e.mock.On("MsigAddPropose", context1, address1, address11, address12, b)}
 }
 
@@ -8658,7 +8727,7 @@ type FullNode_MsigApprove_Call struct {
 //   - address1 address.Address
 //   - v uint64
 //   - address11 address.Address
-func (_e *FullNode_Expecter) MsigApprove(context1 interface{}, address1 interface{}, v interface{}, address11 interface{}) *FullNode_MsigApprove_Call {
+func (_e *FullNode_Expecter) MsigApprove(context1 any, address1 any, v any, address11 any) *FullNode_MsigApprove_Call {
 	return &FullNode_MsigApprove_Call{Call: _e.mock.On("MsigApprove", context1, address1, v, address11)}
 }
 
@@ -8701,8 +8770,8 @@ func (_c *FullNode_MsigApprove_Call) RunAndReturn(run func(context1 context.Cont
 }
 
 // MsigApproveTxnHash provides a mock function for the type FullNode
-func (_mock *FullNode) MsigApproveTxnHash(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, v1 types.BigInt, address13 address.Address, v2 uint64, bytes []byte) (*api.MessagePrototype, error) {
-	ret := _mock.Called(context1, address1, v, address11, address12, v1, address13, v2, bytes)
+func (_mock *FullNode) MsigApproveTxnHash(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, bigInt types.BigInt, address13 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error) {
+	ret := _mock.Called(context1, address1, v, address11, address12, bigInt, address13, v1, bytes)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MsigApproveTxnHash")
@@ -8711,17 +8780,17 @@ func (_mock *FullNode) MsigApproveTxnHash(context1 context.Context, address1 add
 	var r0 *api.MessagePrototype
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, uint64, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error)); ok {
-		return returnFunc(context1, address1, v, address11, address12, v1, address13, v2, bytes)
+		return returnFunc(context1, address1, v, address11, address12, bigInt, address13, v1, bytes)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, uint64, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) *api.MessagePrototype); ok {
-		r0 = returnFunc(context1, address1, v, address11, address12, v1, address13, v2, bytes)
+		r0 = returnFunc(context1, address1, v, address11, address12, bigInt, address13, v1, bytes)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.MessagePrototype)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, uint64, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) error); ok {
-		r1 = returnFunc(context1, address1, v, address11, address12, v1, address13, v2, bytes)
+		r1 = returnFunc(context1, address1, v, address11, address12, bigInt, address13, v1, bytes)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -8739,15 +8808,15 @@ type FullNode_MsigApproveTxnHash_Call struct {
 //   - v uint64
 //   - address11 address.Address
 //   - address12 address.Address
-//   - v1 types.BigInt
+//   - bigInt types.BigInt
 //   - address13 address.Address
-//   - v2 uint64
+//   - v1 uint64
 //   - bytes []byte
-func (_e *FullNode_Expecter) MsigApproveTxnHash(context1 interface{}, address1 interface{}, v interface{}, address11 interface{}, address12 interface{}, v1 interface{}, address13 interface{}, v2 interface{}, bytes interface{}) *FullNode_MsigApproveTxnHash_Call {
-	return &FullNode_MsigApproveTxnHash_Call{Call: _e.mock.On("MsigApproveTxnHash", context1, address1, v, address11, address12, v1, address13, v2, bytes)}
+func (_e *FullNode_Expecter) MsigApproveTxnHash(context1 any, address1 any, v any, address11 any, address12 any, bigInt any, address13 any, v1 any, bytes any) *FullNode_MsigApproveTxnHash_Call {
+	return &FullNode_MsigApproveTxnHash_Call{Call: _e.mock.On("MsigApproveTxnHash", context1, address1, v, address11, address12, bigInt, address13, v1, bytes)}
 }
 
-func (_c *FullNode_MsigApproveTxnHash_Call) Run(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, v1 types.BigInt, address13 address.Address, v2 uint64, bytes []byte)) *FullNode_MsigApproveTxnHash_Call {
+func (_c *FullNode_MsigApproveTxnHash_Call) Run(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, bigInt types.BigInt, address13 address.Address, v1 uint64, bytes []byte)) *FullNode_MsigApproveTxnHash_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -8805,7 +8874,7 @@ func (_c *FullNode_MsigApproveTxnHash_Call) Return(messagePrototype *api.Message
 	return _c
 }
 
-func (_c *FullNode_MsigApproveTxnHash_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, v1 types.BigInt, address13 address.Address, v2 uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigApproveTxnHash_Call {
+func (_c *FullNode_MsigApproveTxnHash_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, address12 address.Address, bigInt types.BigInt, address13 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigApproveTxnHash_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -8848,7 +8917,7 @@ type FullNode_MsigCancel_Call struct {
 //   - address1 address.Address
 //   - v uint64
 //   - address11 address.Address
-func (_e *FullNode_Expecter) MsigCancel(context1 interface{}, address1 interface{}, v interface{}, address11 interface{}) *FullNode_MsigCancel_Call {
+func (_e *FullNode_Expecter) MsigCancel(context1 any, address1 any, v any, address11 any) *FullNode_MsigCancel_Call {
 	return &FullNode_MsigCancel_Call{Call: _e.mock.On("MsigCancel", context1, address1, v, address11)}
 }
 
@@ -8891,8 +8960,8 @@ func (_c *FullNode_MsigCancel_Call) RunAndReturn(run func(context1 context.Conte
 }
 
 // MsigCancelTxnHash provides a mock function for the type FullNode
-func (_mock *FullNode) MsigCancelTxnHash(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, v1 types.BigInt, address12 address.Address, v2 uint64, bytes []byte) (*api.MessagePrototype, error) {
-	ret := _mock.Called(context1, address1, v, address11, v1, address12, v2, bytes)
+func (_mock *FullNode) MsigCancelTxnHash(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, bigInt types.BigInt, address12 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error) {
+	ret := _mock.Called(context1, address1, v, address11, bigInt, address12, v1, bytes)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MsigCancelTxnHash")
@@ -8901,17 +8970,17 @@ func (_mock *FullNode) MsigCancelTxnHash(context1 context.Context, address1 addr
 	var r0 *api.MessagePrototype
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, uint64, address.Address, types.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error)); ok {
-		return returnFunc(context1, address1, v, address11, v1, address12, v2, bytes)
+		return returnFunc(context1, address1, v, address11, bigInt, address12, v1, bytes)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, uint64, address.Address, types.BigInt, address.Address, uint64, []byte) *api.MessagePrototype); ok {
-		r0 = returnFunc(context1, address1, v, address11, v1, address12, v2, bytes)
+		r0 = returnFunc(context1, address1, v, address11, bigInt, address12, v1, bytes)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.MessagePrototype)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, uint64, address.Address, types.BigInt, address.Address, uint64, []byte) error); ok {
-		r1 = returnFunc(context1, address1, v, address11, v1, address12, v2, bytes)
+		r1 = returnFunc(context1, address1, v, address11, bigInt, address12, v1, bytes)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -8928,15 +8997,15 @@ type FullNode_MsigCancelTxnHash_Call struct {
 //   - address1 address.Address
 //   - v uint64
 //   - address11 address.Address
-//   - v1 types.BigInt
+//   - bigInt types.BigInt
 //   - address12 address.Address
-//   - v2 uint64
+//   - v1 uint64
 //   - bytes []byte
-func (_e *FullNode_Expecter) MsigCancelTxnHash(context1 interface{}, address1 interface{}, v interface{}, address11 interface{}, v1 interface{}, address12 interface{}, v2 interface{}, bytes interface{}) *FullNode_MsigCancelTxnHash_Call {
-	return &FullNode_MsigCancelTxnHash_Call{Call: _e.mock.On("MsigCancelTxnHash", context1, address1, v, address11, v1, address12, v2, bytes)}
+func (_e *FullNode_Expecter) MsigCancelTxnHash(context1 any, address1 any, v any, address11 any, bigInt any, address12 any, v1 any, bytes any) *FullNode_MsigCancelTxnHash_Call {
+	return &FullNode_MsigCancelTxnHash_Call{Call: _e.mock.On("MsigCancelTxnHash", context1, address1, v, address11, bigInt, address12, v1, bytes)}
 }
 
-func (_c *FullNode_MsigCancelTxnHash_Call) Run(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, v1 types.BigInt, address12 address.Address, v2 uint64, bytes []byte)) *FullNode_MsigCancelTxnHash_Call {
+func (_c *FullNode_MsigCancelTxnHash_Call) Run(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, bigInt types.BigInt, address12 address.Address, v1 uint64, bytes []byte)) *FullNode_MsigCancelTxnHash_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -8989,14 +9058,14 @@ func (_c *FullNode_MsigCancelTxnHash_Call) Return(messagePrototype *api.MessageP
 	return _c
 }
 
-func (_c *FullNode_MsigCancelTxnHash_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, v1 types.BigInt, address12 address.Address, v2 uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigCancelTxnHash_Call {
+func (_c *FullNode_MsigCancelTxnHash_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v uint64, address11 address.Address, bigInt types.BigInt, address12 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigCancelTxnHash_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // MsigCreate provides a mock function for the type FullNode
-func (_mock *FullNode) MsigCreate(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, v1 types.BigInt, address1 address.Address, v2 types.BigInt) (*api.MessagePrototype, error) {
-	ret := _mock.Called(context1, v, addresss, chainEpoch, v1, address1, v2)
+func (_mock *FullNode) MsigCreate(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, bigInt types.BigInt, address1 address.Address, bigInt1 types.BigInt) (*api.MessagePrototype, error) {
+	ret := _mock.Called(context1, v, addresss, chainEpoch, bigInt, address1, bigInt1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MsigCreate")
@@ -9005,17 +9074,17 @@ func (_mock *FullNode) MsigCreate(context1 context.Context, v uint64, addresss [
 	var r0 *api.MessagePrototype
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, uint64, []address.Address, abi.ChainEpoch, types.BigInt, address.Address, types.BigInt) (*api.MessagePrototype, error)); ok {
-		return returnFunc(context1, v, addresss, chainEpoch, v1, address1, v2)
+		return returnFunc(context1, v, addresss, chainEpoch, bigInt, address1, bigInt1)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, uint64, []address.Address, abi.ChainEpoch, types.BigInt, address.Address, types.BigInt) *api.MessagePrototype); ok {
-		r0 = returnFunc(context1, v, addresss, chainEpoch, v1, address1, v2)
+		r0 = returnFunc(context1, v, addresss, chainEpoch, bigInt, address1, bigInt1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.MessagePrototype)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uint64, []address.Address, abi.ChainEpoch, types.BigInt, address.Address, types.BigInt) error); ok {
-		r1 = returnFunc(context1, v, addresss, chainEpoch, v1, address1, v2)
+		r1 = returnFunc(context1, v, addresss, chainEpoch, bigInt, address1, bigInt1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -9032,14 +9101,14 @@ type FullNode_MsigCreate_Call struct {
 //   - v uint64
 //   - addresss []address.Address
 //   - chainEpoch abi.ChainEpoch
-//   - v1 types.BigInt
+//   - bigInt types.BigInt
 //   - address1 address.Address
-//   - v2 types.BigInt
-func (_e *FullNode_Expecter) MsigCreate(context1 interface{}, v interface{}, addresss interface{}, chainEpoch interface{}, v1 interface{}, address1 interface{}, v2 interface{}) *FullNode_MsigCreate_Call {
-	return &FullNode_MsigCreate_Call{Call: _e.mock.On("MsigCreate", context1, v, addresss, chainEpoch, v1, address1, v2)}
+//   - bigInt1 types.BigInt
+func (_e *FullNode_Expecter) MsigCreate(context1 any, v any, addresss any, chainEpoch any, bigInt any, address1 any, bigInt1 any) *FullNode_MsigCreate_Call {
+	return &FullNode_MsigCreate_Call{Call: _e.mock.On("MsigCreate", context1, v, addresss, chainEpoch, bigInt, address1, bigInt1)}
 }
 
-func (_c *FullNode_MsigCreate_Call) Run(run func(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, v1 types.BigInt, address1 address.Address, v2 types.BigInt)) *FullNode_MsigCreate_Call {
+func (_c *FullNode_MsigCreate_Call) Run(run func(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, bigInt types.BigInt, address1 address.Address, bigInt1 types.BigInt)) *FullNode_MsigCreate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -9087,7 +9156,7 @@ func (_c *FullNode_MsigCreate_Call) Return(messagePrototype *api.MessagePrototyp
 	return _c
 }
 
-func (_c *FullNode_MsigCreate_Call) RunAndReturn(run func(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, v1 types.BigInt, address1 address.Address, v2 types.BigInt) (*api.MessagePrototype, error)) *FullNode_MsigCreate_Call {
+func (_c *FullNode_MsigCreate_Call) RunAndReturn(run func(context1 context.Context, v uint64, addresss []address.Address, chainEpoch abi.ChainEpoch, bigInt types.BigInt, address1 address.Address, bigInt1 types.BigInt) (*api.MessagePrototype, error)) *FullNode_MsigCreate_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -9127,7 +9196,7 @@ type FullNode_MsigGetAvailableBalance_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) MsigGetAvailableBalance(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_MsigGetAvailableBalance_Call {
+func (_e *FullNode_Expecter) MsigGetAvailableBalance(context1 any, address1 any, tipSetKey any) *FullNode_MsigGetAvailableBalance_Call {
 	return &FullNode_MsigGetAvailableBalance_Call{Call: _e.mock.On("MsigGetAvailableBalance", context1, address1, tipSetKey)}
 }
 
@@ -9154,8 +9223,8 @@ func (_c *FullNode_MsigGetAvailableBalance_Call) Run(run func(context1 context.C
 	return _c
 }
 
-func (_c *FullNode_MsigGetAvailableBalance_Call) Return(v types.BigInt, err error) *FullNode_MsigGetAvailableBalance_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_MsigGetAvailableBalance_Call) Return(bigInt types.BigInt, err error) *FullNode_MsigGetAvailableBalance_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -9201,7 +9270,7 @@ type FullNode_MsigGetPending_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) MsigGetPending(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_MsigGetPending_Call {
+func (_e *FullNode_Expecter) MsigGetPending(context1 any, address1 any, tipSetKey any) *FullNode_MsigGetPending_Call {
 	return &FullNode_MsigGetPending_Call{Call: _e.mock.On("MsigGetPending", context1, address1, tipSetKey)}
 }
 
@@ -9274,7 +9343,7 @@ type FullNode_MsigGetVested_Call struct {
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
 //   - tipSetKey1 types.TipSetKey
-func (_e *FullNode_Expecter) MsigGetVested(context1 interface{}, address1 interface{}, tipSetKey interface{}, tipSetKey1 interface{}) *FullNode_MsigGetVested_Call {
+func (_e *FullNode_Expecter) MsigGetVested(context1 any, address1 any, tipSetKey any, tipSetKey1 any) *FullNode_MsigGetVested_Call {
 	return &FullNode_MsigGetVested_Call{Call: _e.mock.On("MsigGetVested", context1, address1, tipSetKey, tipSetKey1)}
 }
 
@@ -9306,8 +9375,8 @@ func (_c *FullNode_MsigGetVested_Call) Run(run func(context1 context.Context, ad
 	return _c
 }
 
-func (_c *FullNode_MsigGetVested_Call) Return(v types.BigInt, err error) *FullNode_MsigGetVested_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_MsigGetVested_Call) Return(bigInt types.BigInt, err error) *FullNode_MsigGetVested_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -9351,7 +9420,7 @@ type FullNode_MsigGetVestingSchedule_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) MsigGetVestingSchedule(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_MsigGetVestingSchedule_Call {
+func (_e *FullNode_Expecter) MsigGetVestingSchedule(context1 any, address1 any, tipSetKey any) *FullNode_MsigGetVestingSchedule_Call {
 	return &FullNode_MsigGetVestingSchedule_Call{Call: _e.mock.On("MsigGetVestingSchedule", context1, address1, tipSetKey)}
 }
 
@@ -9389,8 +9458,8 @@ func (_c *FullNode_MsigGetVestingSchedule_Call) RunAndReturn(run func(context1 c
 }
 
 // MsigPropose provides a mock function for the type FullNode
-func (_mock *FullNode) MsigPropose(context1 context.Context, address1 address.Address, address11 address.Address, v types.BigInt, address12 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error) {
-	ret := _mock.Called(context1, address1, address11, v, address12, v1, bytes)
+func (_mock *FullNode) MsigPropose(context1 context.Context, address1 address.Address, address11 address.Address, bigInt types.BigInt, address12 address.Address, v uint64, bytes []byte) (*api.MessagePrototype, error) {
+	ret := _mock.Called(context1, address1, address11, bigInt, address12, v, bytes)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MsigPropose")
@@ -9399,17 +9468,17 @@ func (_mock *FullNode) MsigPropose(context1 context.Context, address1 address.Ad
 	var r0 *api.MessagePrototype
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) (*api.MessagePrototype, error)); ok {
-		return returnFunc(context1, address1, address11, v, address12, v1, bytes)
+		return returnFunc(context1, address1, address11, bigInt, address12, v, bytes)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) *api.MessagePrototype); ok {
-		r0 = returnFunc(context1, address1, address11, v, address12, v1, bytes)
+		r0 = returnFunc(context1, address1, address11, bigInt, address12, v, bytes)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.MessagePrototype)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, address.Address, types.BigInt, address.Address, uint64, []byte) error); ok {
-		r1 = returnFunc(context1, address1, address11, v, address12, v1, bytes)
+		r1 = returnFunc(context1, address1, address11, bigInt, address12, v, bytes)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -9425,15 +9494,15 @@ type FullNode_MsigPropose_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - address11 address.Address
-//   - v types.BigInt
+//   - bigInt types.BigInt
 //   - address12 address.Address
-//   - v1 uint64
+//   - v uint64
 //   - bytes []byte
-func (_e *FullNode_Expecter) MsigPropose(context1 interface{}, address1 interface{}, address11 interface{}, v interface{}, address12 interface{}, v1 interface{}, bytes interface{}) *FullNode_MsigPropose_Call {
-	return &FullNode_MsigPropose_Call{Call: _e.mock.On("MsigPropose", context1, address1, address11, v, address12, v1, bytes)}
+func (_e *FullNode_Expecter) MsigPropose(context1 any, address1 any, address11 any, bigInt any, address12 any, v any, bytes any) *FullNode_MsigPropose_Call {
+	return &FullNode_MsigPropose_Call{Call: _e.mock.On("MsigPropose", context1, address1, address11, bigInt, address12, v, bytes)}
 }
 
-func (_c *FullNode_MsigPropose_Call) Run(run func(context1 context.Context, address1 address.Address, address11 address.Address, v types.BigInt, address12 address.Address, v1 uint64, bytes []byte)) *FullNode_MsigPropose_Call {
+func (_c *FullNode_MsigPropose_Call) Run(run func(context1 context.Context, address1 address.Address, address11 address.Address, bigInt types.BigInt, address12 address.Address, v uint64, bytes []byte)) *FullNode_MsigPropose_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -9481,7 +9550,7 @@ func (_c *FullNode_MsigPropose_Call) Return(messagePrototype *api.MessagePrototy
 	return _c
 }
 
-func (_c *FullNode_MsigPropose_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, address11 address.Address, v types.BigInt, address12 address.Address, v1 uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigPropose_Call {
+func (_c *FullNode_MsigPropose_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, address11 address.Address, bigInt types.BigInt, address12 address.Address, v uint64, bytes []byte) (*api.MessagePrototype, error)) *FullNode_MsigPropose_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -9525,7 +9594,7 @@ type FullNode_MsigRemoveSigner_Call struct {
 //   - proposer address.Address
 //   - toRemove address.Address
 //   - decrease bool
-func (_e *FullNode_Expecter) MsigRemoveSigner(ctx interface{}, msig interface{}, proposer interface{}, toRemove interface{}, decrease interface{}) *FullNode_MsigRemoveSigner_Call {
+func (_e *FullNode_Expecter) MsigRemoveSigner(ctx any, msig any, proposer any, toRemove any, decrease any) *FullNode_MsigRemoveSigner_Call {
 	return &FullNode_MsigRemoveSigner_Call{Call: _e.mock.On("MsigRemoveSigner", ctx, msig, proposer, toRemove, decrease)}
 }
 
@@ -9613,7 +9682,7 @@ type FullNode_MsigSwapApprove_Call struct {
 //   - address12 address.Address
 //   - address13 address.Address
 //   - address14 address.Address
-func (_e *FullNode_Expecter) MsigSwapApprove(context1 interface{}, address1 interface{}, address11 interface{}, v interface{}, address12 interface{}, address13 interface{}, address14 interface{}) *FullNode_MsigSwapApprove_Call {
+func (_e *FullNode_Expecter) MsigSwapApprove(context1 any, address1 any, address11 any, v any, address12 any, address13 any, address14 any) *FullNode_MsigSwapApprove_Call {
 	return &FullNode_MsigSwapApprove_Call{Call: _e.mock.On("MsigSwapApprove", context1, address1, address11, v, address12, address13, address14)}
 }
 
@@ -9710,7 +9779,7 @@ type FullNode_MsigSwapCancel_Call struct {
 //   - v uint64
 //   - address12 address.Address
 //   - address13 address.Address
-func (_e *FullNode_Expecter) MsigSwapCancel(context1 interface{}, address1 interface{}, address11 interface{}, v interface{}, address12 interface{}, address13 interface{}) *FullNode_MsigSwapCancel_Call {
+func (_e *FullNode_Expecter) MsigSwapCancel(context1 any, address1 any, address11 any, v any, address12 any, address13 any) *FullNode_MsigSwapCancel_Call {
 	return &FullNode_MsigSwapCancel_Call{Call: _e.mock.On("MsigSwapCancel", context1, address1, address11, v, address12, address13)}
 }
 
@@ -9801,7 +9870,7 @@ type FullNode_MsigSwapPropose_Call struct {
 //   - address11 address.Address
 //   - address12 address.Address
 //   - address13 address.Address
-func (_e *FullNode_Expecter) MsigSwapPropose(context1 interface{}, address1 interface{}, address11 interface{}, address12 interface{}, address13 interface{}) *FullNode_MsigSwapPropose_Call {
+func (_e *FullNode_Expecter) MsigSwapPropose(context1 any, address1 any, address11 any, address12 any, address13 any) *FullNode_MsigSwapPropose_Call {
 	return &FullNode_MsigSwapPropose_Call{Call: _e.mock.On("MsigSwapPropose", context1, address1, address11, address12, address13)}
 }
 
@@ -9881,7 +9950,7 @@ type FullNode_NetAddrsListen_Call struct {
 
 // NetAddrsListen is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) NetAddrsListen(context1 interface{}) *FullNode_NetAddrsListen_Call {
+func (_e *FullNode_Expecter) NetAddrsListen(context1 any) *FullNode_NetAddrsListen_Call {
 	return &FullNode_NetAddrsListen_Call{Call: _e.mock.On("NetAddrsListen", context1)}
 }
 
@@ -9942,7 +10011,7 @@ type FullNode_NetAgentVersion_Call struct {
 // NetAgentVersion is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p peer.ID
-func (_e *FullNode_Expecter) NetAgentVersion(ctx interface{}, p interface{}) *FullNode_NetAgentVersion_Call {
+func (_e *FullNode_Expecter) NetAgentVersion(ctx any, p any) *FullNode_NetAgentVersion_Call {
 	return &FullNode_NetAgentVersion_Call{Call: _e.mock.On("NetAgentVersion", ctx, p)}
 }
 
@@ -10007,7 +10076,7 @@ type FullNode_NetAutoNatStatus_Call struct {
 
 // NetAutoNatStatus is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) NetAutoNatStatus(context1 interface{}) *FullNode_NetAutoNatStatus_Call {
+func (_e *FullNode_Expecter) NetAutoNatStatus(context1 any) *FullNode_NetAutoNatStatus_Call {
 	return &FullNode_NetAutoNatStatus_Call{Call: _e.mock.On("NetAutoNatStatus", context1)}
 }
 
@@ -10067,7 +10136,7 @@ type FullNode_NetBandwidthStats_Call struct {
 
 // NetBandwidthStats is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetBandwidthStats(ctx interface{}) *FullNode_NetBandwidthStats_Call {
+func (_e *FullNode_Expecter) NetBandwidthStats(ctx any) *FullNode_NetBandwidthStats_Call {
 	return &FullNode_NetBandwidthStats_Call{Call: _e.mock.On("NetBandwidthStats", ctx)}
 }
 
@@ -10129,7 +10198,7 @@ type FullNode_NetBandwidthStatsByPeer_Call struct {
 
 // NetBandwidthStatsByPeer is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetBandwidthStatsByPeer(ctx interface{}) *FullNode_NetBandwidthStatsByPeer_Call {
+func (_e *FullNode_Expecter) NetBandwidthStatsByPeer(ctx any) *FullNode_NetBandwidthStatsByPeer_Call {
 	return &FullNode_NetBandwidthStatsByPeer_Call{Call: _e.mock.On("NetBandwidthStatsByPeer", ctx)}
 }
 
@@ -10191,7 +10260,7 @@ type FullNode_NetBandwidthStatsByProtocol_Call struct {
 
 // NetBandwidthStatsByProtocol is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetBandwidthStatsByProtocol(ctx interface{}) *FullNode_NetBandwidthStatsByProtocol_Call {
+func (_e *FullNode_Expecter) NetBandwidthStatsByProtocol(ctx any) *FullNode_NetBandwidthStatsByProtocol_Call {
 	return &FullNode_NetBandwidthStatsByProtocol_Call{Call: _e.mock.On("NetBandwidthStatsByProtocol", ctx)}
 }
 
@@ -10243,7 +10312,7 @@ type FullNode_NetBlockAdd_Call struct {
 // NetBlockAdd is a helper method to define mock.On call
 //   - ctx context.Context
 //   - acl api.NetBlockList
-func (_e *FullNode_Expecter) NetBlockAdd(ctx interface{}, acl interface{}) *FullNode_NetBlockAdd_Call {
+func (_e *FullNode_Expecter) NetBlockAdd(ctx any, acl any) *FullNode_NetBlockAdd_Call {
 	return &FullNode_NetBlockAdd_Call{Call: _e.mock.On("NetBlockAdd", ctx, acl)}
 }
 
@@ -10308,7 +10377,7 @@ type FullNode_NetBlockList_Call struct {
 
 // NetBlockList is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetBlockList(ctx interface{}) *FullNode_NetBlockList_Call {
+func (_e *FullNode_Expecter) NetBlockList(ctx any) *FullNode_NetBlockList_Call {
 	return &FullNode_NetBlockList_Call{Call: _e.mock.On("NetBlockList", ctx)}
 }
 
@@ -10360,7 +10429,7 @@ type FullNode_NetBlockRemove_Call struct {
 // NetBlockRemove is a helper method to define mock.On call
 //   - ctx context.Context
 //   - acl api.NetBlockList
-func (_e *FullNode_Expecter) NetBlockRemove(ctx interface{}, acl interface{}) *FullNode_NetBlockRemove_Call {
+func (_e *FullNode_Expecter) NetBlockRemove(ctx any, acl any) *FullNode_NetBlockRemove_Call {
 	return &FullNode_NetBlockRemove_Call{Call: _e.mock.On("NetBlockRemove", ctx, acl)}
 }
 
@@ -10417,7 +10486,7 @@ type FullNode_NetConnect_Call struct {
 // NetConnect is a helper method to define mock.On call
 //   - context1 context.Context
 //   - addrInfo peer.AddrInfo
-func (_e *FullNode_Expecter) NetConnect(context1 interface{}, addrInfo interface{}) *FullNode_NetConnect_Call {
+func (_e *FullNode_Expecter) NetConnect(context1 any, addrInfo any) *FullNode_NetConnect_Call {
 	return &FullNode_NetConnect_Call{Call: _e.mock.On("NetConnect", context1, addrInfo)}
 }
 
@@ -10483,7 +10552,7 @@ type FullNode_NetConnectedness_Call struct {
 // NetConnectedness is a helper method to define mock.On call
 //   - context1 context.Context
 //   - iD peer.ID
-func (_e *FullNode_Expecter) NetConnectedness(context1 interface{}, iD interface{}) *FullNode_NetConnectedness_Call {
+func (_e *FullNode_Expecter) NetConnectedness(context1 any, iD any) *FullNode_NetConnectedness_Call {
 	return &FullNode_NetConnectedness_Call{Call: _e.mock.On("NetConnectedness", context1, iD)}
 }
 
@@ -10540,7 +10609,7 @@ type FullNode_NetDisconnect_Call struct {
 // NetDisconnect is a helper method to define mock.On call
 //   - context1 context.Context
 //   - iD peer.ID
-func (_e *FullNode_Expecter) NetDisconnect(context1 interface{}, iD interface{}) *FullNode_NetDisconnect_Call {
+func (_e *FullNode_Expecter) NetDisconnect(context1 any, iD any) *FullNode_NetDisconnect_Call {
 	return &FullNode_NetDisconnect_Call{Call: _e.mock.On("NetDisconnect", context1, iD)}
 }
 
@@ -10606,7 +10675,7 @@ type FullNode_NetFindPeer_Call struct {
 // NetFindPeer is a helper method to define mock.On call
 //   - context1 context.Context
 //   - iD peer.ID
-func (_e *FullNode_Expecter) NetFindPeer(context1 interface{}, iD interface{}) *FullNode_NetFindPeer_Call {
+func (_e *FullNode_Expecter) NetFindPeer(context1 any, iD any) *FullNode_NetFindPeer_Call {
 	return &FullNode_NetFindPeer_Call{Call: _e.mock.On("NetFindPeer", context1, iD)}
 }
 
@@ -10672,7 +10741,7 @@ type FullNode_NetLimit_Call struct {
 // NetLimit is a helper method to define mock.On call
 //   - ctx context.Context
 //   - scope string
-func (_e *FullNode_Expecter) NetLimit(ctx interface{}, scope interface{}) *FullNode_NetLimit_Call {
+func (_e *FullNode_Expecter) NetLimit(ctx any, scope any) *FullNode_NetLimit_Call {
 	return &FullNode_NetLimit_Call{Call: _e.mock.On("NetLimit", ctx, scope)}
 }
 
@@ -10737,7 +10806,7 @@ type FullNode_NetListening_Call struct {
 
 // NetListening is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetListening(ctx interface{}) *FullNode_NetListening_Call {
+func (_e *FullNode_Expecter) NetListening(ctx any) *FullNode_NetListening_Call {
 	return &FullNode_NetListening_Call{Call: _e.mock.On("NetListening", ctx)}
 }
 
@@ -10800,7 +10869,7 @@ type FullNode_NetPeerInfo_Call struct {
 // NetPeerInfo is a helper method to define mock.On call
 //   - context1 context.Context
 //   - iD peer.ID
-func (_e *FullNode_Expecter) NetPeerInfo(context1 interface{}, iD interface{}) *FullNode_NetPeerInfo_Call {
+func (_e *FullNode_Expecter) NetPeerInfo(context1 any, iD any) *FullNode_NetPeerInfo_Call {
 	return &FullNode_NetPeerInfo_Call{Call: _e.mock.On("NetPeerInfo", context1, iD)}
 }
 
@@ -10867,7 +10936,7 @@ type FullNode_NetPeers_Call struct {
 
 // NetPeers is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) NetPeers(context1 interface{}) *FullNode_NetPeers_Call {
+func (_e *FullNode_Expecter) NetPeers(context1 any) *FullNode_NetPeers_Call {
 	return &FullNode_NetPeers_Call{Call: _e.mock.On("NetPeers", context1)}
 }
 
@@ -10928,7 +10997,7 @@ type FullNode_NetPing_Call struct {
 // NetPing is a helper method to define mock.On call
 //   - context1 context.Context
 //   - iD peer.ID
-func (_e *FullNode_Expecter) NetPing(context1 interface{}, iD interface{}) *FullNode_NetPing_Call {
+func (_e *FullNode_Expecter) NetPing(context1 any, iD any) *FullNode_NetPing_Call {
 	return &FullNode_NetPing_Call{Call: _e.mock.On("NetPing", context1, iD)}
 }
 
@@ -10985,7 +11054,7 @@ type FullNode_NetProtectAdd_Call struct {
 // NetProtectAdd is a helper method to define mock.On call
 //   - ctx context.Context
 //   - acl []peer.ID
-func (_e *FullNode_Expecter) NetProtectAdd(ctx interface{}, acl interface{}) *FullNode_NetProtectAdd_Call {
+func (_e *FullNode_Expecter) NetProtectAdd(ctx any, acl any) *FullNode_NetProtectAdd_Call {
 	return &FullNode_NetProtectAdd_Call{Call: _e.mock.On("NetProtectAdd", ctx, acl)}
 }
 
@@ -11052,7 +11121,7 @@ type FullNode_NetProtectList_Call struct {
 
 // NetProtectList is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetProtectList(ctx interface{}) *FullNode_NetProtectList_Call {
+func (_e *FullNode_Expecter) NetProtectList(ctx any) *FullNode_NetProtectList_Call {
 	return &FullNode_NetProtectList_Call{Call: _e.mock.On("NetProtectList", ctx)}
 }
 
@@ -11104,7 +11173,7 @@ type FullNode_NetProtectRemove_Call struct {
 // NetProtectRemove is a helper method to define mock.On call
 //   - ctx context.Context
 //   - acl []peer.ID
-func (_e *FullNode_Expecter) NetProtectRemove(ctx interface{}, acl interface{}) *FullNode_NetProtectRemove_Call {
+func (_e *FullNode_Expecter) NetProtectRemove(ctx any, acl any) *FullNode_NetProtectRemove_Call {
 	return &FullNode_NetProtectRemove_Call{Call: _e.mock.On("NetProtectRemove", ctx, acl)}
 }
 
@@ -11171,7 +11240,7 @@ type FullNode_NetPubsubScores_Call struct {
 
 // NetPubsubScores is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) NetPubsubScores(context1 interface{}) *FullNode_NetPubsubScores_Call {
+func (_e *FullNode_Expecter) NetPubsubScores(context1 any) *FullNode_NetPubsubScores_Call {
 	return &FullNode_NetPubsubScores_Call{Call: _e.mock.On("NetPubsubScores", context1)}
 }
 
@@ -11224,7 +11293,7 @@ type FullNode_NetSetLimit_Call struct {
 //   - ctx context.Context
 //   - scope string
 //   - limit api.NetLimit
-func (_e *FullNode_Expecter) NetSetLimit(ctx interface{}, scope interface{}, limit interface{}) *FullNode_NetSetLimit_Call {
+func (_e *FullNode_Expecter) NetSetLimit(ctx any, scope any, limit any) *FullNode_NetSetLimit_Call {
 	return &FullNode_NetSetLimit_Call{Call: _e.mock.On("NetSetLimit", ctx, scope, limit)}
 }
 
@@ -11295,7 +11364,7 @@ type FullNode_NetStat_Call struct {
 // NetStat is a helper method to define mock.On call
 //   - ctx context.Context
 //   - scope string
-func (_e *FullNode_Expecter) NetStat(ctx interface{}, scope interface{}) *FullNode_NetStat_Call {
+func (_e *FullNode_Expecter) NetStat(ctx any, scope any) *FullNode_NetStat_Call {
 	return &FullNode_NetStat_Call{Call: _e.mock.On("NetStat", ctx, scope)}
 }
 
@@ -11360,7 +11429,7 @@ type FullNode_NetVersion_Call struct {
 
 // NetVersion is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) NetVersion(ctx interface{}) *FullNode_NetVersion_Call {
+func (_e *FullNode_Expecter) NetVersion(ctx any) *FullNode_NetVersion_Call {
 	return &FullNode_NetVersion_Call{Call: _e.mock.On("NetVersion", ctx)}
 }
 
@@ -11421,7 +11490,7 @@ type FullNode_NodeStatus_Call struct {
 // NodeStatus is a helper method to define mock.On call
 //   - ctx context.Context
 //   - inclChainStatus bool
-func (_e *FullNode_Expecter) NodeStatus(ctx interface{}, inclChainStatus interface{}) *FullNode_NodeStatus_Call {
+func (_e *FullNode_Expecter) NodeStatus(ctx any, inclChainStatus any) *FullNode_NodeStatus_Call {
 	return &FullNode_NodeStatus_Call{Call: _e.mock.On("NodeStatus", ctx, inclChainStatus)}
 }
 
@@ -11487,7 +11556,7 @@ type FullNode_PaychAllocateLane_Call struct {
 // PaychAllocateLane is a helper method to define mock.On call
 //   - ctx context.Context
 //   - ch address.Address
-func (_e *FullNode_Expecter) PaychAllocateLane(ctx interface{}, ch interface{}) *FullNode_PaychAllocateLane_Call {
+func (_e *FullNode_Expecter) PaychAllocateLane(ctx any, ch any) *FullNode_PaychAllocateLane_Call {
 	return &FullNode_PaychAllocateLane_Call{Call: _e.mock.On("PaychAllocateLane", ctx, ch)}
 }
 
@@ -11555,7 +11624,7 @@ type FullNode_PaychAvailableFunds_Call struct {
 // PaychAvailableFunds is a helper method to define mock.On call
 //   - ctx context.Context
 //   - ch address.Address
-func (_e *FullNode_Expecter) PaychAvailableFunds(ctx interface{}, ch interface{}) *FullNode_PaychAvailableFunds_Call {
+func (_e *FullNode_Expecter) PaychAvailableFunds(ctx any, ch any) *FullNode_PaychAvailableFunds_Call {
 	return &FullNode_PaychAvailableFunds_Call{Call: _e.mock.On("PaychAvailableFunds", ctx, ch)}
 }
 
@@ -11624,7 +11693,7 @@ type FullNode_PaychAvailableFundsByFromTo_Call struct {
 //   - ctx context.Context
 //   - from address.Address
 //   - to address.Address
-func (_e *FullNode_Expecter) PaychAvailableFundsByFromTo(ctx interface{}, from interface{}, to interface{}) *FullNode_PaychAvailableFundsByFromTo_Call {
+func (_e *FullNode_Expecter) PaychAvailableFundsByFromTo(ctx any, from any, to any) *FullNode_PaychAvailableFundsByFromTo_Call {
 	return &FullNode_PaychAvailableFundsByFromTo_Call{Call: _e.mock.On("PaychAvailableFundsByFromTo", ctx, from, to)}
 }
 
@@ -11695,7 +11764,7 @@ type FullNode_PaychCollect_Call struct {
 // PaychCollect is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) PaychCollect(context1 interface{}, address1 interface{}) *FullNode_PaychCollect_Call {
+func (_e *FullNode_Expecter) PaychCollect(context1 any, address1 any) *FullNode_PaychCollect_Call {
 	return &FullNode_PaychCollect_Call{Call: _e.mock.On("PaychCollect", context1, address1)}
 }
 
@@ -11765,7 +11834,7 @@ type FullNode_PaychFund_Call struct {
 //   - from address.Address
 //   - to address.Address
 //   - amt types.BigInt
-func (_e *FullNode_Expecter) PaychFund(ctx interface{}, from interface{}, to interface{}, amt interface{}) *FullNode_PaychFund_Call {
+func (_e *FullNode_Expecter) PaychFund(ctx any, from any, to any, amt any) *FullNode_PaychFund_Call {
 	return &FullNode_PaychFund_Call{Call: _e.mock.On("PaychFund", ctx, from, to, amt)}
 }
 
@@ -11846,7 +11915,7 @@ type FullNode_PaychGet_Call struct {
 //   - to address.Address
 //   - amt types.BigInt
 //   - opts api.PaychGetOpts
-func (_e *FullNode_Expecter) PaychGet(ctx interface{}, from interface{}, to interface{}, amt interface{}, opts interface{}) *FullNode_PaychGet_Call {
+func (_e *FullNode_Expecter) PaychGet(ctx any, from any, to any, amt any, opts any) *FullNode_PaychGet_Call {
 	return &FullNode_PaychGet_Call{Call: _e.mock.On("PaychGet", ctx, from, to, amt, opts)}
 }
 
@@ -11927,7 +11996,7 @@ type FullNode_PaychGetWaitReady_Call struct {
 // PaychGetWaitReady is a helper method to define mock.On call
 //   - context1 context.Context
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) PaychGetWaitReady(context1 interface{}, cid1 interface{}) *FullNode_PaychGetWaitReady_Call {
+func (_e *FullNode_Expecter) PaychGetWaitReady(context1 any, cid1 any) *FullNode_PaychGetWaitReady_Call {
 	return &FullNode_PaychGetWaitReady_Call{Call: _e.mock.On("PaychGetWaitReady", context1, cid1)}
 }
 
@@ -11994,7 +12063,7 @@ type FullNode_PaychList_Call struct {
 
 // PaychList is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) PaychList(context1 interface{}) *FullNode_PaychList_Call {
+func (_e *FullNode_Expecter) PaychList(context1 any) *FullNode_PaychList_Call {
 	return &FullNode_PaychList_Call{Call: _e.mock.On("PaychList", context1)}
 }
 
@@ -12059,7 +12128,7 @@ type FullNode_PaychNewPayment_Call struct {
 //   - from address.Address
 //   - to address.Address
 //   - vouchers []api.VoucherSpec
-func (_e *FullNode_Expecter) PaychNewPayment(ctx interface{}, from interface{}, to interface{}, vouchers interface{}) *FullNode_PaychNewPayment_Call {
+func (_e *FullNode_Expecter) PaychNewPayment(ctx any, from any, to any, vouchers any) *FullNode_PaychNewPayment_Call {
 	return &FullNode_PaychNewPayment_Call{Call: _e.mock.On("PaychNewPayment", ctx, from, to, vouchers)}
 }
 
@@ -12135,7 +12204,7 @@ type FullNode_PaychSettle_Call struct {
 // PaychSettle is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) PaychSettle(context1 interface{}, address1 interface{}) *FullNode_PaychSettle_Call {
+func (_e *FullNode_Expecter) PaychSettle(context1 any, address1 any) *FullNode_PaychSettle_Call {
 	return &FullNode_PaychSettle_Call{Call: _e.mock.On("PaychSettle", context1, address1)}
 }
 
@@ -12203,7 +12272,7 @@ type FullNode_PaychStatus_Call struct {
 // PaychStatus is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) PaychStatus(context1 interface{}, address1 interface{}) *FullNode_PaychStatus_Call {
+func (_e *FullNode_Expecter) PaychStatus(context1 any, address1 any) *FullNode_PaychStatus_Call {
 	return &FullNode_PaychStatus_Call{Call: _e.mock.On("PaychStatus", context1, address1)}
 }
 
@@ -12236,8 +12305,8 @@ func (_c *FullNode_PaychStatus_Call) RunAndReturn(run func(context1 context.Cont
 }
 
 // PaychVoucherAdd provides a mock function for the type FullNode
-func (_mock *FullNode) PaychVoucherAdd(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, v types.BigInt) (types.BigInt, error) {
-	ret := _mock.Called(context1, address1, signedVoucher, bytes, v)
+func (_mock *FullNode) PaychVoucherAdd(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, bigInt types.BigInt) (types.BigInt, error) {
+	ret := _mock.Called(context1, address1, signedVoucher, bytes, bigInt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PaychVoucherAdd")
@@ -12246,15 +12315,15 @@ func (_mock *FullNode) PaychVoucherAdd(context1 context.Context, address1 addres
 	var r0 types.BigInt
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, *paych.SignedVoucher, []byte, types.BigInt) (types.BigInt, error)); ok {
-		return returnFunc(context1, address1, signedVoucher, bytes, v)
+		return returnFunc(context1, address1, signedVoucher, bytes, bigInt)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, *paych.SignedVoucher, []byte, types.BigInt) types.BigInt); ok {
-		r0 = returnFunc(context1, address1, signedVoucher, bytes, v)
+		r0 = returnFunc(context1, address1, signedVoucher, bytes, bigInt)
 	} else {
 		r0 = ret.Get(0).(types.BigInt)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, *paych.SignedVoucher, []byte, types.BigInt) error); ok {
-		r1 = returnFunc(context1, address1, signedVoucher, bytes, v)
+		r1 = returnFunc(context1, address1, signedVoucher, bytes, bigInt)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -12271,12 +12340,12 @@ type FullNode_PaychVoucherAdd_Call struct {
 //   - address1 address.Address
 //   - signedVoucher *paych.SignedVoucher
 //   - bytes []byte
-//   - v types.BigInt
-func (_e *FullNode_Expecter) PaychVoucherAdd(context1 interface{}, address1 interface{}, signedVoucher interface{}, bytes interface{}, v interface{}) *FullNode_PaychVoucherAdd_Call {
-	return &FullNode_PaychVoucherAdd_Call{Call: _e.mock.On("PaychVoucherAdd", context1, address1, signedVoucher, bytes, v)}
+//   - bigInt types.BigInt
+func (_e *FullNode_Expecter) PaychVoucherAdd(context1 any, address1 any, signedVoucher any, bytes any, bigInt any) *FullNode_PaychVoucherAdd_Call {
+	return &FullNode_PaychVoucherAdd_Call{Call: _e.mock.On("PaychVoucherAdd", context1, address1, signedVoucher, bytes, bigInt)}
 }
 
-func (_c *FullNode_PaychVoucherAdd_Call) Run(run func(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, v types.BigInt)) *FullNode_PaychVoucherAdd_Call {
+func (_c *FullNode_PaychVoucherAdd_Call) Run(run func(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, bigInt types.BigInt)) *FullNode_PaychVoucherAdd_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -12309,12 +12378,12 @@ func (_c *FullNode_PaychVoucherAdd_Call) Run(run func(context1 context.Context, 
 	return _c
 }
 
-func (_c *FullNode_PaychVoucherAdd_Call) Return(v1 types.BigInt, err error) *FullNode_PaychVoucherAdd_Call {
-	_c.Call.Return(v1, err)
+func (_c *FullNode_PaychVoucherAdd_Call) Return(bigInt1 types.BigInt, err error) *FullNode_PaychVoucherAdd_Call {
+	_c.Call.Return(bigInt1, err)
 	return _c
 }
 
-func (_c *FullNode_PaychVoucherAdd_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, v types.BigInt) (types.BigInt, error)) *FullNode_PaychVoucherAdd_Call {
+func (_c *FullNode_PaychVoucherAdd_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, signedVoucher *paych.SignedVoucher, bytes []byte, bigInt types.BigInt) (types.BigInt, error)) *FullNode_PaychVoucherAdd_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -12356,7 +12425,7 @@ type FullNode_PaychVoucherCheckSpendable_Call struct {
 //   - signedVoucher *paych.SignedVoucher
 //   - bytes []byte
 //   - bytes1 []byte
-func (_e *FullNode_Expecter) PaychVoucherCheckSpendable(context1 interface{}, address1 interface{}, signedVoucher interface{}, bytes interface{}, bytes1 interface{}) *FullNode_PaychVoucherCheckSpendable_Call {
+func (_e *FullNode_Expecter) PaychVoucherCheckSpendable(context1 any, address1 any, signedVoucher any, bytes any, bytes1 any) *FullNode_PaychVoucherCheckSpendable_Call {
 	return &FullNode_PaychVoucherCheckSpendable_Call{Call: _e.mock.On("PaychVoucherCheckSpendable", context1, address1, signedVoucher, bytes, bytes1)}
 }
 
@@ -12429,7 +12498,7 @@ type FullNode_PaychVoucherCheckValid_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - signedVoucher *paych.SignedVoucher
-func (_e *FullNode_Expecter) PaychVoucherCheckValid(context1 interface{}, address1 interface{}, signedVoucher interface{}) *FullNode_PaychVoucherCheckValid_Call {
+func (_e *FullNode_Expecter) PaychVoucherCheckValid(context1 any, address1 any, signedVoucher any) *FullNode_PaychVoucherCheckValid_Call {
 	return &FullNode_PaychVoucherCheckValid_Call{Call: _e.mock.On("PaychVoucherCheckValid", context1, address1, signedVoucher)}
 }
 
@@ -12467,8 +12536,8 @@ func (_c *FullNode_PaychVoucherCheckValid_Call) RunAndReturn(run func(context1 c
 }
 
 // PaychVoucherCreate provides a mock function for the type FullNode
-func (_mock *FullNode) PaychVoucherCreate(context1 context.Context, address1 address.Address, v types.BigInt, v1 uint64) (*api.VoucherCreateResult, error) {
-	ret := _mock.Called(context1, address1, v, v1)
+func (_mock *FullNode) PaychVoucherCreate(context1 context.Context, address1 address.Address, bigInt types.BigInt, v uint64) (*api.VoucherCreateResult, error) {
+	ret := _mock.Called(context1, address1, bigInt, v)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PaychVoucherCreate")
@@ -12477,17 +12546,17 @@ func (_mock *FullNode) PaychVoucherCreate(context1 context.Context, address1 add
 	var r0 *api.VoucherCreateResult
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, types.BigInt, uint64) (*api.VoucherCreateResult, error)); ok {
-		return returnFunc(context1, address1, v, v1)
+		return returnFunc(context1, address1, bigInt, v)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, types.BigInt, uint64) *api.VoucherCreateResult); ok {
-		r0 = returnFunc(context1, address1, v, v1)
+		r0 = returnFunc(context1, address1, bigInt, v)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.VoucherCreateResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, types.BigInt, uint64) error); ok {
-		r1 = returnFunc(context1, address1, v, v1)
+		r1 = returnFunc(context1, address1, bigInt, v)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -12502,13 +12571,13 @@ type FullNode_PaychVoucherCreate_Call struct {
 // PaychVoucherCreate is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-//   - v types.BigInt
-//   - v1 uint64
-func (_e *FullNode_Expecter) PaychVoucherCreate(context1 interface{}, address1 interface{}, v interface{}, v1 interface{}) *FullNode_PaychVoucherCreate_Call {
-	return &FullNode_PaychVoucherCreate_Call{Call: _e.mock.On("PaychVoucherCreate", context1, address1, v, v1)}
+//   - bigInt types.BigInt
+//   - v uint64
+func (_e *FullNode_Expecter) PaychVoucherCreate(context1 any, address1 any, bigInt any, v any) *FullNode_PaychVoucherCreate_Call {
+	return &FullNode_PaychVoucherCreate_Call{Call: _e.mock.On("PaychVoucherCreate", context1, address1, bigInt, v)}
 }
 
-func (_c *FullNode_PaychVoucherCreate_Call) Run(run func(context1 context.Context, address1 address.Address, v types.BigInt, v1 uint64)) *FullNode_PaychVoucherCreate_Call {
+func (_c *FullNode_PaychVoucherCreate_Call) Run(run func(context1 context.Context, address1 address.Address, bigInt types.BigInt, v uint64)) *FullNode_PaychVoucherCreate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -12541,7 +12610,7 @@ func (_c *FullNode_PaychVoucherCreate_Call) Return(voucherCreateResult *api.Vouc
 	return _c
 }
 
-func (_c *FullNode_PaychVoucherCreate_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v types.BigInt, v1 uint64) (*api.VoucherCreateResult, error)) *FullNode_PaychVoucherCreate_Call {
+func (_c *FullNode_PaychVoucherCreate_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, bigInt types.BigInt, v uint64) (*api.VoucherCreateResult, error)) *FullNode_PaychVoucherCreate_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -12582,7 +12651,7 @@ type FullNode_PaychVoucherList_Call struct {
 // PaychVoucherList is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) PaychVoucherList(context1 interface{}, address1 interface{}) *FullNode_PaychVoucherList_Call {
+func (_e *FullNode_Expecter) PaychVoucherList(context1 any, address1 any) *FullNode_PaychVoucherList_Call {
 	return &FullNode_PaychVoucherList_Call{Call: _e.mock.On("PaychVoucherList", context1, address1)}
 }
 
@@ -12651,7 +12720,7 @@ type FullNode_PaychVoucherSubmit_Call struct {
 //   - signedVoucher *paych.SignedVoucher
 //   - bytes []byte
 //   - bytes1 []byte
-func (_e *FullNode_Expecter) PaychVoucherSubmit(context1 interface{}, address1 interface{}, signedVoucher interface{}, bytes interface{}, bytes1 interface{}) *FullNode_PaychVoucherSubmit_Call {
+func (_e *FullNode_Expecter) PaychVoucherSubmit(context1 any, address1 any, signedVoucher any, bytes any, bytes1 any) *FullNode_PaychVoucherSubmit_Call {
 	return &FullNode_PaychVoucherSubmit_Call{Call: _e.mock.On("PaychVoucherSubmit", context1, address1, signedVoucher, bytes, bytes1)}
 }
 
@@ -12733,7 +12802,7 @@ type FullNode_Session_Call struct {
 
 // Session is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) Session(context1 interface{}) *FullNode_Session_Call {
+func (_e *FullNode_Expecter) Session(context1 any) *FullNode_Session_Call {
 	return &FullNode_Session_Call{Call: _e.mock.On("Session", context1)}
 }
 
@@ -12784,7 +12853,7 @@ type FullNode_Shutdown_Call struct {
 
 // Shutdown is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) Shutdown(context1 interface{}) *FullNode_Shutdown_Call {
+func (_e *FullNode_Expecter) Shutdown(context1 any) *FullNode_Shutdown_Call {
 	return &FullNode_Shutdown_Call{Call: _e.mock.On("Shutdown", context1)}
 }
 
@@ -12844,7 +12913,7 @@ type FullNode_StartTime_Call struct {
 
 // StartTime is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) StartTime(context1 interface{}) *FullNode_StartTime_Call {
+func (_e *FullNode_Expecter) StartTime(context1 any) *FullNode_StartTime_Call {
 	return &FullNode_StartTime_Call{Call: _e.mock.On("StartTime", context1)}
 }
 
@@ -12906,7 +12975,7 @@ type FullNode_StateAccountKey_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateAccountKey(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateAccountKey_Call {
+func (_e *FullNode_Expecter) StateAccountKey(context1 any, address1 any, tipSetKey any) *FullNode_StateAccountKey_Call {
 	return &FullNode_StateAccountKey_Call{Call: _e.mock.On("StateAccountKey", context1, address1, tipSetKey)}
 }
 
@@ -12979,7 +13048,7 @@ type FullNode_StateActorCodeCIDs_Call struct {
 // StateActorCodeCIDs is a helper method to define mock.On call
 //   - context1 context.Context
 //   - version network0.Version
-func (_e *FullNode_Expecter) StateActorCodeCIDs(context1 interface{}, version interface{}) *FullNode_StateActorCodeCIDs_Call {
+func (_e *FullNode_Expecter) StateActorCodeCIDs(context1 any, version any) *FullNode_StateActorCodeCIDs_Call {
 	return &FullNode_StateActorCodeCIDs_Call{Call: _e.mock.On("StateActorCodeCIDs", context1, version)}
 }
 
@@ -13045,7 +13114,7 @@ type FullNode_StateActorManifestCID_Call struct {
 // StateActorManifestCID is a helper method to define mock.On call
 //   - context1 context.Context
 //   - version network0.Version
-func (_e *FullNode_Expecter) StateActorManifestCID(context1 interface{}, version interface{}) *FullNode_StateActorManifestCID_Call {
+func (_e *FullNode_Expecter) StateActorManifestCID(context1 any, version any) *FullNode_StateActorManifestCID_Call {
 	return &FullNode_StateActorManifestCID_Call{Call: _e.mock.On("StateActorManifestCID", context1, version)}
 }
 
@@ -13114,7 +13183,7 @@ type FullNode_StateAllMinerFaults_Call struct {
 //   - ctx context.Context
 //   - lookback abi.ChainEpoch
 //   - ts types.TipSetKey
-func (_e *FullNode_Expecter) StateAllMinerFaults(ctx interface{}, lookback interface{}, ts interface{}) *FullNode_StateAllMinerFaults_Call {
+func (_e *FullNode_Expecter) StateAllMinerFaults(ctx any, lookback any, ts any) *FullNode_StateAllMinerFaults_Call {
 	return &FullNode_StateAllMinerFaults_Call{Call: _e.mock.On("StateAllMinerFaults", ctx, lookback, ts)}
 }
 
@@ -13188,7 +13257,7 @@ type FullNode_StateCall_Call struct {
 //   - context1 context.Context
 //   - message *types.Message
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateCall(context1 interface{}, message interface{}, tipSetKey interface{}) *FullNode_StateCall_Call {
+func (_e *FullNode_Expecter) StateCall(context1 any, message any, tipSetKey any) *FullNode_StateCall_Call {
 	return &FullNode_StateCall_Call{Call: _e.mock.On("StateCall", context1, message, tipSetKey)}
 }
 
@@ -13262,7 +13331,7 @@ type FullNode_StateChangedActors_Call struct {
 //   - context1 context.Context
 //   - cid1 cid.Cid
 //   - cid11 cid.Cid
-func (_e *FullNode_Expecter) StateChangedActors(context1 interface{}, cid1 interface{}, cid11 interface{}) *FullNode_StateChangedActors_Call {
+func (_e *FullNode_Expecter) StateChangedActors(context1 any, cid1 any, cid11 any) *FullNode_StateChangedActors_Call {
 	return &FullNode_StateChangedActors_Call{Call: _e.mock.On("StateChangedActors", context1, cid1, cid11)}
 }
 
@@ -13289,8 +13358,8 @@ func (_c *FullNode_StateChangedActors_Call) Run(run func(context1 context.Contex
 	return _c
 }
 
-func (_c *FullNode_StateChangedActors_Call) Return(stringToV map[string]types.Actor, err error) *FullNode_StateChangedActors_Call {
-	_c.Call.Return(stringToV, err)
+func (_c *FullNode_StateChangedActors_Call) Return(stringToActor map[string]types.Actor, err error) *FullNode_StateChangedActors_Call {
+	_c.Call.Return(stringToActor, err)
 	return _c
 }
 
@@ -13333,7 +13402,7 @@ type FullNode_StateCirculatingSupply_Call struct {
 // StateCirculatingSupply is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateCirculatingSupply(context1 interface{}, tipSetKey interface{}) *FullNode_StateCirculatingSupply_Call {
+func (_e *FullNode_Expecter) StateCirculatingSupply(context1 any, tipSetKey any) *FullNode_StateCirculatingSupply_Call {
 	return &FullNode_StateCirculatingSupply_Call{Call: _e.mock.On("StateCirculatingSupply", context1, tipSetKey)}
 }
 
@@ -13355,8 +13424,8 @@ func (_c *FullNode_StateCirculatingSupply_Call) Run(run func(context1 context.Co
 	return _c
 }
 
-func (_c *FullNode_StateCirculatingSupply_Call) Return(v abi.TokenAmount, err error) *FullNode_StateCirculatingSupply_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateCirculatingSupply_Call) Return(tokenAmount abi.TokenAmount, err error) *FullNode_StateCirculatingSupply_Call {
+	_c.Call.Return(tokenAmount, err)
 	return _c
 }
 
@@ -13403,7 +13472,7 @@ type FullNode_StateCompute_Call struct {
 //   - chainEpoch abi.ChainEpoch
 //   - messages []*types.Message
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateCompute(context1 interface{}, chainEpoch interface{}, messages interface{}, tipSetKey interface{}) *FullNode_StateCompute_Call {
+func (_e *FullNode_Expecter) StateCompute(context1 any, chainEpoch any, messages any, tipSetKey any) *FullNode_StateCompute_Call {
 	return &FullNode_StateCompute_Call{Call: _e.mock.On("StateCompute", context1, chainEpoch, messages, tipSetKey)}
 }
 
@@ -13482,7 +13551,7 @@ type FullNode_StateComputeDataCID_Call struct {
 //   - sectorType abi.RegisteredSealProof
 //   - deals []abi.DealID
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateComputeDataCID(ctx interface{}, maddr interface{}, sectorType interface{}, deals interface{}, tsk interface{}) *FullNode_StateComputeDataCID_Call {
+func (_e *FullNode_Expecter) StateComputeDataCID(ctx any, maddr any, sectorType any, deals any, tsk any) *FullNode_StateComputeDataCID_Call {
 	return &FullNode_StateComputeDataCID_Call{Call: _e.mock.On("StateComputeDataCID", ctx, maddr, sectorType, deals, tsk)}
 }
 
@@ -13565,7 +13634,7 @@ type FullNode_StateDealProviderCollateralBounds_Call struct {
 //   - paddedPieceSize abi.PaddedPieceSize
 //   - b bool
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateDealProviderCollateralBounds(context1 interface{}, paddedPieceSize interface{}, b interface{}, tipSetKey interface{}) *FullNode_StateDealProviderCollateralBounds_Call {
+func (_e *FullNode_Expecter) StateDealProviderCollateralBounds(context1 any, paddedPieceSize any, b any, tipSetKey any) *FullNode_StateDealProviderCollateralBounds_Call {
 	return &FullNode_StateDealProviderCollateralBounds_Call{Call: _e.mock.On("StateDealProviderCollateralBounds", context1, paddedPieceSize, b, tipSetKey)}
 }
 
@@ -13646,7 +13715,7 @@ type FullNode_StateDecodeParams_Call struct {
 //   - method abi.MethodNum
 //   - params []byte
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateDecodeParams(ctx interface{}, toAddr interface{}, method interface{}, params interface{}, tsk interface{}) *FullNode_StateDecodeParams_Call {
+func (_e *FullNode_Expecter) StateDecodeParams(ctx any, toAddr any, method any, params any, tsk any) *FullNode_StateDecodeParams_Call {
 	return &FullNode_StateDecodeParams_Call{Call: _e.mock.On("StateDecodeParams", ctx, toAddr, method, params, tsk)}
 }
 
@@ -13731,7 +13800,7 @@ type FullNode_StateEncodeParams_Call struct {
 //   - toActCode cid.Cid
 //   - method abi.MethodNum
 //   - params json.RawMessage
-func (_e *FullNode_Expecter) StateEncodeParams(ctx interface{}, toActCode interface{}, method interface{}, params interface{}) *FullNode_StateEncodeParams_Call {
+func (_e *FullNode_Expecter) StateEncodeParams(ctx any, toActCode any, method any, params any) *FullNode_StateEncodeParams_Call {
 	return &FullNode_StateEncodeParams_Call{Call: _e.mock.On("StateEncodeParams", ctx, toActCode, method, params)}
 }
 
@@ -13810,7 +13879,7 @@ type FullNode_StateGetActor_Call struct {
 //   - ctx context.Context
 //   - actor address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetActor(ctx interface{}, actor interface{}, tsk interface{}) *FullNode_StateGetActor_Call {
+func (_e *FullNode_Expecter) StateGetActor(ctx any, actor any, tsk any) *FullNode_StateGetActor_Call {
 	return &FullNode_StateGetActor_Call{Call: _e.mock.On("StateGetActor", ctx, actor, tsk)}
 }
 
@@ -13837,8 +13906,8 @@ func (_c *FullNode_StateGetActor_Call) Run(run func(ctx context.Context, actor a
 	return _c
 }
 
-func (_c *FullNode_StateGetActor_Call) Return(v *types.Actor, err error) *FullNode_StateGetActor_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateGetActor_Call) Return(actor1 *types.Actor, err error) *FullNode_StateGetActor_Call {
+	_c.Call.Return(actor1, err)
 	return _c
 }
 
@@ -13883,7 +13952,7 @@ type FullNode_StateGetAllAllocations_Call struct {
 // StateGetAllAllocations is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllAllocations(ctx interface{}, tsk interface{}) *FullNode_StateGetAllAllocations_Call {
+func (_e *FullNode_Expecter) StateGetAllAllocations(ctx any, tsk any) *FullNode_StateGetAllAllocations_Call {
 	return &FullNode_StateGetAllAllocations_Call{Call: _e.mock.On("StateGetAllAllocations", ctx, tsk)}
 }
 
@@ -13905,8 +13974,8 @@ func (_c *FullNode_StateGetAllAllocations_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *FullNode_StateGetAllAllocations_Call) Return(vToV map[verifreg.AllocationId]verifreg.Allocation, err error) *FullNode_StateGetAllAllocations_Call {
-	_c.Call.Return(vToV, err)
+func (_c *FullNode_StateGetAllAllocations_Call) Return(allocationIdToAllocation map[verifreg.AllocationId]verifreg.Allocation, err error) *FullNode_StateGetAllAllocations_Call {
+	_c.Call.Return(allocationIdToAllocation, err)
 	return _c
 }
 
@@ -13951,7 +14020,7 @@ type FullNode_StateGetAllClaims_Call struct {
 // StateGetAllClaims is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllClaims(ctx interface{}, tsk interface{}) *FullNode_StateGetAllClaims_Call {
+func (_e *FullNode_Expecter) StateGetAllClaims(ctx any, tsk any) *FullNode_StateGetAllClaims_Call {
 	return &FullNode_StateGetAllClaims_Call{Call: _e.mock.On("StateGetAllClaims", ctx, tsk)}
 }
 
@@ -13973,8 +14042,8 @@ func (_c *FullNode_StateGetAllClaims_Call) Run(run func(ctx context.Context, tsk
 	return _c
 }
 
-func (_c *FullNode_StateGetAllClaims_Call) Return(vToV map[verifreg.ClaimId]verifreg.Claim, err error) *FullNode_StateGetAllClaims_Call {
-	_c.Call.Return(vToV, err)
+func (_c *FullNode_StateGetAllClaims_Call) Return(claimIdToClaim map[verifreg.ClaimId]verifreg.Claim, err error) *FullNode_StateGetAllClaims_Call {
+	_c.Call.Return(claimIdToClaim, err)
 	return _c
 }
 
@@ -14021,7 +14090,7 @@ type FullNode_StateGetAllocation_Call struct {
 //   - clientAddr address.Address
 //   - allocationId verifreg.AllocationId
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllocation(ctx interface{}, clientAddr interface{}, allocationId interface{}, tsk interface{}) *FullNode_StateGetAllocation_Call {
+func (_e *FullNode_Expecter) StateGetAllocation(ctx any, clientAddr any, allocationId any, tsk any) *FullNode_StateGetAllocation_Call {
 	return &FullNode_StateGetAllocation_Call{Call: _e.mock.On("StateGetAllocation", ctx, clientAddr, allocationId, tsk)}
 }
 
@@ -14053,8 +14122,8 @@ func (_c *FullNode_StateGetAllocation_Call) Run(run func(ctx context.Context, cl
 	return _c
 }
 
-func (_c *FullNode_StateGetAllocation_Call) Return(v *verifreg.Allocation, err error) *FullNode_StateGetAllocation_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateGetAllocation_Call) Return(allocation *verifreg.Allocation, err error) *FullNode_StateGetAllocation_Call {
+	_c.Call.Return(allocation, err)
 	return _c
 }
 
@@ -14100,7 +14169,7 @@ type FullNode_StateGetAllocationForPendingDeal_Call struct {
 //   - ctx context.Context
 //   - dealId abi.DealID
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllocationForPendingDeal(ctx interface{}, dealId interface{}, tsk interface{}) *FullNode_StateGetAllocationForPendingDeal_Call {
+func (_e *FullNode_Expecter) StateGetAllocationForPendingDeal(ctx any, dealId any, tsk any) *FullNode_StateGetAllocationForPendingDeal_Call {
 	return &FullNode_StateGetAllocationForPendingDeal_Call{Call: _e.mock.On("StateGetAllocationForPendingDeal", ctx, dealId, tsk)}
 }
 
@@ -14127,8 +14196,8 @@ func (_c *FullNode_StateGetAllocationForPendingDeal_Call) Run(run func(ctx conte
 	return _c
 }
 
-func (_c *FullNode_StateGetAllocationForPendingDeal_Call) Return(v *verifreg.Allocation, err error) *FullNode_StateGetAllocationForPendingDeal_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateGetAllocationForPendingDeal_Call) Return(allocation *verifreg.Allocation, err error) *FullNode_StateGetAllocationForPendingDeal_Call {
+	_c.Call.Return(allocation, err)
 	return _c
 }
 
@@ -14172,7 +14241,7 @@ type FullNode_StateGetAllocationIdForPendingDeal_Call struct {
 //   - ctx context.Context
 //   - dealId abi.DealID
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllocationIdForPendingDeal(ctx interface{}, dealId interface{}, tsk interface{}) *FullNode_StateGetAllocationIdForPendingDeal_Call {
+func (_e *FullNode_Expecter) StateGetAllocationIdForPendingDeal(ctx any, dealId any, tsk any) *FullNode_StateGetAllocationIdForPendingDeal_Call {
 	return &FullNode_StateGetAllocationIdForPendingDeal_Call{Call: _e.mock.On("StateGetAllocationIdForPendingDeal", ctx, dealId, tsk)}
 }
 
@@ -14199,8 +14268,8 @@ func (_c *FullNode_StateGetAllocationIdForPendingDeal_Call) Run(run func(ctx con
 	return _c
 }
 
-func (_c *FullNode_StateGetAllocationIdForPendingDeal_Call) Return(v verifreg.AllocationId, err error) *FullNode_StateGetAllocationIdForPendingDeal_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateGetAllocationIdForPendingDeal_Call) Return(allocationId verifreg.AllocationId, err error) *FullNode_StateGetAllocationIdForPendingDeal_Call {
+	_c.Call.Return(allocationId, err)
 	return _c
 }
 
@@ -14246,7 +14315,7 @@ type FullNode_StateGetAllocations_Call struct {
 //   - ctx context.Context
 //   - clientAddr address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetAllocations(ctx interface{}, clientAddr interface{}, tsk interface{}) *FullNode_StateGetAllocations_Call {
+func (_e *FullNode_Expecter) StateGetAllocations(ctx any, clientAddr any, tsk any) *FullNode_StateGetAllocations_Call {
 	return &FullNode_StateGetAllocations_Call{Call: _e.mock.On("StateGetAllocations", ctx, clientAddr, tsk)}
 }
 
@@ -14273,8 +14342,8 @@ func (_c *FullNode_StateGetAllocations_Call) Run(run func(ctx context.Context, c
 	return _c
 }
 
-func (_c *FullNode_StateGetAllocations_Call) Return(vToV map[verifreg.AllocationId]verifreg.Allocation, err error) *FullNode_StateGetAllocations_Call {
-	_c.Call.Return(vToV, err)
+func (_c *FullNode_StateGetAllocations_Call) Return(allocationIdToAllocation map[verifreg.AllocationId]verifreg.Allocation, err error) *FullNode_StateGetAllocations_Call {
+	_c.Call.Return(allocationIdToAllocation, err)
 	return _c
 }
 
@@ -14319,7 +14388,7 @@ type FullNode_StateGetBeaconEntry_Call struct {
 // StateGetBeaconEntry is a helper method to define mock.On call
 //   - ctx context.Context
 //   - epoch abi.ChainEpoch
-func (_e *FullNode_Expecter) StateGetBeaconEntry(ctx interface{}, epoch interface{}) *FullNode_StateGetBeaconEntry_Call {
+func (_e *FullNode_Expecter) StateGetBeaconEntry(ctx any, epoch any) *FullNode_StateGetBeaconEntry_Call {
 	return &FullNode_StateGetBeaconEntry_Call{Call: _e.mock.On("StateGetBeaconEntry", ctx, epoch)}
 }
 
@@ -14389,7 +14458,7 @@ type FullNode_StateGetClaim_Call struct {
 //   - providerAddr address.Address
 //   - claimId verifreg.ClaimId
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetClaim(ctx interface{}, providerAddr interface{}, claimId interface{}, tsk interface{}) *FullNode_StateGetClaim_Call {
+func (_e *FullNode_Expecter) StateGetClaim(ctx any, providerAddr any, claimId any, tsk any) *FullNode_StateGetClaim_Call {
 	return &FullNode_StateGetClaim_Call{Call: _e.mock.On("StateGetClaim", ctx, providerAddr, claimId, tsk)}
 }
 
@@ -14421,8 +14490,8 @@ func (_c *FullNode_StateGetClaim_Call) Run(run func(ctx context.Context, provide
 	return _c
 }
 
-func (_c *FullNode_StateGetClaim_Call) Return(v *verifreg.Claim, err error) *FullNode_StateGetClaim_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateGetClaim_Call) Return(claim *verifreg.Claim, err error) *FullNode_StateGetClaim_Call {
+	_c.Call.Return(claim, err)
 	return _c
 }
 
@@ -14468,7 +14537,7 @@ type FullNode_StateGetClaims_Call struct {
 //   - ctx context.Context
 //   - providerAddr address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetClaims(ctx interface{}, providerAddr interface{}, tsk interface{}) *FullNode_StateGetClaims_Call {
+func (_e *FullNode_Expecter) StateGetClaims(ctx any, providerAddr any, tsk any) *FullNode_StateGetClaims_Call {
 	return &FullNode_StateGetClaims_Call{Call: _e.mock.On("StateGetClaims", ctx, providerAddr, tsk)}
 }
 
@@ -14495,8 +14564,8 @@ func (_c *FullNode_StateGetClaims_Call) Run(run func(ctx context.Context, provid
 	return _c
 }
 
-func (_c *FullNode_StateGetClaims_Call) Return(vToV map[verifreg.ClaimId]verifreg.Claim, err error) *FullNode_StateGetClaims_Call {
-	_c.Call.Return(vToV, err)
+func (_c *FullNode_StateGetClaims_Call) Return(claimIdToClaim map[verifreg.ClaimId]verifreg.Claim, err error) *FullNode_StateGetClaims_Call {
+	_c.Call.Return(claimIdToClaim, err)
 	return _c
 }
 
@@ -14540,7 +14609,7 @@ type FullNode_StateGetNetworkParams_Call struct {
 
 // StateGetNetworkParams is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) StateGetNetworkParams(ctx interface{}) *FullNode_StateGetNetworkParams_Call {
+func (_e *FullNode_Expecter) StateGetNetworkParams(ctx any) *FullNode_StateGetNetworkParams_Call {
 	return &FullNode_StateGetNetworkParams_Call{Call: _e.mock.On("StateGetNetworkParams", ctx)}
 }
 
@@ -14604,7 +14673,7 @@ type FullNode_StateGetRandomnessDigestFromBeacon_Call struct {
 //   - ctx context.Context
 //   - randEpoch abi.ChainEpoch
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetRandomnessDigestFromBeacon(ctx interface{}, randEpoch interface{}, tsk interface{}) *FullNode_StateGetRandomnessDigestFromBeacon_Call {
+func (_e *FullNode_Expecter) StateGetRandomnessDigestFromBeacon(ctx any, randEpoch any, tsk any) *FullNode_StateGetRandomnessDigestFromBeacon_Call {
 	return &FullNode_StateGetRandomnessDigestFromBeacon_Call{Call: _e.mock.On("StateGetRandomnessDigestFromBeacon", ctx, randEpoch, tsk)}
 }
 
@@ -14678,7 +14747,7 @@ type FullNode_StateGetRandomnessDigestFromTickets_Call struct {
 //   - ctx context.Context
 //   - randEpoch abi.ChainEpoch
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetRandomnessDigestFromTickets(ctx interface{}, randEpoch interface{}, tsk interface{}) *FullNode_StateGetRandomnessDigestFromTickets_Call {
+func (_e *FullNode_Expecter) StateGetRandomnessDigestFromTickets(ctx any, randEpoch any, tsk any) *FullNode_StateGetRandomnessDigestFromTickets_Call {
 	return &FullNode_StateGetRandomnessDigestFromTickets_Call{Call: _e.mock.On("StateGetRandomnessDigestFromTickets", ctx, randEpoch, tsk)}
 }
 
@@ -14754,7 +14823,7 @@ type FullNode_StateGetRandomnessFromBeacon_Call struct {
 //   - randEpoch abi.ChainEpoch
 //   - entropy []byte
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetRandomnessFromBeacon(ctx interface{}, personalization interface{}, randEpoch interface{}, entropy interface{}, tsk interface{}) *FullNode_StateGetRandomnessFromBeacon_Call {
+func (_e *FullNode_Expecter) StateGetRandomnessFromBeacon(ctx any, personalization any, randEpoch any, entropy any, tsk any) *FullNode_StateGetRandomnessFromBeacon_Call {
 	return &FullNode_StateGetRandomnessFromBeacon_Call{Call: _e.mock.On("StateGetRandomnessFromBeacon", ctx, personalization, randEpoch, entropy, tsk)}
 }
 
@@ -14840,7 +14909,7 @@ type FullNode_StateGetRandomnessFromTickets_Call struct {
 //   - randEpoch abi.ChainEpoch
 //   - entropy []byte
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateGetRandomnessFromTickets(ctx interface{}, personalization interface{}, randEpoch interface{}, entropy interface{}, tsk interface{}) *FullNode_StateGetRandomnessFromTickets_Call {
+func (_e *FullNode_Expecter) StateGetRandomnessFromTickets(ctx any, personalization any, randEpoch any, entropy any, tsk any) *FullNode_StateGetRandomnessFromTickets_Call {
 	return &FullNode_StateGetRandomnessFromTickets_Call{Call: _e.mock.On("StateGetRandomnessFromTickets", ctx, personalization, randEpoch, entropy, tsk)}
 }
 
@@ -14923,7 +14992,7 @@ type FullNode_StateListActors_Call struct {
 // StateListActors is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateListActors(context1 interface{}, tipSetKey interface{}) *FullNode_StateListActors_Call {
+func (_e *FullNode_Expecter) StateListActors(context1 any, tipSetKey any) *FullNode_StateListActors_Call {
 	return &FullNode_StateListActors_Call{Call: _e.mock.On("StateListActors", context1, tipSetKey)}
 }
 
@@ -14993,7 +15062,7 @@ type FullNode_StateListMessages_Call struct {
 //   - match *api.MessageMatch
 //   - tsk types.TipSetKey
 //   - toht abi.ChainEpoch
-func (_e *FullNode_Expecter) StateListMessages(ctx interface{}, match interface{}, tsk interface{}, toht interface{}) *FullNode_StateListMessages_Call {
+func (_e *FullNode_Expecter) StateListMessages(ctx any, match any, tsk any, toht any) *FullNode_StateListMessages_Call {
 	return &FullNode_StateListMessages_Call{Call: _e.mock.On("StateListMessages", ctx, match, tsk, toht)}
 }
 
@@ -15071,7 +15140,7 @@ type FullNode_StateListMiners_Call struct {
 // StateListMiners is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateListMiners(context1 interface{}, tipSetKey interface{}) *FullNode_StateListMiners_Call {
+func (_e *FullNode_Expecter) StateListMiners(context1 any, tipSetKey any) *FullNode_StateListMiners_Call {
 	return &FullNode_StateListMiners_Call{Call: _e.mock.On("StateListMiners", context1, tipSetKey)}
 }
 
@@ -15138,7 +15207,7 @@ type FullNode_StateLookupID_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateLookupID(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateLookupID_Call {
+func (_e *FullNode_Expecter) StateLookupID(context1 any, address1 any, tipSetKey any) *FullNode_StateLookupID_Call {
 	return &FullNode_StateLookupID_Call{Call: _e.mock.On("StateLookupID", context1, address1, tipSetKey)}
 }
 
@@ -15210,7 +15279,7 @@ type FullNode_StateLookupRobustAddress_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateLookupRobustAddress(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateLookupRobustAddress_Call {
+func (_e *FullNode_Expecter) StateLookupRobustAddress(context1 any, address1 any, tipSetKey any) *FullNode_StateLookupRobustAddress_Call {
 	return &FullNode_StateLookupRobustAddress_Call{Call: _e.mock.On("StateLookupRobustAddress", context1, address1, tipSetKey)}
 }
 
@@ -15282,7 +15351,7 @@ type FullNode_StateMarketBalance_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMarketBalance(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMarketBalance_Call {
+func (_e *FullNode_Expecter) StateMarketBalance(context1 any, address1 any, tipSetKey any) *FullNode_StateMarketBalance_Call {
 	return &FullNode_StateMarketBalance_Call{Call: _e.mock.On("StateMarketBalance", context1, address1, tipSetKey)}
 }
 
@@ -15355,7 +15424,7 @@ type FullNode_StateMarketDeals_Call struct {
 // StateMarketDeals is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMarketDeals(context1 interface{}, tipSetKey interface{}) *FullNode_StateMarketDeals_Call {
+func (_e *FullNode_Expecter) StateMarketDeals(context1 any, tipSetKey any) *FullNode_StateMarketDeals_Call {
 	return &FullNode_StateMarketDeals_Call{Call: _e.mock.On("StateMarketDeals", context1, tipSetKey)}
 }
 
@@ -15423,7 +15492,7 @@ type FullNode_StateMarketParticipants_Call struct {
 // StateMarketParticipants is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMarketParticipants(context1 interface{}, tipSetKey interface{}) *FullNode_StateMarketParticipants_Call {
+func (_e *FullNode_Expecter) StateMarketParticipants(context1 any, tipSetKey any) *FullNode_StateMarketParticipants_Call {
 	return &FullNode_StateMarketParticipants_Call{Call: _e.mock.On("StateMarketParticipants", context1, tipSetKey)}
 }
 
@@ -15490,7 +15559,7 @@ type FullNode_StateMarketProposalPending_Call struct {
 //   - ctx context.Context
 //   - proposalCid cid.Cid
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateMarketProposalPending(ctx interface{}, proposalCid interface{}, tsk interface{}) *FullNode_StateMarketProposalPending_Call {
+func (_e *FullNode_Expecter) StateMarketProposalPending(ctx any, proposalCid any, tsk any) *FullNode_StateMarketProposalPending_Call {
 	return &FullNode_StateMarketProposalPending_Call{Call: _e.mock.On("StateMarketProposalPending", ctx, proposalCid, tsk)}
 }
 
@@ -15564,7 +15633,7 @@ type FullNode_StateMarketStorageDeal_Call struct {
 //   - context1 context.Context
 //   - dealID abi.DealID
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMarketStorageDeal(context1 interface{}, dealID interface{}, tipSetKey interface{}) *FullNode_StateMarketStorageDeal_Call {
+func (_e *FullNode_Expecter) StateMarketStorageDeal(context1 any, dealID any, tipSetKey any) *FullNode_StateMarketStorageDeal_Call {
 	return &FullNode_StateMarketStorageDeal_Call{Call: _e.mock.On("StateMarketStorageDeal", context1, dealID, tipSetKey)}
 }
 
@@ -15638,7 +15707,7 @@ type FullNode_StateMinerActiveSectors_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerActiveSectors(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerActiveSectors_Call {
+func (_e *FullNode_Expecter) StateMinerActiveSectors(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerActiveSectors_Call {
 	return &FullNode_StateMinerActiveSectors_Call{Call: _e.mock.On("StateMinerActiveSectors", context1, address1, tipSetKey)}
 }
 
@@ -15665,8 +15734,8 @@ func (_c *FullNode_StateMinerActiveSectors_Call) Run(run func(context1 context.C
 	return _c
 }
 
-func (_c *FullNode_StateMinerActiveSectors_Call) Return(vs []*miner.SectorOnChainInfo, err error) *FullNode_StateMinerActiveSectors_Call {
-	_c.Call.Return(vs, err)
+func (_c *FullNode_StateMinerActiveSectors_Call) Return(sectorOnChainInfos []*miner.SectorOnChainInfo, err error) *FullNode_StateMinerActiveSectors_Call {
+	_c.Call.Return(sectorOnChainInfos, err)
 	return _c
 }
 
@@ -15712,7 +15781,7 @@ type FullNode_StateMinerAllocated_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerAllocated(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerAllocated_Call {
+func (_e *FullNode_Expecter) StateMinerAllocated(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerAllocated_Call {
 	return &FullNode_StateMinerAllocated_Call{Call: _e.mock.On("StateMinerAllocated", context1, address1, tipSetKey)}
 }
 
@@ -15784,7 +15853,7 @@ type FullNode_StateMinerAvailableBalance_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerAvailableBalance(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerAvailableBalance_Call {
+func (_e *FullNode_Expecter) StateMinerAvailableBalance(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerAvailableBalance_Call {
 	return &FullNode_StateMinerAvailableBalance_Call{Call: _e.mock.On("StateMinerAvailableBalance", context1, address1, tipSetKey)}
 }
 
@@ -15811,8 +15880,8 @@ func (_c *FullNode_StateMinerAvailableBalance_Call) Run(run func(context1 contex
 	return _c
 }
 
-func (_c *FullNode_StateMinerAvailableBalance_Call) Return(v types.BigInt, err error) *FullNode_StateMinerAvailableBalance_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateMinerAvailableBalance_Call) Return(bigInt types.BigInt, err error) *FullNode_StateMinerAvailableBalance_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -15855,7 +15924,7 @@ type FullNode_StateMinerCreationDeposit_Call struct {
 // StateMinerCreationDeposit is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerCreationDeposit(ctx interface{}, tsk interface{}) *FullNode_StateMinerCreationDeposit_Call {
+func (_e *FullNode_Expecter) StateMinerCreationDeposit(ctx any, tsk any) *FullNode_StateMinerCreationDeposit_Call {
 	return &FullNode_StateMinerCreationDeposit_Call{Call: _e.mock.On("StateMinerCreationDeposit", ctx, tsk)}
 }
 
@@ -15877,8 +15946,8 @@ func (_c *FullNode_StateMinerCreationDeposit_Call) Run(run func(ctx context.Cont
 	return _c
 }
 
-func (_c *FullNode_StateMinerCreationDeposit_Call) Return(v types.BigInt, err error) *FullNode_StateMinerCreationDeposit_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateMinerCreationDeposit_Call) Return(bigInt types.BigInt, err error) *FullNode_StateMinerCreationDeposit_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -15924,7 +15993,7 @@ type FullNode_StateMinerDeadlines_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerDeadlines(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerDeadlines_Call {
+func (_e *FullNode_Expecter) StateMinerDeadlines(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerDeadlines_Call {
 	return &FullNode_StateMinerDeadlines_Call{Call: _e.mock.On("StateMinerDeadlines", context1, address1, tipSetKey)}
 }
 
@@ -15996,7 +16065,7 @@ type FullNode_StateMinerFaults_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerFaults(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerFaults_Call {
+func (_e *FullNode_Expecter) StateMinerFaults(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerFaults_Call {
 	return &FullNode_StateMinerFaults_Call{Call: _e.mock.On("StateMinerFaults", context1, address1, tipSetKey)}
 }
 
@@ -16068,7 +16137,7 @@ type FullNode_StateMinerInfo_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerInfo(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerInfo_Call {
+func (_e *FullNode_Expecter) StateMinerInfo(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerInfo_Call {
 	return &FullNode_StateMinerInfo_Call{Call: _e.mock.On("StateMinerInfo", context1, address1, tipSetKey)}
 }
 
@@ -16106,8 +16175,8 @@ func (_c *FullNode_StateMinerInfo_Call) RunAndReturn(run func(context1 context.C
 }
 
 // StateMinerInitialPledgeCollateral provides a mock function for the type FullNode
-func (_mock *FullNode) StateMinerInitialPledgeCollateral(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error) {
-	ret := _mock.Called(context1, address1, v, tipSetKey)
+func (_mock *FullNode) StateMinerInitialPledgeCollateral(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error) {
+	ret := _mock.Called(context1, address1, sectorPreCommitInfo, tipSetKey)
 
 	if len(ret) == 0 {
 		panic("no return value specified for StateMinerInitialPledgeCollateral")
@@ -16116,15 +16185,15 @@ func (_mock *FullNode) StateMinerInitialPledgeCollateral(context1 context.Contex
 	var r0 types.BigInt
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) (types.BigInt, error)); ok {
-		return returnFunc(context1, address1, v, tipSetKey)
+		return returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) types.BigInt); ok {
-		r0 = returnFunc(context1, address1, v, tipSetKey)
+		r0 = returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	} else {
 		r0 = ret.Get(0).(types.BigInt)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) error); ok {
-		r1 = returnFunc(context1, address1, v, tipSetKey)
+		r1 = returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -16139,13 +16208,13 @@ type FullNode_StateMinerInitialPledgeCollateral_Call struct {
 // StateMinerInitialPledgeCollateral is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-//   - v miner.SectorPreCommitInfo
+//   - sectorPreCommitInfo miner.SectorPreCommitInfo
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerInitialPledgeCollateral(context1 interface{}, address1 interface{}, v interface{}, tipSetKey interface{}) *FullNode_StateMinerInitialPledgeCollateral_Call {
-	return &FullNode_StateMinerInitialPledgeCollateral_Call{Call: _e.mock.On("StateMinerInitialPledgeCollateral", context1, address1, v, tipSetKey)}
+func (_e *FullNode_Expecter) StateMinerInitialPledgeCollateral(context1 any, address1 any, sectorPreCommitInfo any, tipSetKey any) *FullNode_StateMinerInitialPledgeCollateral_Call {
+	return &FullNode_StateMinerInitialPledgeCollateral_Call{Call: _e.mock.On("StateMinerInitialPledgeCollateral", context1, address1, sectorPreCommitInfo, tipSetKey)}
 }
 
-func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) Run(run func(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey)) *FullNode_StateMinerInitialPledgeCollateral_Call {
+func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) Run(run func(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey)) *FullNode_StateMinerInitialPledgeCollateral_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -16173,12 +16242,12 @@ func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) Run(run func(context1
 	return _c
 }
 
-func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) Return(v1 types.BigInt, err error) *FullNode_StateMinerInitialPledgeCollateral_Call {
-	_c.Call.Return(v1, err)
+func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) Return(bigInt types.BigInt, err error) *FullNode_StateMinerInitialPledgeCollateral_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
-func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error)) *FullNode_StateMinerInitialPledgeCollateral_Call {
+func (_c *FullNode_StateMinerInitialPledgeCollateral_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error)) *FullNode_StateMinerInitialPledgeCollateral_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -16220,7 +16289,7 @@ type FullNode_StateMinerInitialPledgeForSector_Call struct {
 //   - sectorSize abi.SectorSize
 //   - verifiedSize uint64
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerInitialPledgeForSector(ctx interface{}, sectorDuration interface{}, sectorSize interface{}, verifiedSize interface{}, tsk interface{}) *FullNode_StateMinerInitialPledgeForSector_Call {
+func (_e *FullNode_Expecter) StateMinerInitialPledgeForSector(ctx any, sectorDuration any, sectorSize any, verifiedSize any, tsk any) *FullNode_StateMinerInitialPledgeForSector_Call {
 	return &FullNode_StateMinerInitialPledgeForSector_Call{Call: _e.mock.On("StateMinerInitialPledgeForSector", ctx, sectorDuration, sectorSize, verifiedSize, tsk)}
 }
 
@@ -16257,8 +16326,8 @@ func (_c *FullNode_StateMinerInitialPledgeForSector_Call) Run(run func(ctx conte
 	return _c
 }
 
-func (_c *FullNode_StateMinerInitialPledgeForSector_Call) Return(v types.BigInt, err error) *FullNode_StateMinerInitialPledgeForSector_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateMinerInitialPledgeForSector_Call) Return(bigInt types.BigInt, err error) *FullNode_StateMinerInitialPledgeForSector_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -16305,7 +16374,7 @@ type FullNode_StateMinerPartitions_Call struct {
 //   - m address.Address
 //   - dlIdx uint64
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerPartitions(ctx interface{}, m interface{}, dlIdx interface{}, tsk interface{}) *FullNode_StateMinerPartitions_Call {
+func (_e *FullNode_Expecter) StateMinerPartitions(ctx any, m any, dlIdx any, tsk any) *FullNode_StateMinerPartitions_Call {
 	return &FullNode_StateMinerPartitions_Call{Call: _e.mock.On("StateMinerPartitions", ctx, m, dlIdx, tsk)}
 }
 
@@ -16384,7 +16453,7 @@ type FullNode_StateMinerPower_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerPower(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerPower_Call {
+func (_e *FullNode_Expecter) StateMinerPower(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerPower_Call {
 	return &FullNode_StateMinerPower_Call{Call: _e.mock.On("StateMinerPower", context1, address1, tipSetKey)}
 }
 
@@ -16422,8 +16491,8 @@ func (_c *FullNode_StateMinerPower_Call) RunAndReturn(run func(context1 context.
 }
 
 // StateMinerPreCommitDepositForPower provides a mock function for the type FullNode
-func (_mock *FullNode) StateMinerPreCommitDepositForPower(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error) {
-	ret := _mock.Called(context1, address1, v, tipSetKey)
+func (_mock *FullNode) StateMinerPreCommitDepositForPower(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error) {
+	ret := _mock.Called(context1, address1, sectorPreCommitInfo, tipSetKey)
 
 	if len(ret) == 0 {
 		panic("no return value specified for StateMinerPreCommitDepositForPower")
@@ -16432,15 +16501,15 @@ func (_mock *FullNode) StateMinerPreCommitDepositForPower(context1 context.Conte
 	var r0 types.BigInt
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) (types.BigInt, error)); ok {
-		return returnFunc(context1, address1, v, tipSetKey)
+		return returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) types.BigInt); ok {
-		r0 = returnFunc(context1, address1, v, tipSetKey)
+		r0 = returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	} else {
 		r0 = ret.Get(0).(types.BigInt)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, address.Address, miner.SectorPreCommitInfo, types.TipSetKey) error); ok {
-		r1 = returnFunc(context1, address1, v, tipSetKey)
+		r1 = returnFunc(context1, address1, sectorPreCommitInfo, tipSetKey)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -16455,13 +16524,13 @@ type FullNode_StateMinerPreCommitDepositForPower_Call struct {
 // StateMinerPreCommitDepositForPower is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-//   - v miner.SectorPreCommitInfo
+//   - sectorPreCommitInfo miner.SectorPreCommitInfo
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerPreCommitDepositForPower(context1 interface{}, address1 interface{}, v interface{}, tipSetKey interface{}) *FullNode_StateMinerPreCommitDepositForPower_Call {
-	return &FullNode_StateMinerPreCommitDepositForPower_Call{Call: _e.mock.On("StateMinerPreCommitDepositForPower", context1, address1, v, tipSetKey)}
+func (_e *FullNode_Expecter) StateMinerPreCommitDepositForPower(context1 any, address1 any, sectorPreCommitInfo any, tipSetKey any) *FullNode_StateMinerPreCommitDepositForPower_Call {
+	return &FullNode_StateMinerPreCommitDepositForPower_Call{Call: _e.mock.On("StateMinerPreCommitDepositForPower", context1, address1, sectorPreCommitInfo, tipSetKey)}
 }
 
-func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) Run(run func(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey)) *FullNode_StateMinerPreCommitDepositForPower_Call {
+func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) Run(run func(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey)) *FullNode_StateMinerPreCommitDepositForPower_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -16489,12 +16558,12 @@ func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) Run(run func(context
 	return _c
 }
 
-func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) Return(v1 types.BigInt, err error) *FullNode_StateMinerPreCommitDepositForPower_Call {
-	_c.Call.Return(v1, err)
+func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) Return(bigInt types.BigInt, err error) *FullNode_StateMinerPreCommitDepositForPower_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
-func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, v miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error)) *FullNode_StateMinerPreCommitDepositForPower_Call {
+func (_c *FullNode_StateMinerPreCommitDepositForPower_Call) RunAndReturn(run func(context1 context.Context, address1 address.Address, sectorPreCommitInfo miner.SectorPreCommitInfo, tipSetKey types.TipSetKey) (types.BigInt, error)) *FullNode_StateMinerPreCommitDepositForPower_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -16536,7 +16605,7 @@ type FullNode_StateMinerProvingDeadline_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerProvingDeadline(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerProvingDeadline_Call {
+func (_e *FullNode_Expecter) StateMinerProvingDeadline(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerProvingDeadline_Call {
 	return &FullNode_StateMinerProvingDeadline_Call{Call: _e.mock.On("StateMinerProvingDeadline", context1, address1, tipSetKey)}
 }
 
@@ -16608,7 +16677,7 @@ type FullNode_StateMinerRecoveries_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerRecoveries(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerRecoveries_Call {
+func (_e *FullNode_Expecter) StateMinerRecoveries(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerRecoveries_Call {
 	return &FullNode_StateMinerRecoveries_Call{Call: _e.mock.On("StateMinerRecoveries", context1, address1, tipSetKey)}
 }
 
@@ -16681,7 +16750,7 @@ type FullNode_StateMinerSectorAllocated_Call struct {
 //   - address1 address.Address
 //   - sectorNumber abi.SectorNumber
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerSectorAllocated(context1 interface{}, address1 interface{}, sectorNumber interface{}, tipSetKey interface{}) *FullNode_StateMinerSectorAllocated_Call {
+func (_e *FullNode_Expecter) StateMinerSectorAllocated(context1 any, address1 any, sectorNumber any, tipSetKey any) *FullNode_StateMinerSectorAllocated_Call {
 	return &FullNode_StateMinerSectorAllocated_Call{Call: _e.mock.On("StateMinerSectorAllocated", context1, address1, sectorNumber, tipSetKey)}
 }
 
@@ -16758,7 +16827,7 @@ type FullNode_StateMinerSectorCount_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerSectorCount(context1 interface{}, address1 interface{}, tipSetKey interface{}) *FullNode_StateMinerSectorCount_Call {
+func (_e *FullNode_Expecter) StateMinerSectorCount(context1 any, address1 any, tipSetKey any) *FullNode_StateMinerSectorCount_Call {
 	return &FullNode_StateMinerSectorCount_Call{Call: _e.mock.On("StateMinerSectorCount", context1, address1, tipSetKey)}
 }
 
@@ -16833,7 +16902,7 @@ type FullNode_StateMinerSectors_Call struct {
 //   - address1 address.Address
 //   - bitField *bitfield.BitField
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateMinerSectors(context1 interface{}, address1 interface{}, bitField interface{}, tipSetKey interface{}) *FullNode_StateMinerSectors_Call {
+func (_e *FullNode_Expecter) StateMinerSectors(context1 any, address1 any, bitField any, tipSetKey any) *FullNode_StateMinerSectors_Call {
 	return &FullNode_StateMinerSectors_Call{Call: _e.mock.On("StateMinerSectors", context1, address1, bitField, tipSetKey)}
 }
 
@@ -16865,8 +16934,8 @@ func (_c *FullNode_StateMinerSectors_Call) Run(run func(context1 context.Context
 	return _c
 }
 
-func (_c *FullNode_StateMinerSectors_Call) Return(vs []*miner.SectorOnChainInfo, err error) *FullNode_StateMinerSectors_Call {
-	_c.Call.Return(vs, err)
+func (_c *FullNode_StateMinerSectors_Call) Return(sectorOnChainInfos []*miner.SectorOnChainInfo, err error) *FullNode_StateMinerSectors_Call {
+	_c.Call.Return(sectorOnChainInfos, err)
 	return _c
 }
 
@@ -16908,7 +16977,7 @@ type FullNode_StateNetworkName_Call struct {
 
 // StateNetworkName is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) StateNetworkName(context1 interface{}) *FullNode_StateNetworkName_Call {
+func (_e *FullNode_Expecter) StateNetworkName(context1 any) *FullNode_StateNetworkName_Call {
 	return &FullNode_StateNetworkName_Call{Call: _e.mock.On("StateNetworkName", context1)}
 }
 
@@ -16969,7 +17038,7 @@ type FullNode_StateNetworkVersion_Call struct {
 // StateNetworkVersion is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateNetworkVersion(context1 interface{}, tipSetKey interface{}) *FullNode_StateNetworkVersion_Call {
+func (_e *FullNode_Expecter) StateNetworkVersion(context1 any, tipSetKey any) *FullNode_StateNetworkVersion_Call {
 	return &FullNode_StateNetworkVersion_Call{Call: _e.mock.On("StateNetworkVersion", context1, tipSetKey)}
 }
 
@@ -16991,8 +17060,8 @@ func (_c *FullNode_StateNetworkVersion_Call) Run(run func(context1 context.Conte
 	return _c
 }
 
-func (_c *FullNode_StateNetworkVersion_Call) Return(v apitypes.NetworkVersion, err error) *FullNode_StateNetworkVersion_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateNetworkVersion_Call) Return(networkVersion apitypes.NetworkVersion, err error) *FullNode_StateNetworkVersion_Call {
+	_c.Call.Return(networkVersion, err)
 	return _c
 }
 
@@ -17038,7 +17107,7 @@ type FullNode_StateReadState_Call struct {
 //   - ctx context.Context
 //   - actor address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateReadState(ctx interface{}, actor interface{}, tsk interface{}) *FullNode_StateReadState_Call {
+func (_e *FullNode_Expecter) StateReadState(ctx any, actor any, tsk any) *FullNode_StateReadState_Call {
 	return &FullNode_StateReadState_Call{Call: _e.mock.On("StateReadState", ctx, actor, tsk)}
 }
 
@@ -17112,7 +17181,7 @@ type FullNode_StateReplay_Call struct {
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
 //   - cid1 cid.Cid
-func (_e *FullNode_Expecter) StateReplay(context1 interface{}, tipSetKey interface{}, cid1 interface{}) *FullNode_StateReplay_Call {
+func (_e *FullNode_Expecter) StateReplay(context1 any, tipSetKey any, cid1 any) *FullNode_StateReplay_Call {
 	return &FullNode_StateReplay_Call{Call: _e.mock.On("StateReplay", context1, tipSetKey, cid1)}
 }
 
@@ -17188,7 +17257,7 @@ type FullNode_StateSearchMsg_Call struct {
 //   - msg cid.Cid
 //   - limit abi.ChainEpoch
 //   - allowReplaced bool
-func (_e *FullNode_Expecter) StateSearchMsg(ctx interface{}, from interface{}, msg interface{}, limit interface{}, allowReplaced interface{}) *FullNode_StateSearchMsg_Call {
+func (_e *FullNode_Expecter) StateSearchMsg(ctx any, from any, msg any, limit any, allowReplaced any) *FullNode_StateSearchMsg_Call {
 	return &FullNode_StateSearchMsg_Call{Call: _e.mock.On("StateSearchMsg", ctx, from, msg, limit, allowReplaced)}
 }
 
@@ -17273,7 +17342,7 @@ type FullNode_StateSectorExpiration_Call struct {
 //   - address1 address.Address
 //   - sectorNumber abi.SectorNumber
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateSectorExpiration(context1 interface{}, address1 interface{}, sectorNumber interface{}, tipSetKey interface{}) *FullNode_StateSectorExpiration_Call {
+func (_e *FullNode_Expecter) StateSectorExpiration(context1 any, address1 any, sectorNumber any, tipSetKey any) *FullNode_StateSectorExpiration_Call {
 	return &FullNode_StateSectorExpiration_Call{Call: _e.mock.On("StateSectorExpiration", context1, address1, sectorNumber, tipSetKey)}
 }
 
@@ -17353,7 +17422,7 @@ type FullNode_StateSectorGetInfo_Call struct {
 //   - address1 address.Address
 //   - sectorNumber abi.SectorNumber
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateSectorGetInfo(context1 interface{}, address1 interface{}, sectorNumber interface{}, tipSetKey interface{}) *FullNode_StateSectorGetInfo_Call {
+func (_e *FullNode_Expecter) StateSectorGetInfo(context1 any, address1 any, sectorNumber any, tipSetKey any) *FullNode_StateSectorGetInfo_Call {
 	return &FullNode_StateSectorGetInfo_Call{Call: _e.mock.On("StateSectorGetInfo", context1, address1, sectorNumber, tipSetKey)}
 }
 
@@ -17385,8 +17454,8 @@ func (_c *FullNode_StateSectorGetInfo_Call) Run(run func(context1 context.Contex
 	return _c
 }
 
-func (_c *FullNode_StateSectorGetInfo_Call) Return(v *miner.SectorOnChainInfo, err error) *FullNode_StateSectorGetInfo_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateSectorGetInfo_Call) Return(sectorOnChainInfo *miner.SectorOnChainInfo, err error) *FullNode_StateSectorGetInfo_Call {
+	_c.Call.Return(sectorOnChainInfo, err)
 	return _c
 }
 
@@ -17433,7 +17502,7 @@ type FullNode_StateSectorPartition_Call struct {
 //   - maddr address.Address
 //   - sectorNumber abi.SectorNumber
 //   - tok types.TipSetKey
-func (_e *FullNode_Expecter) StateSectorPartition(ctx interface{}, maddr interface{}, sectorNumber interface{}, tok interface{}) *FullNode_StateSectorPartition_Call {
+func (_e *FullNode_Expecter) StateSectorPartition(ctx any, maddr any, sectorNumber any, tok any) *FullNode_StateSectorPartition_Call {
 	return &FullNode_StateSectorPartition_Call{Call: _e.mock.On("StateSectorPartition", ctx, maddr, sectorNumber, tok)}
 }
 
@@ -17513,7 +17582,7 @@ type FullNode_StateSectorPreCommitInfo_Call struct {
 //   - address1 address.Address
 //   - sectorNumber abi.SectorNumber
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateSectorPreCommitInfo(context1 interface{}, address1 interface{}, sectorNumber interface{}, tipSetKey interface{}) *FullNode_StateSectorPreCommitInfo_Call {
+func (_e *FullNode_Expecter) StateSectorPreCommitInfo(context1 any, address1 any, sectorNumber any, tipSetKey any) *FullNode_StateSectorPreCommitInfo_Call {
 	return &FullNode_StateSectorPreCommitInfo_Call{Call: _e.mock.On("StateSectorPreCommitInfo", context1, address1, sectorNumber, tipSetKey)}
 }
 
@@ -17545,8 +17614,8 @@ func (_c *FullNode_StateSectorPreCommitInfo_Call) Run(run func(context1 context.
 	return _c
 }
 
-func (_c *FullNode_StateSectorPreCommitInfo_Call) Return(v *miner.SectorPreCommitOnChainInfo, err error) *FullNode_StateSectorPreCommitInfo_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateSectorPreCommitInfo_Call) Return(sectorPreCommitOnChainInfo *miner.SectorPreCommitOnChainInfo, err error) *FullNode_StateSectorPreCommitInfo_Call {
+	_c.Call.Return(sectorPreCommitOnChainInfo, err)
 	return _c
 }
 
@@ -17589,7 +17658,7 @@ type FullNode_StateVMCirculatingSupplyInternal_Call struct {
 // StateVMCirculatingSupplyInternal is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tipSetKey types.TipSetKey
-func (_e *FullNode_Expecter) StateVMCirculatingSupplyInternal(context1 interface{}, tipSetKey interface{}) *FullNode_StateVMCirculatingSupplyInternal_Call {
+func (_e *FullNode_Expecter) StateVMCirculatingSupplyInternal(context1 any, tipSetKey any) *FullNode_StateVMCirculatingSupplyInternal_Call {
 	return &FullNode_StateVMCirculatingSupplyInternal_Call{Call: _e.mock.On("StateVMCirculatingSupplyInternal", context1, tipSetKey)}
 }
 
@@ -17658,7 +17727,7 @@ type FullNode_StateVerifiedClientStatus_Call struct {
 //   - ctx context.Context
 //   - addr address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateVerifiedClientStatus(ctx interface{}, addr interface{}, tsk interface{}) *FullNode_StateVerifiedClientStatus_Call {
+func (_e *FullNode_Expecter) StateVerifiedClientStatus(ctx any, addr any, tsk any) *FullNode_StateVerifiedClientStatus_Call {
 	return &FullNode_StateVerifiedClientStatus_Call{Call: _e.mock.On("StateVerifiedClientStatus", ctx, addr, tsk)}
 }
 
@@ -17685,8 +17754,8 @@ func (_c *FullNode_StateVerifiedClientStatus_Call) Run(run func(ctx context.Cont
 	return _c
 }
 
-func (_c *FullNode_StateVerifiedClientStatus_Call) Return(v *abi.StoragePower, err error) *FullNode_StateVerifiedClientStatus_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateVerifiedClientStatus_Call) Return(storagePower *abi.StoragePower, err error) *FullNode_StateVerifiedClientStatus_Call {
+	_c.Call.Return(storagePower, err)
 	return _c
 }
 
@@ -17729,7 +17798,7 @@ type FullNode_StateVerifiedRegistryRootKey_Call struct {
 // StateVerifiedRegistryRootKey is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateVerifiedRegistryRootKey(ctx interface{}, tsk interface{}) *FullNode_StateVerifiedRegistryRootKey_Call {
+func (_e *FullNode_Expecter) StateVerifiedRegistryRootKey(ctx any, tsk any) *FullNode_StateVerifiedRegistryRootKey_Call {
 	return &FullNode_StateVerifiedRegistryRootKey_Call{Call: _e.mock.On("StateVerifiedRegistryRootKey", ctx, tsk)}
 }
 
@@ -17798,7 +17867,7 @@ type FullNode_StateVerifierStatus_Call struct {
 //   - ctx context.Context
 //   - addr address.Address
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) StateVerifierStatus(ctx interface{}, addr interface{}, tsk interface{}) *FullNode_StateVerifierStatus_Call {
+func (_e *FullNode_Expecter) StateVerifierStatus(ctx any, addr any, tsk any) *FullNode_StateVerifierStatus_Call {
 	return &FullNode_StateVerifierStatus_Call{Call: _e.mock.On("StateVerifierStatus", ctx, addr, tsk)}
 }
 
@@ -17825,8 +17894,8 @@ func (_c *FullNode_StateVerifierStatus_Call) Run(run func(ctx context.Context, a
 	return _c
 }
 
-func (_c *FullNode_StateVerifierStatus_Call) Return(v *abi.StoragePower, err error) *FullNode_StateVerifierStatus_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_StateVerifierStatus_Call) Return(storagePower *abi.StoragePower, err error) *FullNode_StateVerifierStatus_Call {
+	_c.Call.Return(storagePower, err)
 	return _c
 }
 
@@ -17874,7 +17943,7 @@ type FullNode_StateWaitMsg_Call struct {
 //   - confidence uint64
 //   - limit abi.ChainEpoch
 //   - allowReplaced bool
-func (_e *FullNode_Expecter) StateWaitMsg(ctx interface{}, cid1 interface{}, confidence interface{}, limit interface{}, allowReplaced interface{}) *FullNode_StateWaitMsg_Call {
+func (_e *FullNode_Expecter) StateWaitMsg(ctx any, cid1 any, confidence any, limit any, allowReplaced any) *FullNode_StateWaitMsg_Call {
 	return &FullNode_StateWaitMsg_Call{Call: _e.mock.On("StateWaitMsg", ctx, cid1, confidence, limit, allowReplaced)}
 }
 
@@ -17957,7 +18026,7 @@ type FullNode_SubscribeActorEventsRaw_Call struct {
 // SubscribeActorEventsRaw is a helper method to define mock.On call
 //   - ctx context.Context
 //   - filter *types.ActorEventFilter
-func (_e *FullNode_Expecter) SubscribeActorEventsRaw(ctx interface{}, filter interface{}) *FullNode_SubscribeActorEventsRaw_Call {
+func (_e *FullNode_Expecter) SubscribeActorEventsRaw(ctx any, filter any) *FullNode_SubscribeActorEventsRaw_Call {
 	return &FullNode_SubscribeActorEventsRaw_Call{Call: _e.mock.On("SubscribeActorEventsRaw", ctx, filter)}
 }
 
@@ -18023,7 +18092,7 @@ type FullNode_SyncCheckBad_Call struct {
 // SyncCheckBad is a helper method to define mock.On call
 //   - ctx context.Context
 //   - bcid cid.Cid
-func (_e *FullNode_Expecter) SyncCheckBad(ctx interface{}, bcid interface{}) *FullNode_SyncCheckBad_Call {
+func (_e *FullNode_Expecter) SyncCheckBad(ctx any, bcid any) *FullNode_SyncCheckBad_Call {
 	return &FullNode_SyncCheckBad_Call{Call: _e.mock.On("SyncCheckBad", ctx, bcid)}
 }
 
@@ -18080,7 +18149,7 @@ type FullNode_SyncCheckpoint_Call struct {
 // SyncCheckpoint is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) SyncCheckpoint(ctx interface{}, tsk interface{}) *FullNode_SyncCheckpoint_Call {
+func (_e *FullNode_Expecter) SyncCheckpoint(ctx any, tsk any) *FullNode_SyncCheckpoint_Call {
 	return &FullNode_SyncCheckpoint_Call{Call: _e.mock.On("SyncCheckpoint", ctx, tsk)}
 }
 
@@ -18147,7 +18216,7 @@ type FullNode_SyncIncomingBlocks_Call struct {
 
 // SyncIncomingBlocks is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) SyncIncomingBlocks(ctx interface{}) *FullNode_SyncIncomingBlocks_Call {
+func (_e *FullNode_Expecter) SyncIncomingBlocks(ctx any) *FullNode_SyncIncomingBlocks_Call {
 	return &FullNode_SyncIncomingBlocks_Call{Call: _e.mock.On("SyncIncomingBlocks", ctx)}
 }
 
@@ -18199,7 +18268,7 @@ type FullNode_SyncMarkBad_Call struct {
 // SyncMarkBad is a helper method to define mock.On call
 //   - ctx context.Context
 //   - bcid cid.Cid
-func (_e *FullNode_Expecter) SyncMarkBad(ctx interface{}, bcid interface{}) *FullNode_SyncMarkBad_Call {
+func (_e *FullNode_Expecter) SyncMarkBad(ctx any, bcid any) *FullNode_SyncMarkBad_Call {
 	return &FullNode_SyncMarkBad_Call{Call: _e.mock.On("SyncMarkBad", ctx, bcid)}
 }
 
@@ -18266,7 +18335,7 @@ type FullNode_SyncState_Call struct {
 
 // SyncState is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) SyncState(context1 interface{}) *FullNode_SyncState_Call {
+func (_e *FullNode_Expecter) SyncState(context1 any) *FullNode_SyncState_Call {
 	return &FullNode_SyncState_Call{Call: _e.mock.On("SyncState", context1)}
 }
 
@@ -18318,7 +18387,7 @@ type FullNode_SyncSubmitBlock_Call struct {
 // SyncSubmitBlock is a helper method to define mock.On call
 //   - ctx context.Context
 //   - blk *types.BlockMsg
-func (_e *FullNode_Expecter) SyncSubmitBlock(ctx interface{}, blk interface{}) *FullNode_SyncSubmitBlock_Call {
+func (_e *FullNode_Expecter) SyncSubmitBlock(ctx any, blk any) *FullNode_SyncSubmitBlock_Call {
 	return &FullNode_SyncSubmitBlock_Call{Call: _e.mock.On("SyncSubmitBlock", ctx, blk)}
 }
 
@@ -18374,7 +18443,7 @@ type FullNode_SyncUnmarkAllBad_Call struct {
 
 // SyncUnmarkAllBad is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) SyncUnmarkAllBad(ctx interface{}) *FullNode_SyncUnmarkAllBad_Call {
+func (_e *FullNode_Expecter) SyncUnmarkAllBad(ctx any) *FullNode_SyncUnmarkAllBad_Call {
 	return &FullNode_SyncUnmarkAllBad_Call{Call: _e.mock.On("SyncUnmarkAllBad", ctx)}
 }
 
@@ -18426,7 +18495,7 @@ type FullNode_SyncUnmarkBad_Call struct {
 // SyncUnmarkBad is a helper method to define mock.On call
 //   - ctx context.Context
 //   - bcid cid.Cid
-func (_e *FullNode_Expecter) SyncUnmarkBad(ctx interface{}, bcid interface{}) *FullNode_SyncUnmarkBad_Call {
+func (_e *FullNode_Expecter) SyncUnmarkBad(ctx any, bcid any) *FullNode_SyncUnmarkBad_Call {
 	return &FullNode_SyncUnmarkBad_Call{Call: _e.mock.On("SyncUnmarkBad", ctx, bcid)}
 }
 
@@ -18492,7 +18561,7 @@ type FullNode_SyncValidateTipset_Call struct {
 // SyncValidateTipset is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tsk types.TipSetKey
-func (_e *FullNode_Expecter) SyncValidateTipset(ctx interface{}, tsk interface{}) *FullNode_SyncValidateTipset_Call {
+func (_e *FullNode_Expecter) SyncValidateTipset(ctx any, tsk any) *FullNode_SyncValidateTipset_Call {
 	return &FullNode_SyncValidateTipset_Call{Call: _e.mock.On("SyncValidateTipset", ctx, tsk)}
 }
 
@@ -18557,7 +18626,7 @@ type FullNode_Version_Call struct {
 
 // Version is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) Version(context1 interface{}) *FullNode_Version_Call {
+func (_e *FullNode_Expecter) Version(context1 any) *FullNode_Version_Call {
 	return &FullNode_Version_Call{Call: _e.mock.On("Version", context1)}
 }
 
@@ -18618,7 +18687,7 @@ type FullNode_WalletBalance_Call struct {
 // WalletBalance is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) WalletBalance(context1 interface{}, address1 interface{}) *FullNode_WalletBalance_Call {
+func (_e *FullNode_Expecter) WalletBalance(context1 any, address1 any) *FullNode_WalletBalance_Call {
 	return &FullNode_WalletBalance_Call{Call: _e.mock.On("WalletBalance", context1, address1)}
 }
 
@@ -18640,8 +18709,8 @@ func (_c *FullNode_WalletBalance_Call) Run(run func(context1 context.Context, ad
 	return _c
 }
 
-func (_c *FullNode_WalletBalance_Call) Return(v types.BigInt, err error) *FullNode_WalletBalance_Call {
-	_c.Call.Return(v, err)
+func (_c *FullNode_WalletBalance_Call) Return(bigInt types.BigInt, err error) *FullNode_WalletBalance_Call {
+	_c.Call.Return(bigInt, err)
 	return _c
 }
 
@@ -18683,7 +18752,7 @@ type FullNode_WalletDefaultAddress_Call struct {
 
 // WalletDefaultAddress is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) WalletDefaultAddress(context1 interface{}) *FullNode_WalletDefaultAddress_Call {
+func (_e *FullNode_Expecter) WalletDefaultAddress(context1 any) *FullNode_WalletDefaultAddress_Call {
 	return &FullNode_WalletDefaultAddress_Call{Call: _e.mock.On("WalletDefaultAddress", context1)}
 }
 
@@ -18735,7 +18804,7 @@ type FullNode_WalletDelete_Call struct {
 // WalletDelete is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) WalletDelete(context1 interface{}, address1 interface{}) *FullNode_WalletDelete_Call {
+func (_e *FullNode_Expecter) WalletDelete(context1 any, address1 any) *FullNode_WalletDelete_Call {
 	return &FullNode_WalletDelete_Call{Call: _e.mock.On("WalletDelete", context1, address1)}
 }
 
@@ -18803,7 +18872,7 @@ type FullNode_WalletExport_Call struct {
 // WalletExport is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) WalletExport(context1 interface{}, address1 interface{}) *FullNode_WalletExport_Call {
+func (_e *FullNode_Expecter) WalletExport(context1 any, address1 any) *FullNode_WalletExport_Call {
 	return &FullNode_WalletExport_Call{Call: _e.mock.On("WalletExport", context1, address1)}
 }
 
@@ -18869,7 +18938,7 @@ type FullNode_WalletHas_Call struct {
 // WalletHas is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) WalletHas(context1 interface{}, address1 interface{}) *FullNode_WalletHas_Call {
+func (_e *FullNode_Expecter) WalletHas(context1 any, address1 any) *FullNode_WalletHas_Call {
 	return &FullNode_WalletHas_Call{Call: _e.mock.On("WalletHas", context1, address1)}
 }
 
@@ -18935,7 +19004,7 @@ type FullNode_WalletImport_Call struct {
 // WalletImport is a helper method to define mock.On call
 //   - context1 context.Context
 //   - keyInfo *types.KeyInfo
-func (_e *FullNode_Expecter) WalletImport(context1 interface{}, keyInfo interface{}) *FullNode_WalletImport_Call {
+func (_e *FullNode_Expecter) WalletImport(context1 any, keyInfo any) *FullNode_WalletImport_Call {
 	return &FullNode_WalletImport_Call{Call: _e.mock.On("WalletImport", context1, keyInfo)}
 }
 
@@ -19002,7 +19071,7 @@ type FullNode_WalletList_Call struct {
 
 // WalletList is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *FullNode_Expecter) WalletList(context1 interface{}) *FullNode_WalletList_Call {
+func (_e *FullNode_Expecter) WalletList(context1 any) *FullNode_WalletList_Call {
 	return &FullNode_WalletList_Call{Call: _e.mock.On("WalletList", context1)}
 }
 
@@ -19063,7 +19132,7 @@ type FullNode_WalletNew_Call struct {
 // WalletNew is a helper method to define mock.On call
 //   - context1 context.Context
 //   - keyType types.KeyType
-func (_e *FullNode_Expecter) WalletNew(context1 interface{}, keyType interface{}) *FullNode_WalletNew_Call {
+func (_e *FullNode_Expecter) WalletNew(context1 any, keyType any) *FullNode_WalletNew_Call {
 	return &FullNode_WalletNew_Call{Call: _e.mock.On("WalletNew", context1, keyType)}
 }
 
@@ -19120,7 +19189,7 @@ type FullNode_WalletSetDefault_Call struct {
 // WalletSetDefault is a helper method to define mock.On call
 //   - context1 context.Context
 //   - address1 address.Address
-func (_e *FullNode_Expecter) WalletSetDefault(context1 interface{}, address1 interface{}) *FullNode_WalletSetDefault_Call {
+func (_e *FullNode_Expecter) WalletSetDefault(context1 any, address1 any) *FullNode_WalletSetDefault_Call {
 	return &FullNode_WalletSetDefault_Call{Call: _e.mock.On("WalletSetDefault", context1, address1)}
 }
 
@@ -19189,7 +19258,7 @@ type FullNode_WalletSign_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - bytes []byte
-func (_e *FullNode_Expecter) WalletSign(context1 interface{}, address1 interface{}, bytes interface{}) *FullNode_WalletSign_Call {
+func (_e *FullNode_Expecter) WalletSign(context1 any, address1 any, bytes any) *FullNode_WalletSign_Call {
 	return &FullNode_WalletSign_Call{Call: _e.mock.On("WalletSign", context1, address1, bytes)}
 }
 
@@ -19263,7 +19332,7 @@ type FullNode_WalletSignMessage_Call struct {
 //   - context1 context.Context
 //   - address1 address.Address
 //   - message *types.Message
-func (_e *FullNode_Expecter) WalletSignMessage(context1 interface{}, address1 interface{}, message interface{}) *FullNode_WalletSignMessage_Call {
+func (_e *FullNode_Expecter) WalletSignMessage(context1 any, address1 any, message any) *FullNode_WalletSignMessage_Call {
 	return &FullNode_WalletSignMessage_Call{Call: _e.mock.On("WalletSignMessage", context1, address1, message)}
 }
 
@@ -19334,7 +19403,7 @@ type FullNode_WalletValidateAddress_Call struct {
 // WalletValidateAddress is a helper method to define mock.On call
 //   - context1 context.Context
 //   - s string
-func (_e *FullNode_Expecter) WalletValidateAddress(context1 interface{}, s interface{}) *FullNode_WalletValidateAddress_Call {
+func (_e *FullNode_Expecter) WalletValidateAddress(context1 any, s any) *FullNode_WalletValidateAddress_Call {
 	return &FullNode_WalletValidateAddress_Call{Call: _e.mock.On("WalletValidateAddress", context1, s)}
 }
 
@@ -19402,7 +19471,7 @@ type FullNode_WalletVerify_Call struct {
 //   - address1 address.Address
 //   - bytes []byte
 //   - signature *crypto.Signature
-func (_e *FullNode_Expecter) WalletVerify(context1 interface{}, address1 interface{}, bytes interface{}, signature interface{}) *FullNode_WalletVerify_Call {
+func (_e *FullNode_Expecter) WalletVerify(context1 any, address1 any, bytes any, signature any) *FullNode_WalletVerify_Call {
 	return &FullNode_WalletVerify_Call{Call: _e.mock.On("WalletVerify", context1, address1, bytes, signature)}
 }
 
@@ -19477,7 +19546,7 @@ type FullNode_Web3ClientVersion_Call struct {
 
 // Web3ClientVersion is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *FullNode_Expecter) Web3ClientVersion(ctx interface{}) *FullNode_Web3ClientVersion_Call {
+func (_e *FullNode_Expecter) Web3ClientVersion(ctx any) *FullNode_Web3ClientVersion_Call {
 	return &FullNode_Web3ClientVersion_Call{Call: _e.mock.On("Web3ClientVersion", ctx)}
 }
 
