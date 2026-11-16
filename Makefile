@@ -46,7 +46,7 @@ lint:
 #	golangci-lint run -E stylecheck -E gosec -E goconst -E godox -E gocritic
 
 test: build
-	go test -race ./rosetta/services
+	go test -race ./rosetta/services ./rosetta/tools
 
 test_integration: build
 	go test -race ./rosetta/tests
