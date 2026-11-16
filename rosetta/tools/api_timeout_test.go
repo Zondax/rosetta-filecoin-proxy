@@ -1,9 +1,11 @@
 package tools
 
 import (
-	"gotest.tools/assert"
 	"testing"
+	"testing/synctest"
 	"time"
+
+	"gotest.tools/assert"
 )
 
 func TestTimeout(t *testing.T) {
@@ -59,4 +61,20 @@ func TestCopyVariable(t *testing.T) {
 	err := WrapWithTimeout(impl, 3*time.Second)
 	assert.NilError(t, err)
 	assert.Equal(t, someVar, "Copied")
+}
+
+// Regression: lotusFunc finishing after the timeout fired used to race on the
+// shared channel variable and could panic with "send on closed channel".
+// Run with -race: fails deterministically on the old implementation. synctest
+// also fails if the late worker is left blocked.
+func TestLateCompletionAfterTimeout(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		err := WrapWithTimeout(func() {
+			time.Sleep(2 * time.Millisecond)
+		}, time.Millisecond)
+		assert.Error(t, err, "call to Lotus RPC timed out!")
+
+		// Advance fake time past the late completion before leaving the bubble.
+		time.Sleep(2 * time.Millisecond)
+	})
 }
