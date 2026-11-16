@@ -51,7 +51,7 @@ jobs:
           - network: calibration
             url: LOTUS_CALIBRATION_RPC_URL
           #   token: LOTUS_CALIBRATION_RPC_TOKEN
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - run: sudo apt update && sudo apt install -yy build-essential bzr git jq pkg-config mesa-opencl-icd ocl-icd-opencl-dev hwloc libhwloc-dev curl
       - uses: actions/checkout@v6
