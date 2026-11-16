@@ -14,10 +14,10 @@ var ActorsDB Database
 type Database interface {
 	NewImpl(*api.FullNode)
 	// Address-ActorCID Map
-	GetActorCode(address address.Address) (cid.Cid, error)
+	GetActorCode(ctx context.Context, address address.Address) (cid.Cid, error)
 	storeActorCode(address address.Address, actorCode cid.Cid)
 	// Address-ActorPubkey Map
-	GetActorPubKey(address address.Address, reverse bool) (string, error)
+	GetActorPubKey(ctx context.Context, address address.Address, reverse bool) (string, error)
 	storeActorPubKey(address address.Address, pubKey string)
 }
 
@@ -34,11 +34,11 @@ func (m *Cache) NewImpl(node *api.FullNode) {
 	m.Node = node
 }
 
-func (m *Cache) GetActorCode(address address.Address) (cid.Cid, error) {
+func (m *Cache) GetActorCode(ctx context.Context, address address.Address) (cid.Cid, error) {
 	code, ok := m.cidMap.Get(address.String())
 	if !ok {
 		var err error
-		code, err = m.retrieveActorFromLotus(address)
+		code, err = m.retrieveActorFromLotus(ctx, address)
 		if err != nil {
 			return cid.Cid{}, err
 		}
@@ -52,8 +52,12 @@ func (m *Cache) storeActorCode(key address.Address, value cid.Cid) {
 	m.cidMap.Set(key.String(), value)
 }
 
-func (m *Cache) retrieveActorFromLotus(add address.Address) (cid.Cid, error) {
-	actor, err := (*m.Node).StateGetActor(context.Background(), add, filTypes.EmptyTSK)
+func (m *Cache) retrieveActorFromLotus(ctx context.Context, add address.Address) (cid.Cid, error) {
+	// Keep the request values (forwarded headers) but not its cancellation, so a
+	// shared cache fill isn't aborted by one client disconnecting (same lifetime
+	// as the previous context.Background()).
+	ctx = context.WithoutCancel(ctx)
+	actor, err := (*m.Node).StateGetActor(ctx, add, filTypes.EmptyTSK)
 	if err != nil {
 		return cid.Cid{}, err
 	}
@@ -61,11 +65,11 @@ func (m *Cache) retrieveActorFromLotus(add address.Address) (cid.Cid, error) {
 	return actor.Code, nil
 }
 
-func (m *Cache) GetActorPubKey(address address.Address, reverse bool) (string, error) {
+func (m *Cache) GetActorPubKey(ctx context.Context, address address.Address, reverse bool) (string, error) {
 	pubKey, ok := m.pubKeyMap.Get(address.String())
 	if !ok {
 		var err error
-		pubKey, err = m.retrieveActorPubKeyFromLotus(address, reverse)
+		pubKey, err = m.retrieveActorPubKeyFromLotus(ctx, address, reverse)
 		if err != nil {
 			return address.String(), err
 		}
@@ -79,13 +83,16 @@ func (m *Cache) storeActorPubKey(address address.Address, pubKey string) {
 	m.pubKeyMap.Set(address.String(), pubKey)
 }
 
-func (m *Cache) retrieveActorPubKeyFromLotus(add address.Address, reverse bool) (string, error) {
+func (m *Cache) retrieveActorPubKeyFromLotus(ctx context.Context, add address.Address, reverse bool) (string, error) {
+	// Lookup errors are cached below as the fallback value, so a client disconnect
+	// must not be able to cause one (same lifetime as the previous context.Background()).
+	ctx = context.WithoutCancel(ctx)
 	var key address.Address
 	var err error
 	if reverse {
-		key, err = (*m.Node).StateLookupID(context.Background(), add, filTypes.EmptyTSK)
+		key, err = (*m.Node).StateLookupID(ctx, add, filTypes.EmptyTSK)
 	} else {
-		key, err = (*m.Node).StateAccountKey(context.Background(), add, filTypes.EmptyTSK)
+		key, err = (*m.Node).StateAccountKey(ctx, add, filTypes.EmptyTSK)
 	}
 
 	if err != nil {

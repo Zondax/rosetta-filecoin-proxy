@@ -142,28 +142,28 @@ func TestGetMethodNameShortcuts(t *testing.T) {
 	// These branches short-circuit before any actor/lib resolution, so they can
 	// be exercised with a nil lib.
 	t.Run("nil message returns an error", func(t *testing.T) {
-		if name, err := GetMethodName(nil, nil); err == nil {
+		if name, err := GetMethodName(context.Background(), nil, nil); err == nil {
 			t.Fatalf("expected an error for a nil message, got name %q", name)
 		}
 	})
 
 	t.Run("method 0 resolves to Send", func(t *testing.T) {
-		name, err := GetMethodName(&filTypes.MessageTrace{Method: abi.MethodNum(0)}, nil)
+		name, err := GetMethodName(context.Background(), &filTypes.MessageTrace{Method: abi.MethodNum(0)}, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if name != METHOD_SEND {
-			t.Errorf("GetMethodName(method=0) = %q, want %q", name, METHOD_SEND)
+			t.Errorf("GetMethodName(context.Background(), method=0) = %q, want %q", name, METHOD_SEND)
 		}
 	})
 
 	t.Run("method 1 resolves to Constructor", func(t *testing.T) {
-		name, err := GetMethodName(&filTypes.MessageTrace{Method: abi.MethodNum(1)}, nil)
+		name, err := GetMethodName(context.Background(), &filTypes.MessageTrace{Method: abi.MethodNum(1)}, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if name != "Constructor" {
-			t.Errorf("GetMethodName(method=1) = %q, want %q", name, "Constructor")
+			t.Errorf("GetMethodName(context.Background(), method=1) = %q, want %q", name, "Constructor")
 		}
 	})
 }

@@ -129,7 +129,7 @@ func (m MemPoolAPIService) MempoolTransaction(
 			Operations: []*types.Operation{},
 		}
 
-		opType, err := GetMethodName(&filTypes.MessageTrace{
+		opType, err := GetMethodName(ctx, &filTypes.MessageTrace{
 			From:   msg.Message.From,
 			To:     msg.Message.To,
 			Value:  msg.Message.Value,

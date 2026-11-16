@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -45,7 +46,7 @@ func startLogger(level string) {
 	logging.SetAllLoggers(lvl)
 }
 
-func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
+func getFullNodeAPI(addr string, token string, forwardHeaders []string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
 	headers := http.Header{}
 	if len(token) > 0 {
 		headers.Add("Authorization", "Bearer "+token)
@@ -57,13 +58,18 @@ func getFullNodeAPI(addr string, token string) (api.FullNode, v2api.FullNode, js
 	}
 	srv.Logger.Infof("Resolved RPC endpoints - V1: %s, V2: %s", endpoints.V1, endpoints.V2)
 
-	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), endpoints.V1, headers)
+	var opts []jsonrpc.Option
+	if len(forwardHeaders) > 0 {
+		opts = append(opts, jsonrpc.WithHTTPClient(tools.NewForwardHeadersHTTPClient()))
+	}
+
+	v1Client, v1Closer, err := client.NewFullNodeRPCV1(context.Background(), endpoints.V1, headers, opts...)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create V1 client: %w", err)
 	}
 
 	if srv.EnableLotusV2APIs {
-		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers)
+		v2Client, v2Closer, err := client.NewFullNodeRPCV2(context.Background(), endpoints.V2, headers, opts...)
 		if err != nil {
 			v1Closer()
 			return nil, nil, nil, fmt.Errorf("V2 APIs enabled but failed to create V2 client: %w", err)
@@ -121,7 +127,7 @@ func newBlockchainRouter(
 		blockAPIController, mempoolAPIController, constructionAPIController)
 }
 
-func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode) error {
+func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode, forwardHeaders []string) error {
 	netName, err := v1API.StateNetworkName(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get network name: %w", err)
@@ -173,7 +179,8 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(v1API)
 
 	router := newBlockchainRouter(network, asserter, v1API, v2API, r)
-	loggedRouter := server.LoggerMiddleware(router)
+	forwardRouter := tools.ForwardHeadersMiddleware(forwardHeaders, router)
+	loggedRouter := server.LoggerMiddleware(forwardRouter)
 	corsRouter := server.CorsMiddleware(loggedRouter)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
 
@@ -197,8 +204,8 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	return server.ListenAndServe()
 }
 
-func connectAPI(addr string, token string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
-	v1API, v2API, clientCloser, err := getFullNodeAPI(addr, token)
+func connectAPI(addr string, token string, forwardHeaders []string) (api.FullNode, v2api.FullNode, jsonrpc.ClientCloser, error) {
+	v1API, v2API, clientCloser, err := getFullNodeAPI(addr, token, forwardHeaders)
 	if err != nil {
 		srv.Logger.Errorf("Error %s\n", err)
 		return nil, nil, nil, err
@@ -265,13 +272,24 @@ func main() {
 		}
 	}
 
+	forwardHeaders, err := tools.ParseForwardHeaders(os.Getenv("FORWARD_HEADERS"))
+	if err != nil {
+		srv.Logger.Fatalf("Invalid FORWARD_HEADERS: %s", err)
+	}
+	if len(forwardHeaders) > 0 {
+		srv.Logger.Infof("Forwarding request headers to Lotus: %s", strings.Join(forwardHeaders, ", "))
+		// Per-request headers only work over HTTP: a websocket sends headers once, at dial time.
+		if !strings.HasPrefix(addr, "http://") && !strings.HasPrefix(addr, "https://") {
+			srv.Logger.Fatalf("FORWARD_HEADERS requires an http(s) LOTUS_RPC_URL, got %s", addr)
+		}
+	}
+
 	srv.Logger.Info("Starting Rosetta Proxy")
 	srv.Logger.Infof("LOTUS_RPC_URL: %s", addr)
 
 	var lotusV1API api.FullNode
 	var lotusV2API v2api.FullNode
 	var clientCloser jsonrpc.ClientCloser
-	var err error
 
 	retryAttempts, err := strconv.Atoi(srv.RetryConnectAttempts)
 	if err != nil {
@@ -280,7 +298,7 @@ func main() {
 	}
 
 	for i := 1; i <= retryAttempts; i++ {
-		lotusV1API, lotusV2API, clientCloser, err = connectAPI(addr, token)
+		lotusV1API, lotusV2API, clientCloser, err = connectAPI(addr, token, forwardHeaders)
 		if err == nil {
 			break
 		}
@@ -297,7 +315,7 @@ func main() {
 	setupActorsDatabase(&lotusV1API)
 
 	ctx := context.Background()
-	err = startRosettaRPC(ctx, lotusV1API, lotusV2API)
+	err = startRosettaRPC(ctx, lotusV1API, lotusV2API, forwardHeaders)
 	if err != nil {
 		srv.Logger.Infof("Exit Rosetta rpc: %s", err.Error())
 	}
