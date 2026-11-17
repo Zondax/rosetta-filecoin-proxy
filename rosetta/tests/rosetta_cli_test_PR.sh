@@ -25,7 +25,8 @@ CONFIG=./rosetta-config-PR-${NETWORK}.json
 ONLINE_URL=$(jq -r '.online_url' "$CONFIG")
 NETWORK_ID=$(jq -c '{network_identifier: .network}' "$CONFIG")
 
-go install github.com/coinbase/rosetta-cli@v0.10.0
+# CI installs it in an earlier step, before the proxy starts.
+command -v rosetta-cli >/dev/null || go install github.com/coinbase/rosetta-cli@v0.10.0
 
 if [ -z "$CHECK_START_INDEX" ]; then
     HEAD=""
