@@ -88,11 +88,11 @@ func GetCurrencyData() *types.Currency {
 	}
 }
 
-func GetActorNameFromAddress(address address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) string {
+func GetActorNameFromAddress(ctx context.Context, address address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) string {
 	var actorCode cid.Cid
 	// Search for actor in cache
 	var err error
-	actorCode, err = tools.ActorsDB.GetActorCode(address)
+	actorCode, err = tools.ActorsDB.GetActorCode(ctx, address)
 	if err != nil {
 		return actors.UnknownStr
 	}
@@ -157,7 +157,7 @@ func FindMethodNameInAllActors(methodNum uint64) string {
 	return actors.UnknownStr
 }
 
-func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
+func GetMethodName(ctx context.Context, msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 	if msg == nil {
 		return "", BuildError(ErrMalformedValue, nil, true)
 	}
@@ -172,7 +172,7 @@ func GetMethodName(msg *filTypes.MessageTrace, lib *rosettaFilecoinLib.RosettaCo
 		return "Constructor", nil
 	}
 
-	actorName := GetActorNameFromAddress(msg.To, lib)
+	actorName := GetActorNameFromAddress(ctx, msg.To, lib)
 	return resolveMethodName(actorName, msg.Method), nil
 }
 
@@ -255,9 +255,9 @@ func GetMethodByActorName(actorName string) interface{} {
 	return method
 }
 
-func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
+func GetActorPubKey(ctx context.Context, add address.Address, lib *rosettaFilecoinLib.RosettaConstructionFilecoin) (string, *types.Error) {
 
-	actorCode, err := tools.ActorsDB.GetActorCode(add)
+	actorCode, err := tools.ActorsDB.GetActorCode(ctx, add)
 	if err != nil {
 		Logger.Error("could not get actor code from address. Err:", err.Error())
 		return add.String(), nil
@@ -268,16 +268,16 @@ func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstruc
 
 	// Handler for msig
 	if lib.BuiltinActors.IsActor(actorCode, actors.ActorMultisigName) {
-		return getPubKeyForMsig(add)
+		return getPubKeyForMsig(ctx, add)
 	}
 
 	// Handler for storage miner
 	if lib.BuiltinActors.IsActor(actorCode, actors.ActorStorageMinerName) {
-		return getPubKeyForStorageMiner(add)
+		return getPubKeyForStorageMiner(ctx, add)
 	}
 
 	// For other types, try to return address in "robust" format
-	pubKey, err := tools.ActorsDB.GetActorPubKey(add, false)
+	pubKey, err := tools.ActorsDB.GetActorPubKey(ctx, add, false)
 	if err != nil {
 		pubKey = add.String()
 	}
@@ -285,7 +285,7 @@ func GetActorPubKey(add address.Address, lib *rosettaFilecoinLib.RosettaConstruc
 	return pubKey, nil
 }
 
-func getPubKeyForMsig(add address.Address) (string, *types.Error) {
+func getPubKeyForMsig(ctx context.Context, add address.Address) (string, *types.Error) {
 
 	var (
 		pubKey string
@@ -296,7 +296,7 @@ func getPubKeyForMsig(add address.Address) (string, *types.Error) {
 	case address.BLS, address.SECP256K1, address.Actor:
 		// Use "short" address for msig actors since can be mixed on the blockchain
 		// and we need them to be normalized to any of the two formats
-		pubKey, err = tools.ActorsDB.GetActorPubKey(add, true)
+		pubKey, err = tools.ActorsDB.GetActorPubKey(ctx, add, true)
 		if err != nil {
 			pubKey = add.String()
 		}
@@ -310,7 +310,7 @@ func getPubKeyForMsig(add address.Address) (string, *types.Error) {
 	return pubKey, nil
 }
 
-func getPubKeyForStorageMiner(add address.Address) (string, *types.Error) {
+func getPubKeyForStorageMiner(ctx context.Context, add address.Address) (string, *types.Error) {
 
 	var (
 		pubKey string
@@ -321,7 +321,7 @@ func getPubKeyForStorageMiner(add address.Address) (string, *types.Error) {
 	case address.BLS, address.SECP256K1, address.Actor:
 		// Use "short" address for storage miners actors since can be mixed on the blockchain
 		// and we need them to be normalized to any of the two formats
-		pubKey, err = tools.ActorsDB.GetActorPubKey(add, true)
+		pubKey, err = tools.ActorsDB.GetActorPubKey(ctx, add, true)
 		if err != nil {
 			pubKey = add.String()
 		}

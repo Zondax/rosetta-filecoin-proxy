@@ -130,7 +130,7 @@ func (s *BlockAPIService) Block(
 		if err != nil {
 			return nil, err
 		}
-		transactions = s.buildTransactions(states)
+		transactions = s.buildTransactions(ctx, states)
 	}
 
 	// Add block metadata
@@ -175,7 +175,7 @@ func (s *BlockAPIService) Block(
 	return resp, nil
 }
 
-func (s *BlockAPIService) buildTransactions(states *api.ComputeStateOutput) *[]*types.Transaction {
+func (s *BlockAPIService) buildTransactions(ctx context.Context, states *api.ComputeStateOutput) *[]*types.Transaction {
 	defer TimeTrack(time.Now(), "[Proxy]TraceAnalysis")
 
 	var transactions []*types.Transaction
@@ -189,7 +189,7 @@ func (s *BlockAPIService) buildTransactions(states *api.ComputeStateOutput) *[]*
 		var operations []*types.Operation
 
 		// Analyze full trace recursively
-		s.processTrace(&trace.ExecutionTrace, &operations)
+		s.processTrace(ctx, &trace.ExecutionTrace, &operations)
 		if len(operations) > 0 {
 			// Add the corresponding "Fee" operation
 			if !trace.GasCost.TotalCost.Nil() {
@@ -224,13 +224,13 @@ func getLotusStateCompute(ctx context.Context, node *api.FullNode, tipSet *filTy
 	return states, nil
 }
 
-func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
+func (s *BlockAPIService) processTrace(ctx context.Context, trace *filTypes.ExecutionTrace, operations *[]*types.Operation) {
 
 	if trace == nil {
 		return
 	}
 
-	baseMethod, err := GetMethodName(&trace.Msg, s.rosettaLib)
+	baseMethod, err := GetMethodName(ctx, &trace.Msg, s.rosettaLib)
 	if err != nil {
 		Logger.Error("could not get method name. Error:", err.Message, err.Details)
 		baseMethod = "unknown"
@@ -241,8 +241,8 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		opStatus = OperationStatusOk
 	}
 
-	fromPk, err1 := GetActorPubKey(trace.Msg.From, s.rosettaLib)
-	toPk, err2 := GetActorPubKey(trace.Msg.To, s.rosettaLib)
+	fromPk, err1 := GetActorPubKey(ctx, trace.Msg.From, s.rosettaLib)
+	toPk, err2 := GetActorPubKey(ctx, trace.Msg.To, s.rosettaLib)
 	if err1 != nil || err2 != nil {
 		Logger.Error("could not retrieve one or both pubkeys for addresses:",
 			trace.Msg.From.String(), trace.Msg.To.String())
@@ -273,7 +273,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 				trace.Msg.Value.String(), opStatus, true)
 
 			// Check if this Exec op created and funded a msig account
-			params, err := s.parseExecParams(&trace.Msg, &trace.MsgRct)
+			params, err := s.parseExecParams(ctx, &trace.Msg, &trace.MsgRct)
 			if err == nil {
 				var paramsMap map[string]string
 				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -299,7 +299,7 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 		}
 	case "SwapSigner":
 		{
-			params, err := s.parseMsigParams(&trace.Msg)
+			params, err := s.parseMsigParams(ctx, &trace.Msg)
 			if err == nil {
 				var paramsMap map[string]string
 				if err := json.Unmarshal([]byte(params), &paramsMap); err == nil {
@@ -329,14 +329,14 @@ func (s *BlockAPIService) processTrace(trace *filTypes.ExecutionTrace, operation
 	if opStatus == OperationStatusOk {
 		for i := range trace.Subcalls {
 			subTrace := trace.Subcalls[i]
-			s.processTrace(&subTrace, operations)
+			s.processTrace(ctx, &subTrace, operations)
 		}
 	}
 }
 
-func (s *BlockAPIService) parseExecParams(msg *filTypes.MessageTrace, receipt *filTypes.ReturnTrace) (string, error) {
+func (s *BlockAPIService) parseExecParams(ctx context.Context, msg *filTypes.MessageTrace, receipt *filTypes.ReturnTrace) (string, error) {
 
-	actorName := GetActorNameFromAddress(msg.To, s.rosettaLib)
+	actorName := GetActorNameFromAddress(ctx, msg.To, s.rosettaLib)
 
 	switch actorName {
 	case "init":
@@ -373,14 +373,14 @@ func (s *BlockAPIService) parseExecParams(msg *filTypes.MessageTrace, receipt *f
 	}
 }
 
-func (s *BlockAPIService) parseMsigParams(msg *filTypes.MessageTrace) (string, error) {
+func (s *BlockAPIService) parseMsigParams(ctx context.Context, msg *filTypes.MessageTrace) (string, error) {
 	msgSerial, err := json.Marshal(msg)
 	if err != nil {
 		Logger.Error("Could not parse params. Cannot serialize lotus message:", err.Error())
 		return "", err
 	}
 
-	actorCode, err := tools.ActorsDB.GetActorCode(msg.To)
+	actorCode, err := tools.ActorsDB.GetActorCode(ctx, msg.To)
 	if err != nil {
 		return "", err
 	}

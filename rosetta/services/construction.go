@@ -128,7 +128,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			message.To = addressReceiverParsed
 
 			// Get receiver's actor code
-			receiverActor, errAct := c.node.StateGetActor(context.Background(), addressReceiverParsed, filTypes.EmptyTSK)
+			receiverActor, errAct := c.node.StateGetActor(ctx, addressReceiverParsed, filTypes.EmptyTSK)
 			if errAct != nil {
 				// Actor not found on chain, set an empty field
 				md[DestinationActorIdKey] = ""
@@ -155,7 +155,7 @@ func (c *ConstructionAPIService) ConstructionMetadata(
 			md[NonceKey] = nonce
 
 			// Get available balance
-			actor, errAct := c.node.StateGetActor(context.Background(), addressSenderParsed, filTypes.EmptyTSK)
+			actor, errAct := c.node.StateGetActor(ctx, addressSenderParsed, filTypes.EmptyTSK)
 			if errAct != nil {
 				return nil, BuildError(ErrUnableToGetActor, errAct, true)
 			}
