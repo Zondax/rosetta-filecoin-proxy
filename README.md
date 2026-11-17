@@ -43,7 +43,9 @@ FORWARD_HEADERS=x-client-id,x-request-id LOTUS_RPC_URL=https://<node>/rpc ./rose
   `(X-)Idempotency-Key` (it makes Go's HTTP client auto-replay POSTs) headers can
   never be forwarded; startup fails if one is listed.
 - Allowlisted headers named in the incoming request's `Connection` header are dropped.
-- Values longer than 1024 bytes are dropped.
+- Values longer than `FORWARD_HEADERS_MAX_VALUE_BYTES` (default 1024) are dropped
+  and a warning naming the header (never its value) is logged. Startup fails if it
+  is not a positive integer.
 - Forwarded values are whatever the caller sent. Don't rely on them for access
   control or billing unless something in front of Rosetta sets or strips them.
 - Actor lookups served from the in-memory cache make no Lotus call, so they

@@ -127,7 +127,7 @@ func newBlockchainRouter(
 		blockAPIController, mempoolAPIController, constructionAPIController)
 }
 
-func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode, forwardHeaders []string) error {
+func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNode, forwardHeaders []string, forwardMaxValueBytes int) error {
 	netName, err := v1API.StateNetworkName(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get network name: %w", err)
@@ -179,7 +179,7 @@ func startRosettaRPC(ctx context.Context, v1API api.FullNode, v2API v2api.FullNo
 	r := rosettaFilecoinLib.NewRosettaConstructionFilecoin(v1API)
 
 	router := newBlockchainRouter(network, asserter, v1API, v2API, r)
-	forwardRouter := tools.ForwardHeadersMiddleware(forwardHeaders, router)
+	forwardRouter := tools.ForwardHeadersMiddleware(forwardHeaders, forwardMaxValueBytes, router)
 	loggedRouter := server.LoggerMiddleware(forwardRouter)
 	corsRouter := server.CorsMiddleware(loggedRouter)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", ServerPort), Handler: corsRouter}
@@ -276,8 +276,13 @@ func main() {
 	if err != nil {
 		srv.Logger.Fatalf("Invalid FORWARD_HEADERS: %s", err)
 	}
+	forwardMaxValueBytes, err := tools.ParseForwardHeadersMaxValueBytes(os.Getenv("FORWARD_HEADERS_MAX_VALUE_BYTES"))
+	if err != nil {
+		srv.Logger.Fatalf("Invalid FORWARD_HEADERS_MAX_VALUE_BYTES: %s", err)
+	}
 	if len(forwardHeaders) > 0 {
-		srv.Logger.Infof("Forwarding request headers to Lotus: %s", strings.Join(forwardHeaders, ", "))
+		srv.Logger.Infof("Forwarding request headers to Lotus: %s (max %d bytes per value)",
+			strings.Join(forwardHeaders, ", "), forwardMaxValueBytes)
 		// Per-request headers only work over HTTP: a websocket sends headers once, at dial time.
 		if !strings.HasPrefix(addr, "http://") && !strings.HasPrefix(addr, "https://") {
 			srv.Logger.Fatalf("FORWARD_HEADERS requires an http(s) LOTUS_RPC_URL, got %s", addr)
@@ -315,7 +320,7 @@ func main() {
 	setupActorsDatabase(&lotusV1API)
 
 	ctx := context.Background()
-	err = startRosettaRPC(ctx, lotusV1API, lotusV2API, forwardHeaders)
+	err = startRosettaRPC(ctx, lotusV1API, lotusV2API, forwardHeaders, forwardMaxValueBytes)
 	if err != nil {
 		srv.Logger.Infof("Exit Rosetta rpc: %s", err.Error())
 	}

@@ -42,6 +42,38 @@ func TestParseForwardHeaders(t *testing.T) {
 	}
 }
 
+func TestParseForwardHeadersMaxValueBytes(t *testing.T) {
+	for raw, want := range map[string]int{"": DefaultMaxForwardedHeaderValueLen, "  ": DefaultMaxForwardedHeaderValueLen, "4096": 4096, " 16 ": 16} {
+		got, err := ParseForwardHeadersMaxValueBytes(raw)
+		if err != nil || got != want {
+			t.Errorf("ParseForwardHeadersMaxValueBytes(%q) = %d, %v; want %d", raw, got, err, want)
+		}
+	}
+	for _, bad := range []string{"0", "-1", "1k", "1.5", "abc"} {
+		if _, err := ParseForwardHeadersMaxValueBytes(bad); err == nil {
+			t.Errorf("expected %q to be rejected", bad)
+		}
+	}
+}
+
+func TestForwardHeadersMiddlewareCustomLimit(t *testing.T) {
+	var seen http.Header
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seen = ForwardedHeadersFromContext(r.Context())
+	})
+	h := ForwardHeadersMiddleware([]string{hdrClientID, hdrRequestID}, 4096, next)
+
+	req := httptest.NewRequest(http.MethodPost, "/block", nil)
+	long := strings.Repeat("a", 4096) // over the default, exactly at the custom limit
+	req.Header.Set(hdrClientID, long)
+	req.Header.Set(hdrRequestID, strings.Repeat("b", 4097))
+	h.ServeHTTP(httptest.NewRecorder(), req)
+
+	if len(seen) != 1 || seen.Get(hdrClientID) != long {
+		t.Fatalf("unexpected forwarded headers: %d entries, client id length %d", len(seen), len(seen.Get(hdrClientID)))
+	}
+}
+
 func TestForwardHeadersMiddleware(t *testing.T) {
 	var seen http.Header
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,19 +81,19 @@ func TestForwardHeadersMiddleware(t *testing.T) {
 	})
 
 	t.Run("empty allowlist returns handler unchanged", func(t *testing.T) {
-		h := ForwardHeadersMiddleware(nil, next)
+		h := ForwardHeadersMiddleware(nil, DefaultMaxForwardedHeaderValueLen, next)
 		if fmt.Sprintf("%p", h) != fmt.Sprintf("%p", next) {
 			t.Fatal("expected the original handler")
 		}
 	})
 
 	t.Run("copies only allowlisted headers", func(t *testing.T) {
-		h := ForwardHeadersMiddleware([]string{hdrClientID, hdrRequestID}, next)
+		h := ForwardHeadersMiddleware([]string{hdrClientID, hdrRequestID}, DefaultMaxForwardedHeaderValueLen, next)
 		req := httptest.NewRequest(http.MethodPost, "/block", nil)
 		req.Header.Set("x-client-id", testClient)
 		req.Header.Set("X-Other", "nope")
 		req.Header.Set("Authorization", "Bearer caller")
-		req.Header.Set(hdrRequestID, strings.Repeat("a", MaxForwardedHeaderValueLen+1))
+		req.Header.Set(hdrRequestID, strings.Repeat("a", DefaultMaxForwardedHeaderValueLen+1))
 		h.ServeHTTP(httptest.NewRecorder(), req)
 
 		if len(seen) != 1 || seen.Get(hdrClientID) != testClient {
@@ -70,7 +102,7 @@ func TestForwardHeadersMiddleware(t *testing.T) {
 	})
 
 	t.Run("drops headers nominated by Connection", func(t *testing.T) {
-		h := ForwardHeadersMiddleware([]string{hdrClientID, hdrRequestID}, next)
+		h := ForwardHeadersMiddleware([]string{hdrClientID, hdrRequestID}, DefaultMaxForwardedHeaderValueLen, next)
 		req := httptest.NewRequest(http.MethodPost, "/block", nil)
 		req.Header.Add("Connection", "keep-alive")
 		req.Header.Add("Connection", " x-CLIENT-id ")
@@ -83,7 +115,7 @@ func TestForwardHeadersMiddleware(t *testing.T) {
 	})
 
 	t.Run("no matching headers leaves context untouched", func(t *testing.T) {
-		h := ForwardHeadersMiddleware([]string{hdrClientID}, next)
+		h := ForwardHeadersMiddleware([]string{hdrClientID}, DefaultMaxForwardedHeaderValueLen, next)
 		h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/block", nil))
 		if seen != nil {
 			t.Fatalf("expected no forwarded headers, got %v", seen)

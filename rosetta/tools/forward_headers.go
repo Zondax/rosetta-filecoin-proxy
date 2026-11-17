@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
-// MaxForwardedHeaderValueLen caps the size of a single forwarded header value.
-// Longer values are dropped (not truncated) so the node never sees partial data.
-const MaxForwardedHeaderValueLen = 1024
+// DefaultMaxForwardedHeaderValueLen is the default cap on the size of a single
+// forwarded header value (FORWARD_HEADERS_MAX_VALUE_BYTES overrides it). Longer
+// values are dropped, not truncated, so the node never sees partial data.
+const DefaultMaxForwardedHeaderValueLen = 1024
 
 // deniedForwardHeaders can never be forwarded, even if allowlisted. They either
 // carry credentials (an incoming value must not replace LOTUS_RPC_TOKEN), are
@@ -81,11 +83,27 @@ func ParseForwardHeaders(raw string) ([]string, error) {
 	return names, nil
 }
 
+// ParseForwardHeadersMaxValueBytes parses the per-value size cap (e.g. the
+// FORWARD_HEADERS_MAX_VALUE_BYTES env var). An empty input returns
+// DefaultMaxForwardedHeaderValueLen; otherwise it must be a positive integer.
+func ParseForwardHeadersMaxValueBytes(raw string) (int, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return DefaultMaxForwardedHeaderValueLen, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("must be a positive integer, got %q", raw)
+	}
+	return n, nil
+}
+
 // ForwardHeadersMiddleware copies the allowlisted headers of each incoming
 // request into that request's context, where ForwardHeadersTransport picks them
-// up for every outbound node call made with that context. With an empty
-// allowlist the handler is returned unchanged.
-func ForwardHeadersMiddleware(allowlist []string, next http.Handler) http.Handler {
+// up for every outbound node call made with that context. Values longer than
+// maxValueBytes are dropped with a warning. With an empty allowlist the handler
+// is returned unchanged.
+func ForwardHeadersMiddleware(allowlist []string, maxValueBytes int, next http.Handler) http.Handler {
 	if len(allowlist) == 0 {
 		return next
 	}
@@ -106,7 +124,10 @@ func ForwardHeadersMiddleware(allowlist []string, next http.Handler) http.Handle
 				continue
 			}
 			for _, v := range r.Header.Values(name) {
-				if len(v) > MaxForwardedHeaderValueLen {
+				if len(v) > maxValueBytes {
+					// Never log the value itself: it is caller-controlled and may be sensitive.
+					log.Warnf("not forwarding header %s: value is %d bytes, limit is %d (FORWARD_HEADERS_MAX_VALUE_BYTES)",
+						name, len(v), maxValueBytes)
 					continue
 				}
 				forwarded.Add(name, v)
