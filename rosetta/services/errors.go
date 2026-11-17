@@ -346,7 +346,14 @@ var (
 	}
 )
 
+// BuildError returns a copy of proxyErr carrying lotusErr in its details. The
+// Err* values are shared package-level definitions that /network/options also
+// lists, so they must never be modified: details written into them would leak
+// into every later response, and concurrent requests would race on them.
 func BuildError(proxyErr *types.Error, lotusErr error, showDetails bool) *types.Error {
+	errCopy := *proxyErr
+	proxyErr = &errCopy
+
 	lotusMsg := ""
 	proxyMsg := "Proxy: " + proxyErr.Message
 	if lotusErr != nil {

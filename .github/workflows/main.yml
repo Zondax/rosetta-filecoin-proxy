@@ -71,6 +71,10 @@ jobs:
 
       - run: git submodule update --init --recursive
       - run: make build_CI
+      # Install before starting the proxy: this can take >15 min on a cold runner,
+      # and a proxy left idle that long has its node connection go stale.
+      - name: Install rosetta-cli
+        run: go install github.com/coinbase/rosetta-cli@v0.10.0
       - name: Run proxy in background
         run: ./rosetta-filecoin-proxy&
         env:
